@@ -510,7 +510,12 @@ export default function SignalField() {
   return (
     <section id="senales" ref={ref} className="relative h-[560vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
-        <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+        {/* the canvas dissolves at its edges so the field melts into the
+            neighbouring chapters — no hard seam anywhere */}
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 h-full w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_82%,transparent_100%)]"
+        />
 
         {/* ── text overlays, one per phase ─────────────────────── */}
         <Overlay progress={scrollYProgress} range={[0.03, 0.08, 0.16, 0.21]}>
