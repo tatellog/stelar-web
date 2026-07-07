@@ -17,7 +17,7 @@ const SCREENS = [
 const CYCLE_MS = 5200;
 
 /**
- * Capítulo V — Haz visible lo invisible.
+ * Capítulo V — Tu Órbita.
  * The phone appears for the FIRST time in the journey — only now that the
  * metaphor is understood. Floating, large, alive: Día, Semana and Mes
  * animate themselves in a slow automatic cycle. Not screenshots.
@@ -31,14 +31,14 @@ export default function Evidence() {
   }, []);
 
   return (
-    <section id="evidencia" className="relative py-32 sm:py-44">
+    <section id="orbita" className="relative py-32 sm:py-44">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_45%_at_50%_55%,rgba(233,30,99,0.06),transparent_70%)]" />
 
       <div className="relative mx-auto grid max-w-6xl items-center gap-16 px-6 lg:grid-cols-2">
         <div>
           <Reveal>
             <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
-              Capítulo V · Haz visible lo invisible
+              Capítulo V · Tu Órbita
             </p>
             <h2 className="font-sans text-4xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
               Todo esto sucede dentro de{" "}

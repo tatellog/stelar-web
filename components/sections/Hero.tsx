@@ -1,105 +1,38 @@
 "use client";
 
 import { useRef } from "react";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  useScroll,
-} from "framer-motion";
-import { PrimaryCTA } from "../CTAButton";
+import { motion, useTransform, useScroll } from "framer-motion";
 
 /**
  * Capítulo I — Oscuridad.
- * No interface. No phone. No product. Only space: the ambient starfield,
- * one single star being born, and the words. The star leans toward the
- * cursor; scrolling pulls a trail out of it, down into the journey.
+ * No interface. No phone. No product. Only space: the ambient starfield
+ * and the words. The scroll invitation pulls you down into the journey.
  */
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
-
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const sx = useSpring(mx, { stiffness: 40, damping: 18, mass: 0.8 });
-  const sy = useSpring(my, { stiffness: 40, damping: 18, mass: 0.8 });
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return;
-    mx.set(((e.clientX - rect.left) / rect.width) * 2 - 1);
-    my.set(((e.clientY - rect.top) / rect.height) * 2 - 1);
-  };
-
-  // the star drifts gently toward the cursor
-  const starX = useTransform(sx, (v) => v * 26);
-  const starY = useTransform(sy, (v) => v * 18);
-
-  // scroll: the star leaves a trail and the chapter recedes
-  const trail = useTransform(scrollYProgress, [0.02, 0.45], [0, 1]);
+  // scroll: the chapter recedes into the dark
   const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const drift = useTransform(scrollYProgress, [0, 1], [0, -70]);
 
   return (
     <section
       ref={ref}
-      onPointerMove={onPointerMove}
       className="relative flex min-h-screen items-center justify-center overflow-hidden"
     >
       <motion.div
         style={{ opacity: fade, y: drift }}
         className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 text-center"
       >
-        {/* the single star, slowly born */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.3 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 3.2, ease: [0.22, 1, 0.36, 1] }}
-          style={{ x: starX, y: starY }}
-          className="relative mb-2 h-28 w-28 sm:h-32 sm:w-32"
-        >
-          {/* a single diffuse light — same soft language as the field */}
-          <motion.span
-            aria-hidden
-            className="absolute inset-0 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(255,246,229,0.9) 0%, rgba(251,215,227,0.35) 22%, rgba(233,30,99,0.12) 45%, transparent 70%)",
-            }}
-            animate={{ scale: [1, 1.12, 1], opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          />
-          {/* the trail it leaves when you begin to move */}
-          <svg
-            viewBox="0 0 100 160"
-            className="pointer-events-none absolute left-1/2 top-[62%] h-64 w-24 -translate-x-1/2"
-            aria-hidden
-          >
-            <motion.path
-              d="M50 8 C 46 50, 56 90, 48 150"
-              fill="none"
-              stroke="url(#heroTrail)"
-              strokeWidth="1.2"
-              style={{ pathLength: trail, opacity: trail }}
-            />
-            <defs>
-              <linearGradient id="heroTrail" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#FFF6E5" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#FF4886" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </motion.div>
-
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.6, delay: 2.2 }}
+          transition={{ duration: 1.6, delay: 1.2 }}
           className="mb-6 text-xs uppercase tracking-[0.4em] text-gold/90"
         >
           Haz visible lo invisible
@@ -108,7 +41,7 @@ export default function Hero() {
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.8, delay: 2.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.8, delay: 1.6, ease: [0.22, 1, 0.36, 1] }}
           className="font-sans text-4xl font-black leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-6xl"
         >
           Perder peso no es{" "}
@@ -120,36 +53,33 @@ export default function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 3.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.5, delay: 2.3, ease: [0.22, 1, 0.36, 1] }}
           className="mt-7 max-w-xl text-lg leading-relaxed text-cream/70"
         >
           La parte más difícil es que no puedes ver los patrones que están
           formando tus resultados.
         </motion.p>
 
-        <motion.div
+        {/* the invitation: not a button — the journey begins by descending */}
+        <motion.a
+          href="#senales"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.3, delay: 4.0 }}
-          className="mt-10"
+          transition={{ duration: 1.3, delay: 3.0 }}
+          className="group mt-14 flex flex-col items-center gap-4"
         >
-          <PrimaryCTA href="#senales">Comienza el viaje</PrimaryCTA>
-        </motion.div>
-      </motion.div>
-
-      {/* scroll hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5, delay: 4.6 }}
-        style={{ opacity: fade }}
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-          className="h-10 w-px bg-gradient-to-b from-transparent via-gold/60 to-transparent"
-        />
+          <span className="text-[11px] uppercase tracking-[0.35em] text-cream/50 transition-colors duration-500 group-hover:text-cream/80">
+            Desliza para comenzar el viaje
+          </span>
+          <span className="relative flex h-14 w-px overflow-hidden">
+            <span className="absolute inset-0 bg-gradient-to-b from-transparent via-gold/25 to-transparent" />
+            <motion.span
+              animate={{ y: ["-100%", "160%"] }}
+              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-x-0 h-8 bg-gradient-to-b from-transparent via-gold/80 to-transparent"
+            />
+          </span>
+        </motion.a>
       </motion.div>
     </section>
   );
