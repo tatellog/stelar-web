@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Reveal from "../Reveal";
 import { PrimaryCTA } from "../CTAButton";
+import { useSign } from "../SignContext";
 import { figureInRect } from "@/lib/zodiac/helpers";
 
 // The app's real Aries figure across the closing sky —
@@ -12,8 +13,24 @@ const STARS = ARIES.pts;
 const LINKS = ARIES.lines.slice(0, -1);
 
 export default function FinalCTA() {
+  const { sign } = useSign();
   return (
     <section id="beta" className="relative overflow-hidden py-36 sm:py-48">
+      {/* the visitor's emblem, glowing softly behind the calm */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.16 }}
+        viewport={{ once: true }}
+        transition={{ duration: 3, ease: "easeOut" }}
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/emblems/${sign}/f10.png`}
+          alt=""
+          className="h-full w-full object-contain"
+        />
+      </motion.div>
       <svg
         viewBox="0 0 800 240"
         aria-hidden

@@ -5,8 +5,8 @@ import Reveal from "../Reveal";
 const ROWS: { others: string; stelar: string }[] = [
   { others: "Cuentan calorías", stelar: "Revela patrones" },
   { others: "Muestran números", stelar: "Muestra evidencia" },
-  { others: "Te dicen qué hacer", stelar: "Te ayuda a entenderte" },
-  { others: "Castigan el error", stelar: "Valora volver" },
+  { others: "Trackean hábitos", stelar: "Construye entendimiento" },
+  { others: "Muestran dashboards", stelar: "Hace visible lo invisible" },
 ];
 
 export default function Comparison() {

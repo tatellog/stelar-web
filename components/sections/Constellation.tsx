@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Reveal from "../Reveal";
 import LottieGlow from "../LottieGlow";
-import EmblemReveal from "../EmblemReveal";
+import { useSign } from "../SignContext";
 import skyAmbient from "@/lib/lottie/month-sky-ambient.json";
 import { FIGURES } from "@/lib/zodiac/figures";
 import type { ZodiacSign, ZodiacStar } from "@/lib/zodiac/types";
@@ -22,7 +21,7 @@ const HERO_MAG = 2;
  * pictorial art resting on its golden halo.
  */
 export default function Constellation() {
-  const [sign, setSign] = useState<ZodiacSign>("leo");
+  const { sign, setSign } = useSign();
   const def = FIGURES[sign];
   const namedAnchor = def.stars.find((s) => s.name && s.role);
 
@@ -31,7 +30,7 @@ export default function Constellation() {
       <div className="mx-auto max-w-5xl px-6 text-center">
         <Reveal>
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold/80">
-            Capítulo V · Tu constelación
+            Capítulo IV · Tu constelación
           </p>
           <h2 className="font-sans text-4xl font-black leading-[1.1] tracking-tight text-cream sm:text-6xl">
             Tu constelación no se desbloquea.
@@ -44,8 +43,8 @@ export default function Constellation() {
 
         <Reveal delay={0.3} className="mx-auto mt-8 max-w-xl">
           <p className="text-lg leading-relaxed text-cream/60">
-            Cada día que vuelves enciende una estrella de tu signo. Cuando tu
-            evidencia completa la figura, tu constelación brilla entera.
+            Cada acción repetida ilumina otra parte de ella. Elige tu signo y
+            mira cómo tus días le dan forma.
           </p>
         </Reveal>
 
@@ -142,19 +141,14 @@ function SignFigure({ sign }: { sign: ZodiacSign }) {
       {/* the reveal's golden halo, behind the art */}
       <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,246,229,0.10)_0%,rgba(232,184,114,0.09)_40%,rgba(217,174,111,0.05)_72%,transparent_100%)]" />
 
-      {/* the sign's emblem painting itself in — the app's real reveal frames */}
-      <motion.div
-        className="absolute inset-[6%]"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 0.75 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+      {/* the live figure — the app's exact stars and lines, breathing */}
+      <motion.svg
+        viewBox="0 0 100 100"
+        className="relative h-full w-full"
+        aria-hidden
+        animate={{ scale: [1, 1.015, 1] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
       >
-        <EmblemReveal sign={sign} />
-      </motion.div>
-
-      {/* the live figure — the app's exact stars and lines */}
-      <svg viewBox="0 0 100 100" className="relative h-full w-full" aria-hidden>
         {/* connecting lines, drawn in order */}
         {def.lines.map(([a, b], i) => (
           <motion.line
@@ -225,7 +219,7 @@ function SignFigure({ sign }: { sign: ZodiacSign }) {
             </motion.text>
           ) : null
         )}
-      </svg>
+      </motion.svg>
     </div>
   );
 }

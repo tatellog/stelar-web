@@ -52,23 +52,24 @@ const SIGNALS: Signal[] = SIGNAL_META.map((m, i) => ({
   r: LEO.pts[i].mag <= 2.3 ? m.r + 0.8 : m.r,
 }));
 
-const LINKS = LEO.lines;
+// deliberately incomplete — the constellation only finishes in chapter IV
+const LINKS = LEO.lines.slice(0, -2);
 
 const PHASES = [
   {
-    word: "datos sueltos",
+    word: "señales sueltas",
     color: "text-cream/50",
-    sub: "Registros que todavía no dicen nada.",
+    sub: "Un solo día cambia muy poco.",
   },
   {
-    word: "evidencia",
+    word: "repetición",
     color: "text-gold text-glow-gold",
-    sub: "Cada comida. Cada entrenamiento. Cada noche. Cada día que vuelves.",
+    sub: "Los días repetidos cuentan una historia.",
   },
   {
-    word: "patrón",
+    word: "un patrón",
     color: "text-pink text-glow-pink",
-    sub: "Y cuando las señales se conectan, aparece lo que antes no podías ver.",
+    sub: "Y cuando la repetición se conecta, aparece lo que antes no podías ver.",
   },
 ];
 
@@ -83,10 +84,10 @@ export default function RevealScene() {
     <section id="promesa" ref={ref} className="relative h-[340vh]">
       <div className="sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden px-6">
         <p className="mb-2 text-xs uppercase tracking-[0.35em] text-gold/80">
-          Capítulo II · La promesa
+          Capítulo III · Conexiones
         </p>
         <h2 className="mb-4 text-center font-sans text-3xl font-black leading-tight tracking-tight text-cream sm:text-5xl">
-          Stelar convierte tus registros en
+          Tus días se convierten en
         </h2>
 
         {/* the changing word */}
@@ -272,8 +273,8 @@ function SkyLink({
       x2={x2}
       y2={y2}
       style={{ pathLength, opacity }}
-      stroke="#F4ECDE"
-      strokeWidth="1"
+      stroke="#D9AE6F"
+      strokeWidth="0.9"
     />
   );
 }

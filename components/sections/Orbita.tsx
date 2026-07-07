@@ -59,7 +59,7 @@ export default function Orbita() {
       <div className="relative mx-auto max-w-6xl px-6">
         <Reveal className="mx-auto mb-16 max-w-3xl text-center">
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
-            Capítulo IV · Órbita
+            Capítulo VI · Órbita
           </p>
           <h2 className="font-sans text-5xl font-black leading-tight tracking-tight text-cream sm:text-6xl">
             No son datos.{" "}

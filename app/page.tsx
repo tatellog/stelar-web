@@ -1,31 +1,41 @@
 import Starfield from "@/components/Starfield";
 import Nav from "@/components/Nav";
+import { SignProvider } from "@/components/SignContext";
 import Hero from "@/components/sections/Hero";
-import Problem from "@/components/sections/Problem";
+import Signals from "@/components/sections/Signals";
 import RevealScene from "@/components/sections/RevealScene";
-import Features from "@/components/sections/Features";
-import Orbita from "@/components/sections/Orbita";
 import Constellation from "@/components/sections/Constellation";
-import AlmaCeleste from "@/components/sections/AlmaCeleste";
+import Evidence from "@/components/sections/Evidence";
+import Orbita from "@/components/sections/Orbita";
+import Emblem from "@/components/sections/Emblem";
 import Comparison from "@/components/sections/Comparison";
 import FinalCTA from "@/components/sections/FinalCTA";
 import Footer from "@/components/Footer";
 
+/*
+ * El viaje — capítulos del brief:
+ * I Oscuridad · II Señales · III Conexiones · IV Tu constelación ·
+ * V Haz visible lo invisible (aparece el teléfono) · VI Órbita ·
+ * VII El emblema (clímax) · VIII Comparación · Final.
+ * El producto no existe hasta el capítulo V: la protagonista es ella.
+ */
 export default function Home() {
   return (
     <main className="cosmic-gradient relative">
       <Starfield />
-      <Nav />
-      <Hero />
-      <Problem />
-      <RevealScene />
-      <Features />
-      <Orbita />
-      <Constellation />
-      <AlmaCeleste />
-      <Comparison />
-      <FinalCTA />
-      <Footer />
+      <SignProvider>
+        <Nav />
+        <Hero />
+        <Signals />
+        <RevealScene />
+        <Constellation />
+        <Evidence />
+        <Orbita />
+        <Emblem />
+        <Comparison />
+        <FinalCTA />
+        <Footer />
+      </SignProvider>
     </main>
   );
 }
