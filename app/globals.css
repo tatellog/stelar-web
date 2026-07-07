@@ -1,26 +1,127 @@
 @import "tailwindcss";
 
+/* Paleta cerrada de Stelar (theme/colors.ts de la app):
+   bg #0A0608 · bgCard #14080B · bgCard2 #1F0E13 · leche #F4ECDE ·
+   magenta #E91E63 · magentaHot #FF4886 · oro #D9AE6F · rosaLuz #FBD7E3 */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-deep: #0a0608;
+  --bg-wine: #14080b;
+  --pink: #ff4886;
+  --pink-soft: #e91e63;
+  --gold: #d9ae6f;
+  --gold-soft: #e8b872;
+  --cream: #f4ecde;
+  --bone: #c9b8a5;
+  --rosa-luz: #fbd7e3;
+  --plum: #1f0e13;
+  --plum-deep: #14080b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-deep: var(--bg-deep);
+  --color-wine: var(--bg-wine);
+  --color-pink: var(--pink);
+  --color-pink-soft: var(--pink-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-cream: var(--cream);
+  --color-bone: var(--bone);
+  --color-rosa: var(--rosa-luz);
+  --color-plum: var(--plum);
+  --color-plum-deep: var(--plum-deep);
+  --font-sans: var(--font-hanken), system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-deep);
+  color: var(--cream);
+  font-family: var(--font-hanken), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(233, 30, 99, 0.35);
+  color: var(--cream);
+}
+
+/* Soft radial vignettes layered over the page background */
+.cosmic-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(43, 13, 36, 0.9), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 30%, rgba(233, 30, 99, 0.06), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 15% 60%, rgba(217, 174, 111, 0.05), transparent 70%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-wine) 50%, var(--bg-deep) 100%);
+}
+
+.text-glow-pink {
+  text-shadow: 0 0 24px rgba(233, 30, 99, 0.45);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 20px rgba(217, 174, 111, 0.4);
+}
+
+.glow-dot {
+  filter: drop-shadow(0 0 6px rgba(244, 236, 222, 0.9));
+}
+
+.hairline {
+  border-color: rgba(244, 236, 222, 0.08);
+}
+
+/* Slow float for phone mockups */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-orbit {
+  animation: orbit-spin 60s linear infinite;
+  transform-origin: center;
+}
+
+.animate-orbit-reverse {
+  animation: orbit-spin 90s linear infinite reverse;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-slow,
+  .animate-orbit,
+  .animate-orbit-reverse {
+    animation: none;
+  }
 }
