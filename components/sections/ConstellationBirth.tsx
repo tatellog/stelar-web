@@ -501,38 +501,36 @@ export default function ConstellationBirth() {
           const mini = getMini(o.sign);
           const hovered = hoverSign === o.sign;
           const scale = pr.s * 0.62 * (hovered ? 1.06 : 1);
-          const pulse = reduced ? 1 : 0.85 + 0.15 * Math.sin(t * 0.7 + k);
-          const a = obsAlpha * (hovered ? 0.95 : 0.4) * Math.min(1, 3.4 / dist) * pulse;
+          const pulse = reduced ? 1 : 0.9 + 0.1 * Math.sin(t * 0.7 + k);
+          const a = obsAlpha * (hovered ? 1 : 0.78) * Math.min(1, 4.6 / dist) * pulse;
 
-          /* orbit halo when alive */
-          if (hovered) softDot(ctx, pr.sx, pr.sy, scale * 0.9, ORO, 0.12, 0.5);
+          /* orbit halo — always faintly present, alive on hover */
+          softDot(ctx, pr.sx, pr.sy, scale * 0.9, ORO, hovered ? 0.14 : 0.05, 0.5);
 
           for (const [la, lb] of mini.lines) {
             const A = mini.pts[la];
             const B = mini.pts[lb];
-            ctx.strokeStyle = `rgba(217,174,111,${a * 0.5})`;
-            ctx.lineWidth = hovered ? 0.8 : 0.55;
+            ctx.strokeStyle = `rgba(217,174,111,${a * 0.65})`;
+            ctx.lineWidth = hovered ? 0.9 : 0.7;
             ctx.beginPath();
             ctx.moveTo(pr.sx + A.x * scale, pr.sy + A.y * scale);
             ctx.lineTo(pr.sx + B.x * scale, pr.sy + B.y * scale);
             ctx.stroke();
           }
           for (const st of mini.pts) {
-            const sr = st.mag <= 2.3 ? 2.4 : 1.5;
-            softDot(
-              ctx,
-              pr.sx + st.x * scale,
-              pr.sy + st.y * scale,
-              sr * (hovered ? 2.6 : 2),
-              hovered ? ORO_LUZ : LECHE,
-              a,
-              0.4
-            );
+            const anchorStar = st.mag <= 2.3;
+            const sr = anchorStar ? 2.6 : 1.7;
+            const sx = pr.sx + st.x * scale;
+            const sy = pr.sy + st.y * scale;
+            softDot(ctx, sx, sy, sr * (hovered ? 2.8 : 2.3), hovered ? ORO_LUZ : LECHE, a, 0.4);
+            if (anchorStar) {
+              ctx.fillStyle = `rgba(255,233,194,${a * 0.95})`;
+              sparklePath(ctx, sx, sy, sr * 1.4);
+            }
           }
-          if (hovered) {
-            ctx.fillStyle = `rgba(244,236,222,${obsAlpha * 0.85})`;
-            ctx.fillText(FIGURES[o.sign].label, pr.sx, pr.sy + scale * 0.62 + 18);
-          }
+          /* the name is always there — a chart label, brighter on hover */
+          ctx.fillStyle = `rgba(244,236,222,${obsAlpha * (hovered ? 0.9 : 0.4) * Math.min(1, 4.6 / dist)})`;
+          ctx.fillText(FIGURES[o.sign].label, pr.sx, pr.sy + scale * 0.62 + 18);
         }
         ctx.letterSpacing = "0px";
       }
