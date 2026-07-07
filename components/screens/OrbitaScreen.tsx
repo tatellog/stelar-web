@@ -35,7 +35,7 @@ export default function OrbitaScreen() {
           animate={{ opacity: 0.85 }}
           transition={{ duration: 2, delay: 0.4 }}
         >
-          <Image src="/art/orbit-day.png" alt="" fill className="object-contain" />
+          <Image src="/art/orbit-day.png" alt="" fill sizes="300px" className="object-contain" />
         </motion.div>
         <svg viewBox="0 0 100 100" className="relative h-full w-full">
           {/* orbits */}

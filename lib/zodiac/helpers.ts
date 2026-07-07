@@ -19,6 +19,24 @@ export function figureInRect(sign: ZodiacSign, rect: Rect) {
   };
 }
 
+/** The figure in ART SPACE: the app traced these coords over the sign's
+ *  reveal art (0..1 of the emblem canvas). Uniform mapping centered on the
+ *  origin — the figure keeps its designed proportions AND stays aligned
+ *  with the emblem when both are drawn in the same box. */
+export function figureArt(sign: ZodiacSign, size: number) {
+  const def = FIGURES[sign];
+  return {
+    label: def.label,
+    pts: def.stars.map((s) => ({
+      x: (s.x - 0.5) * size,
+      y: (s.y - 0.5) * size,
+      mag: s.mag,
+      name: s.name,
+    })),
+    lines: def.lines as readonly (readonly [number, number])[],
+  };
+}
+
 /** The figure normalized to its own bounding box and fitted into `rect`
  *  with padding — so the constellation FILLS the canvas instead of
  *  floating small in a corner of the 0..1 space. */

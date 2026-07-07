@@ -83,7 +83,7 @@ export default function Emblem() {
             style={{ opacity: auraOpacity }}
             className="pointer-events-none absolute -inset-16"
           >
-            <Image src="/reveal/golden-aura.svg" alt="" fill className="object-contain" />
+            <Image src="/reveal/golden-aura.svg" alt="" fill sizes="100vw" className="object-contain" />
           </motion.div>
 
           {/* ceremonial halo */}
@@ -91,7 +91,7 @@ export default function Emblem() {
             style={{ opacity: haloOpacity, scale: haloScale }}
             className="pointer-events-none absolute -inset-4"
           >
-            <Image src="/reveal/ceremonial-halo.svg" alt="" fill className="object-contain" />
+            <Image src="/reveal/ceremonial-halo.svg" alt="" fill sizes="100vw" className="object-contain" />
           </motion.div>
 
           {/* the emblem, painted into being by the scroll */}

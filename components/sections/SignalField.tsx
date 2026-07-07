@@ -255,7 +255,7 @@ export default function SignalField() {
     const onClick = (e: MouseEvent) => {
       const p = scrollYProgress.get();
       const camZ = cameraZ(p);
-      const f = H * 1.05;
+      const f = Math.min(H * 1.05, W * 1.32);
       const cx = W / 2;
       const cy = H / 2;
       let best: Particle | null = null;
@@ -295,7 +295,7 @@ export default function SignalField() {
       pointer.y += (pointer.ty - pointer.y) * 0.05;
 
       const camZ = cameraZ(p);
-      const f = H * 1.05;
+      const f = Math.min(H * 1.05, W * 1.32);
       const cx = W / 2;
       const cy = H / 2;
 

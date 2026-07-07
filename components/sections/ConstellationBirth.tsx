@@ -9,7 +9,7 @@ import {
 } from "framer-motion";
 import { useSign } from "../SignContext";
 import { FIGURES } from "@/lib/zodiac/figures";
-import { figureFit } from "@/lib/zodiac/helpers";
+import { figureArt } from "@/lib/zodiac/helpers";
 import type { ZodiacSign } from "@/lib/zodiac/types";
 
 /**
@@ -41,6 +41,8 @@ const DEPTH = 22;
 const FZ = 10;
 const TRAVEL = 4;
 const FRAMES = 11;
+/** side of the shared art/figure box in world units */
+const FIG_S = 3.6;
 
 const LECHE: [number, number, number] = [244, 236, 222];
 const MAGENTA: [number, number, number] = [255, 72, 134];
@@ -98,7 +100,9 @@ function sparklePath(ctx: CanvasRenderingContext2D, x: number, y: number, R: num
 /* ── the visited figure, full size ─────────────────────────────── */
 const figCache = new Map<ZodiacSign, ReturnType<typeof buildFigure>>();
 function buildFigure(sign: ZodiacSign) {
-  const fit = figureFit(sign, { x: -2.3, y: -1.75, w: 4.6, h: 3.5 });
+  // art space: the coords were traced over the emblem, so figure and
+  // emblem share the same box and stay perfectly aligned, undistorted
+  const fit = figureArt(sign, FIG_S);
   const stars = fit.pts.map((p, i) => ({
     x: p.x,
     y: p.y,
@@ -126,7 +130,7 @@ function getFigure(sign: ZodiacSign) {
 const miniCache = new Map<ZodiacSign, { pts: { x: number; y: number; mag: number }[]; lines: readonly (readonly [number, number])[] }>();
 function getMini(sign: ZodiacSign) {
   if (!miniCache.has(sign)) {
-    const fit = figureFit(sign, { x: -0.5, y: -0.4, w: 1, h: 0.8 });
+    const fit = figureArt(sign, 1);
     miniCache.set(sign, { pts: fit.pts, lines: fit.lines });
   }
   return miniCache.get(sign)!;
@@ -300,7 +304,9 @@ export default function ConstellationBirth() {
     const frameParams = (now: number) => {
       const p = reduced ? 0.98 : scrollYProgress.get();
       const d = camDist(p, now);
-      const f = H * 1.05;
+      /* responsive focal: on narrow/portrait screens the width rules so
+         the figure and its emblem never overflow the viewport */
+      const f = Math.min(H * 1.05, W * 1.32);
       const bx = reduced ? 0 : Math.sin(now / 9000) * 7;
       const by = reduced ? 0 : Math.cos(now / 11500) * 5;
       return { p, d, f, cx: W / 2 + bx, cy: H / 2 + by };
@@ -309,8 +315,13 @@ export default function ConstellationBirth() {
     const miniCenter = (k: number, now: number, d: number, f: number, cx: number, cy: number) => {
       const o = ORBITS[k];
       const ang = o.angle0 + (reduced ? 0 : (now / 1000) * o.speed);
-      const wx = Math.cos(ang) * o.rx;
-      const wy = Math.sin(ang) * o.ry;
+      /* portrait: compress the orbits horizontally and stretch them
+         vertically so the observatory stays on screen */
+      const aspect = W / H;
+      const kx = Math.min(1, aspect * 1.3);
+      const ky = aspect < 0.8 ? 1.45 : 1;
+      const wx = Math.cos(ang) * o.rx * kx;
+      const wy = Math.sin(ang) * o.ry * ky;
       const dist = o.z - (FZ - d);
       return { pr: project(wx, wy, dist, f, cx, cy), wx, wy, dist };
     };
@@ -542,7 +553,7 @@ export default function ConstellationBirth() {
         const frame = Math.min(FRAMES - 1, Math.floor((reveal * 0.85 + rit * 0.15) * (FRAMES - 1) + rit * 3));
         const img = emblem[frame];
         if (img?.complete && img.naturalWidth > 0) {
-          const eh = (3.4 * f) / d;
+          const eh = (FIG_S * f) / d;
           const ew = eh * (img.naturalWidth / img.naturalHeight);
           ctx.globalCompositeOperation = "screen";
           ctx.globalAlpha = Math.min(0.8, emblemA);

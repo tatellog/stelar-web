@@ -198,7 +198,7 @@ function SolarSystem({ level }: { level: Level }) {
           {level === "dia" ? (
             /* the galaxy turns, imperceptibly */
             <div className="h-full w-full animate-orbit" style={{ animationDuration: "160s" }}>
-              <Image src={ART.dia.src} alt={ART.dia.alt} fill className="object-contain drop-shadow-[0_0_40px_rgba(233,30,99,0.25)]" />
+              <Image src={ART.dia.src} alt={ART.dia.alt} fill sizes="(max-width: 640px) 90vw, 448px" className="object-contain drop-shadow-[0_0_40px_rgba(233,30,99,0.25)]" />
             </div>
           ) : level === "mes" ? (
             /* the black hole breathes */
@@ -207,14 +207,14 @@ function SolarSystem({ level }: { level: Level }) {
               animate={{ scale: [1, 1.03, 1] }}
               transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
             >
-              <Image src={ART.mes.src} alt={ART.mes.alt} fill className="object-contain drop-shadow-[0_0_30px_rgba(217,174,111,0.2)]" />
+              <Image src={ART.mes.src} alt={ART.mes.alt} fill sizes="(max-width: 640px) 90vw, 448px" className="object-contain drop-shadow-[0_0_30px_rgba(217,174,111,0.2)]" />
             </motion.div>
           ) : (
             /* the week art is delicate semi-transparent line work —
                stack it twice so it reads on the dark sky */
             <div className="relative h-full w-full">
-              <Image src={ART.semana.src} alt={ART.semana.alt} fill className="object-contain" />
-              <Image src={ART.semana.src} alt="" fill className="object-contain drop-shadow-[0_0_30px_rgba(244,236,222,0.2)]" />
+              <Image src={ART.semana.src} alt={ART.semana.alt} fill sizes="(max-width: 640px) 90vw, 448px" className="object-contain" />
+              <Image src={ART.semana.src} alt="" fill sizes="(max-width: 640px) 90vw, 448px" className="object-contain drop-shadow-[0_0_30px_rgba(244,236,222,0.2)]" />
             </div>
           )}
         </motion.div>
