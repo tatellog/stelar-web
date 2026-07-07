@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import Reveal from "../Reveal";
 import LottieGlow from "../LottieGlow";
+import EmblemReveal from "../EmblemReveal";
 import skyAmbient from "@/lib/lottie/month-sky-ambient.json";
 import { FIGURES } from "@/lib/zodiac/figures";
 import type { ZodiacSign, ZodiacStar } from "@/lib/zodiac/types";
@@ -142,21 +142,15 @@ function SignFigure({ sign }: { sign: ZodiacSign }) {
       {/* the reveal's golden halo, behind the art */}
       <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,246,229,0.10)_0%,rgba(232,184,114,0.09)_40%,rgba(217,174,111,0.05)_72%,transparent_100%)]" />
 
-      {/* the sign's pictorial art, resting free over the halo */}
+      {/* the sign's emblem painting itself in — the app's real reveal frames */}
       <motion.div
         className="absolute inset-[6%]"
-        initial={{ opacity: 0, scale: 0.97 }}
-        whileInView={{ opacity: 0.5, scale: 1 }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.75 }}
         viewport={{ once: true }}
-        transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Image
-          src={`/zodiac-art/${sign}-art.png`}
-          alt={`Arte de ${def.label}`}
-          fill
-          sizes="(max-width: 640px) 90vw, 448px"
-          className="object-contain"
-        />
+        <EmblemReveal sign={sign} />
       </motion.div>
 
       {/* the live figure — the app's exact stars and lines */}
