@@ -9,8 +9,6 @@ import {
   useScroll,
 } from "framer-motion";
 import { PrimaryCTA } from "../CTAButton";
-import LottieGlow from "../LottieGlow";
-import heroGlow from "@/lib/lottie/auth-hero-glow.json";
 
 /**
  * Capítulo I — Oscuridad.
@@ -63,9 +61,19 @@ export default function Hero() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 3.2, ease: [0.22, 1, 0.36, 1] }}
           style={{ x: starX, y: starY }}
-          className="relative mb-2 h-36 w-36 sm:h-44 sm:w-44"
+          className="relative mb-2 h-28 w-28 sm:h-32 sm:w-32"
         >
-          <LottieGlow data={heroGlow} className="h-full w-full" />
+          {/* a single diffuse light — same soft language as the field */}
+          <motion.span
+            aria-hidden
+            className="absolute inset-0 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle, rgba(255,246,229,0.9) 0%, rgba(251,215,227,0.35) 22%, rgba(233,30,99,0.12) 45%, transparent 70%)",
+            }}
+            animate={{ scale: [1, 1.12, 1], opacity: [0.8, 1, 0.8] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          />
           {/* the trail it leaves when you begin to move */}
           <svg
             viewBox="0 0 100 160"
