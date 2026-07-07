@@ -4,7 +4,7 @@ import { SignProvider } from "@/components/SignContext";
 import Hero from "@/components/sections/Hero";
 
 import SignalField from "@/components/sections/SignalField";
-import Constellation from "@/components/sections/Constellation";
+import ConstellationBirth from "@/components/sections/ConstellationBirth";
 import Evidence from "@/components/sections/Evidence";
 import Orbita from "@/components/sections/Orbita";
 import Emblem from "@/components/sections/Emblem";
@@ -28,7 +28,7 @@ export default function Home() {
         <Hero />
   
         <SignalField />
-        <Constellation />
+        <ConstellationBirth />
         <Evidence />
         <Orbita />
         <Emblem />
