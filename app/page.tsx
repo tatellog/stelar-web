@@ -2,8 +2,8 @@ import Starfield from "@/components/Starfield";
 import Nav from "@/components/Nav";
 import { SignProvider } from "@/components/SignContext";
 import Hero from "@/components/sections/Hero";
-import Signals from "@/components/sections/Signals";
-import RevealScene from "@/components/sections/RevealScene";
+
+import SignalField from "@/components/sections/SignalField";
 import Constellation from "@/components/sections/Constellation";
 import Evidence from "@/components/sections/Evidence";
 import Orbita from "@/components/sections/Orbita";
@@ -26,8 +26,8 @@ export default function Home() {
       <SignProvider>
         <Nav />
         <Hero />
-        <Signals />
-        <RevealScene />
+  
+        <SignalField />
         <Constellation />
         <Evidence />
         <Orbita />

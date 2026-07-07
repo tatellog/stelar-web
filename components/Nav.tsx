@@ -29,7 +29,7 @@ export default function Nav() {
           />
         </a>
         <div className="hidden items-center gap-10 text-sm tracking-[0.15em] text-cream/65 md:flex">
-          <a href="#promesa" className="transition-colors hover:text-cream">
+          <a href="#senales" className="transition-colors hover:text-cream">
             El viaje
           </a>
           <a href="#orbita" className="transition-colors hover:text-cream">
