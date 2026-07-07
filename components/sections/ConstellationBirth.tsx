@@ -13,22 +13,33 @@ import { figureFit } from "@/lib/zodiac/helpers";
 import type { ZodiacSign } from "@/lib/zodiac/types";
 
 /**
- * Capítulo IV — Tu constelación. COMPLETE REDESIGN.
- * Not a tab selector swapping an SVG: a living volume of cosmic dust where
- * a constellation is BORN. Camera advances into the universe; choosing a
- * sign makes the dust gravitate; stars are born one by one; lines draw
- * themselves with energy travelling through them; the emblem is discovered
- * behind the stars as light. Hover = tooltip per Stelar category, click =
- * energy wave through the figure, sign change = 2.5s cinematic morph,
- * long-press = the golden ritual.
+ * Capítulo IV — El observatorio.
+ * Not navigation: exploration. Twelve constellations already exist,
+ * floating in slow orbits around the one being visited. The universe is
+ * a living volume (dust, nebula, breathing camera). Travelling to another
+ * constellation dissolves the current one into golden dust and births the
+ * next. Stars answer to hover with floating typography; a click sends
+ * energy through every connection; the emblem waits behind, like ancient
+ * ink.
  */
 
 const SIGNS = Object.keys(FIGURES) as ZodiacSign[];
-const CATS = ["Movimiento", "Entrenamiento", "Sueño", "Proteína", "Agua", "Déficit", "Registro"];
+const CATS = [
+  "Movimiento",
+  "Sueño",
+  "Proteína",
+  "Agua",
+  "Comida",
+  "Déficit",
+  "Energía",
+  "Ánimo",
+  "Ciclo",
+  "Registro",
+];
 
-const DEPTH = 22; // universe depth
-const FZ = 10; // constellation plane
-const TRAVEL = 4; // camera advance
+const DEPTH = 22;
+const FZ = 10;
+const TRAVEL = 4;
 const FRAMES = 11;
 
 const LECHE: [number, number, number] = [244, 236, 222];
@@ -84,10 +95,10 @@ function sparklePath(ctx: CanvasRenderingContext2D, x: number, y: number, R: num
   ctx.fill();
 }
 
-/* figure world-data per sign, cached */
+/* ── the visited figure, full size ─────────────────────────────── */
 const figCache = new Map<ZodiacSign, ReturnType<typeof buildFigure>>();
 function buildFigure(sign: ZodiacSign) {
-  const fit = figureFit(sign, { x: -2.6, y: -1.95, w: 5.2, h: 3.9 });
+  const fit = figureFit(sign, { x: -2.3, y: -1.75, w: 4.6, h: 3.5 });
   const stars = fit.pts.map((p, i) => ({
     x: p.x,
     y: p.y,
@@ -99,7 +110,6 @@ function buildFigure(sign: ZodiacSign) {
     },
     tw: prand(i * 19) * Math.PI * 2,
   }));
-  // adjacency for the energy wave
   const adj: number[][] = stars.map(() => []);
   fit.lines.forEach(([a, b]) => {
     adj[a].push(b);
@@ -112,16 +122,48 @@ function getFigure(sign: ZodiacSign) {
   return figCache.get(sign)!;
 }
 
-/* emblem reveal frames, cached per sign */
+/* ── the miniatures that float in orbit ───────────────────────── */
+const miniCache = new Map<ZodiacSign, { pts: { x: number; y: number; mag: number }[]; lines: readonly (readonly [number, number])[] }>();
+function getMini(sign: ZodiacSign) {
+  if (!miniCache.has(sign)) {
+    const fit = figureFit(sign, { x: -0.5, y: -0.4, w: 1, h: 0.8 });
+    miniCache.set(sign, { pts: fit.pts, lines: fit.lines });
+  }
+  return miniCache.get(sign)!;
+}
+
+/* orbital parameters — every sign owns a slot in the observatory */
+const ORBITS = SIGNS.map((sign, k) => ({
+  sign,
+  angle0: (k / SIGNS.length) * Math.PI * 2 + prand(k + 77) * 0.3,
+  rx: 3.1 + prand(k + 401) * 1.0,
+  ry: 1.8 + prand(k + 411) * 0.6,
+  z: 8.6 + prand(k + 421) * 3.4,
+  speed: (0.006 + prand(k + 431) * 0.005) * (k % 2 ? 1 : -1),
+}));
+
+/* soft nebula blobs — the sky is never flat */
+const NEBULAE = Array.from({ length: 6 }, (_, i) => ({
+  x: (prand(i + 501) - 0.5) * 9,
+  y: (prand(i + 511) - 0.5) * 5.5,
+  z: 12 + prand(i + 521) * 8,
+  R: 2.6 + prand(i + 531) * 2.4,
+  color: i % 3 === 0 ? MAGENTA : i % 3 === 1 ? ORO : ([90, 40, 60] as [number, number, number]),
+  alpha: 0.05 + prand(i + 541) * 0.035,
+  dx: (prand(i + 551) - 0.5) * 0.02,
+}));
+
 const emblemCache = new Map<string, HTMLImageElement[]>();
 function getEmblem(sign: string) {
   if (!emblemCache.has(sign)) {
-    const imgs = Array.from({ length: FRAMES }, (_, i) => {
-      const img = new Image();
-      img.src = `/emblems/${sign}/f${String(i).padStart(2, "0")}.png`;
-      return img;
-    });
-    emblemCache.set(sign, imgs);
+    emblemCache.set(
+      sign,
+      Array.from({ length: FRAMES }, (_, i) => {
+        const img = new Image();
+        img.src = `/emblems/${sign}/f${String(i).padStart(2, "0")}.png`;
+        return img;
+      })
+    );
   }
   return emblemCache.get(sign)!;
 }
@@ -133,13 +175,14 @@ export default function ConstellationBirth() {
   const { sign, setSign } = useSign();
   const signRef = useRef<ZodiacSign>(sign);
   const morphRef = useRef<{ to: ZodiacSign; start: number } | null>(null);
+  const selectRef = useRef(setSign);
+  selectRef.current = setSign;
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
   });
 
-  /* sign changes arriving from the selector → cinematic morph */
   useEffect(() => {
     if (sign !== signRef.current && !morphRef.current) {
       morphRef.current = { to: sign, start: performance.now() };
@@ -152,10 +195,10 @@ export default function ConstellationBirth() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    getEmblem(signRef.current); // warm the default emblem
+    getEmblem(signRef.current);
+    SIGNS.forEach(getMini);
 
-    /* the universe: cosmic dust in volume */
-    const dust = Array.from({ length: 620 }, (_, i) => ({
+    const dust = Array.from({ length: 560 }, (_, i) => ({
       x: (prand(i) - 0.5) * 11,
       y: (prand(i + 100) - 0.5) * 7,
       z: prand(i + 200) * DEPTH,
@@ -170,10 +213,7 @@ export default function ConstellationBirth() {
       dy: (prand(i + 850) - 0.5) * 0.028,
     }));
 
-    /* transition sparks (born when a figure dissolves) */
     let sparks: { x: number; y: number; a0: number; r0: number; born: number }[] = [];
-
-    /* energy waves from clicked stars: depths per star */
     let waves: { start: number; depths: number[] }[] = [];
 
     let W = 0;
@@ -181,8 +221,9 @@ export default function ConstellationBirth() {
     let raf = 0;
     let running = true;
     let hoverIdx = -1;
+    let hoverSign: ZodiacSign | null = null;
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
-    const press = { held: false, since: 0, ritual: 0, flashed: false, flash: 0 };
+    const press = { held: false, since: 0, ritual: 0, flashed: false, flash: 0, waved: false };
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const resize = () => {
@@ -200,10 +241,10 @@ export default function ConstellationBirth() {
         const mt = (now - morphRef.current.start) / 1000;
         zoomOut = Math.sin(Math.min(1, mt / 2.5) * Math.PI) * 0.9;
       }
-      return FZ - TRAVEL * smooth(0.14, 0.36, p) + zoomOut;
+      const breathe = reduced ? 0 : Math.sin(now / 14000) * 0.08;
+      return FZ - TRAVEL * smooth(0.14, 0.36, p) + zoomOut + breathe;
     };
 
-    /* morph envelope: 1 → 0 (dissolve) → 1 (rebirth); swaps sign mid-way */
     const morphEnv = (now: number) => {
       const m = morphRef.current;
       if (!m) return 1;
@@ -211,11 +252,8 @@ export default function ConstellationBirth() {
       if (t < 0.6) return 1 - smooth(0, 0.6, t);
       if (t < 1.4) {
         if (signRef.current !== m.to) {
-          signRef.current = m.to;
-          getEmblem(m.to);
-          /* spawn the swirl of freed particles */
-          const fig = getFigure(m.to);
-          sparks = fig.stars.flatMap((s, i) =>
+          const old = getFigure(signRef.current);
+          sparks = old.stars.flatMap((s, i) =>
             Array.from({ length: 5 }, (_, k) => ({
               x: s.x,
               y: s.y,
@@ -224,6 +262,8 @@ export default function ConstellationBirth() {
               born: now,
             }))
           );
+          signRef.current = m.to;
+          getEmblem(m.to);
           waves = [];
         }
         return 0;
@@ -243,7 +283,6 @@ export default function ConstellationBirth() {
       };
     };
 
-    /* star position: spiral gather from scatter → slot */
     const starPos = (fig: ReturnType<typeof buildFigure>, i: number, gather: number) => {
       const st = fig.stars[i];
       const vx = st.scatter.x - st.x;
@@ -258,51 +297,82 @@ export default function ConstellationBirth() {
       };
     };
 
-    const screenStars = () => {
-      /* projected star positions for hit-testing (uses last frame params) */
-      const p = reduced ? 1 : scrollYProgress.get();
-      const now = performance.now();
-      const fig = getFigure(signRef.current);
-      const f = H * 1.05;
-      const cx = W / 2;
-      const cy = H / 2;
-      const gather = smooth(0.36, 0.5, p);
+    const frameParams = (now: number) => {
+      const p = reduced ? 0.98 : scrollYProgress.get();
       const d = camDist(p, now);
-      return fig.stars.map((_, i) => {
-        const pos = starPos(fig, i, gather);
-        const pr = project(pos.x, pos.y, d, f, cx, cy);
-        return pr ? { x: pr.sx, y: pr.sy } : null;
-      });
+      const f = H * 1.05;
+      const bx = reduced ? 0 : Math.sin(now / 9000) * 7;
+      const by = reduced ? 0 : Math.cos(now / 11500) * 5;
+      return { p, d, f, cx: W / 2 + bx, cy: H / 2 + by };
+    };
+
+    const miniCenter = (k: number, now: number, d: number, f: number, cx: number, cy: number) => {
+      const o = ORBITS[k];
+      const ang = o.angle0 + (reduced ? 0 : (now / 1000) * o.speed);
+      const wx = Math.cos(ang) * o.rx;
+      const wy = Math.sin(ang) * o.ry;
+      const dist = o.z - (FZ - d);
+      return { pr: project(wx, wy, dist, f, cx, cy), wx, wy, dist };
     };
 
     const onPointerMove = (e: PointerEvent) => {
       pointer.tx = (e.clientX / W) * 2 - 1;
       pointer.ty = (e.clientY / H) * 2 - 1;
-      /* star hover */
       const rect = canvas.getBoundingClientRect();
-      if (e.clientY < rect.top || e.clientY > rect.bottom) return;
-      const pts = screenStars();
-      let best = -1;
+      if (e.clientY < rect.top || e.clientY > rect.bottom) {
+        hoverIdx = -1;
+        hoverSign = null;
+        return;
+      }
+      const now = performance.now();
+      const { p, d, f, cx, cy } = frameParams(now);
+      const ey = e.clientY - rect.top;
+
+      /* stars of the visited figure */
+      const fig = getFigure(signRef.current);
+      const gather = smooth(0.36, 0.5, p);
+      let bestStar = -1;
       let bestD = 34;
-      pts.forEach((pt, i) => {
-        if (!pt) return;
-        const d = Math.hypot(pt.x - e.clientX, pt.y - (e.clientY - rect.top));
-        if (d < bestD) {
-          bestD = d;
-          best = i;
+      fig.stars.forEach((_, i) => {
+        const pos = starPos(fig, i, gather);
+        const pr = project(pos.x, pos.y, d, f, cx, cy);
+        if (!pr) return;
+        const dd = Math.hypot(pr.sx - e.clientX, pr.sy - ey);
+        if (dd < bestD) {
+          bestD = dd;
+          bestStar = i;
         }
       });
-      hoverIdx = best;
-      canvas.style.cursor = best >= 0 ? "pointer" : "default";
+      hoverIdx = bestStar;
+
+      /* orbiting miniatures */
+      hoverSign = null;
+      if (bestStar < 0 && smooth(0.24, 0.34, p) > 0.5) {
+        for (let k = 0; k < ORBITS.length; k++) {
+          if (ORBITS[k].sign === signRef.current) continue;
+          const { pr } = miniCenter(k, now, d, f, cx, cy);
+          if (!pr) continue;
+          const rad = 0.55 * pr.s * 0.62;
+          if (Math.hypot(pr.sx - e.clientX, pr.sy - ey) < Math.max(34, rad)) {
+            hoverSign = ORBITS[k].sign;
+            break;
+          }
+        }
+      }
+
+      canvas.style.cursor = bestStar >= 0 || hoverSign ? "pointer" : "default";
       const tip = tooltipRef.current;
       if (tip) {
-        if (best >= 0) {
-          const fig = getFigure(signRef.current);
-          const st = fig.stars[best];
-          tip.textContent = st.name ? `${CATS[best % CATS.length]} · ${st.name}` : CATS[best % CATS.length];
+        if (bestStar >= 0) {
+          const st = fig.stars[bestStar];
+          const pos = starPos(fig, bestStar, gather);
+          const pr = project(pos.x, pos.y, d, f, cx, cy)!;
+          tip.textContent = st.name
+            ? `${CATS[bestStar % CATS.length]} · ${st.name}`
+            : CATS[bestStar % CATS.length];
           tip.style.opacity = "1";
-          tip.style.left = `${pts[best]!.x}px`;
-          tip.style.top = `${pts[best]!.y - 34}px`;
+          tip.style.left = `${pr.sx}px`;
+          tip.style.top = `${pr.sy - 30}px`;
         } else {
           tip.style.opacity = "0";
         }
@@ -310,28 +380,32 @@ export default function ConstellationBirth() {
     };
 
     const onClick = () => {
-      if (hoverIdx < 0 || morphRef.current) return;
-      /* BFS depths from the clicked star → the wave travels the figure */
-      const fig = getFigure(signRef.current);
-      const depths = fig.stars.map(() => -1);
-      const q = [hoverIdx];
-      depths[hoverIdx] = 0;
-      while (q.length) {
-        const v = q.shift()!;
-        for (const n of fig.adj[v]) {
-          if (depths[n] === -1) {
-            depths[n] = depths[v] + 1;
-            q.push(n);
+      if (morphRef.current) return;
+      if (hoverIdx >= 0) {
+        const fig = getFigure(signRef.current);
+        const depths = fig.stars.map(() => -1);
+        const q = [hoverIdx];
+        depths[hoverIdx] = 0;
+        while (q.length) {
+          const v = q.shift()!;
+          for (const n of fig.adj[v]) {
+            if (depths[n] === -1) {
+              depths[n] = depths[v] + 1;
+              q.push(n);
+            }
           }
         }
+        waves.push({ start: performance.now(), depths });
+        if (waves.length > 3) waves.shift();
+        return;
       }
-      waves.push({ start: performance.now(), depths });
-      if (waves.length > 3) waves.shift();
+      if (hoverSign) selectRef.current(hoverSign);
     };
 
     const onDown = () => {
       press.held = true;
       press.since = performance.now();
+      press.waved = false;
     };
     const onUp = () => {
       press.held = false;
@@ -340,13 +414,18 @@ export default function ConstellationBirth() {
 
     const draw = (now: number) => {
       if (!running) return;
-      const p = reduced ? 0.98 : scrollYProgress.get();
       const t = now / 1000;
       pointer.x += (pointer.tx - pointer.x) * 0.05;
       pointer.y += (pointer.ty - pointer.y) * 0.05;
 
-      /* ritual: long-press builds the golden state */
-      const wantRitual = press.held && now - press.since > 450 ? 1 : 0;
+      /* long-press: on a star = energy; on the sky = the golden ritual */
+      const overStar = hoverIdx >= 0;
+      const holding = press.held && now - press.since > 450;
+      if (holding && overStar && !press.waved) {
+        press.waved = true;
+        onClick();
+      }
+      const wantRitual = holding && !overStar ? 1 : 0;
       press.ritual += (wantRitual - press.ritual) * (wantRitual ? 0.03 : 0.05);
       const rit = press.ritual;
       if (rit > 0.96 && !press.flashed) {
@@ -357,12 +436,9 @@ export default function ConstellationBirth() {
       const env = morphEnv(now);
       const fig = getFigure(signRef.current);
       const emblem = getEmblem(signRef.current);
-      const d = camDist(p, now);
-      const f = H * 1.05;
-      const cx = W / 2;
-      const cy = H / 2;
+      const { p, d, f, cx, cy } = frameParams(now);
 
-      /* deep background — a volume, never flat; darkens during the ritual */
+      /* living background */
       const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.8);
       bg.addColorStop(0, `rgba(28, 12, 17, ${1 - rit * 0.35})`);
       bg.addColorStop(0.55, "#100608");
@@ -370,13 +446,27 @@ export default function ConstellationBirth() {
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
 
-      const gather = smooth(0.36, 0.5, p);
-      /* the universe searching for a shape: gentle screen-space swirl */
-      const swirl =
-        (smooth(0.34, 0.42, p) * (1 - smooth(0.52, 0.62, p)) * 0.05 + rit * 0.04) *
-        (reduced ? 0 : 1);
+      /* camera roll: barely there, stronger while travelling between signs */
+      let roll = reduced ? 0 : Math.sin(t * 0.05) * 0.006 + rit * 0.015;
+      if (morphRef.current) {
+        const mt = (now - morphRef.current.start) / 1000;
+        roll += Math.sin(Math.min(1, mt / 2.5) * Math.PI) * 0.05;
+      }
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(roll);
+      ctx.translate(-cx, -cy);
 
-      /* cosmic dust */
+      /* nebula — soft volumes drifting far away */
+      for (const nb of NEBULAE) {
+        const dist = nb.z - (FZ - d);
+        const pr = project(nb.x + nb.dx * t, nb.y, dist, f, cx, cy);
+        if (!pr) continue;
+        const breathe = reduced ? 1 : 0.85 + 0.15 * Math.sin(t * 0.12 + nb.z);
+        softDot(ctx, pr.sx, pr.sy, nb.R * pr.s, nb.color, nb.alpha * breathe * (1 - rit * 0.5), 0.5);
+      }
+
+      const gather = smooth(0.36, 0.5, p);
       const dustDim = (1 - 0.4 * smooth(0.72, 0.9, p)) * (1 - rit * 0.55);
       for (const pt of dust) {
         const wx = pt.x + pt.dx * (reduced ? 0 : t);
@@ -386,44 +476,85 @@ export default function ConstellationBirth() {
         rel += 0.2;
         const pr = project(wx, wy, rel, f, cx, cy);
         if (!pr) continue;
-        let sx = pr.sx;
-        let sy = pr.sy;
-        if (swirl > 0.001) {
-          const ox = sx - cx;
-          const oy = sy - cy;
-          const a = swirl * (1.6 - Math.min(1.4, rel / DEPTH));
-          sx = cx + ox * Math.cos(a) - oy * Math.sin(a);
-          sy = cy + ox * Math.sin(a) + oy * Math.cos(a);
-        }
-        if (sx < -60 || sx > W + 60 || sy < -60 || sy > H + 60) continue;
+        if (pr.sx < -60 || pr.sx > W + 60 || pr.sy < -60 || pr.sy > H + 60) continue;
         const twk = reduced ? 1 : 0.6 + 0.4 * Math.sin(pt.tw + t * pt.twS);
         const r = Math.max(0.4, pt.size * pr.s);
         if (rel < 2) {
           const bok = 1 - smooth(0.2, 2, rel);
-          softDot(ctx, sx, sy, r * (1 + bok * 5), pt.color, (0.24 - bok * 0.17) * twk * dustDim, 0);
+          softDot(ctx, pr.sx, pr.sy, r * (1 + bok * 5), pt.color, (0.24 - bok * 0.17) * twk * dustDim, 0);
         } else {
-          softDot(ctx, sx, sy, r * 2.5, pt.color, Math.min(0.8, 2.6 / rel + 0.1) * twk * dustDim, 0.3);
+          softDot(ctx, pr.sx, pr.sy, r * 2.5, pt.color, Math.min(0.8, 2.6 / rel + 0.1) * twk * dustDim, 0.3);
         }
       }
 
-      /* ── the emblem, discovered behind the stars as light ── */
-      const reveal = smooth(0.76, 0.96, p) * env;
-      const emblemA = (reveal * 0.4 + rit * 0.35) * (0.75 + 0.25 * Math.sin(t * 0.4));
+      /* ── the observatory: eleven constellations in slow orbit ── */
+      const obsAlpha = smooth(0.24, 0.36, p) * (1 - rit * 0.6);
+      if (obsAlpha > 0.01) {
+        ctx.letterSpacing = "2px";
+        ctx.font = "600 10px 'Hanken Grotesk', system-ui, sans-serif";
+        ctx.textAlign = "center";
+        for (let k = 0; k < ORBITS.length; k++) {
+          const o = ORBITS[k];
+          if (o.sign === signRef.current) continue;
+          const { pr, dist } = miniCenter(k, now, d, f, cx, cy);
+          if (!pr || dist < 0.4) continue;
+          const mini = getMini(o.sign);
+          const hovered = hoverSign === o.sign;
+          const scale = pr.s * 0.62 * (hovered ? 1.06 : 1);
+          const pulse = reduced ? 1 : 0.85 + 0.15 * Math.sin(t * 0.7 + k);
+          const a = obsAlpha * (hovered ? 0.95 : 0.4) * Math.min(1, 3.4 / dist) * pulse;
+
+          /* orbit halo when alive */
+          if (hovered) softDot(ctx, pr.sx, pr.sy, scale * 0.9, ORO, 0.12, 0.5);
+
+          for (const [la, lb] of mini.lines) {
+            const A = mini.pts[la];
+            const B = mini.pts[lb];
+            ctx.strokeStyle = `rgba(217,174,111,${a * 0.5})`;
+            ctx.lineWidth = hovered ? 0.8 : 0.55;
+            ctx.beginPath();
+            ctx.moveTo(pr.sx + A.x * scale, pr.sy + A.y * scale);
+            ctx.lineTo(pr.sx + B.x * scale, pr.sy + B.y * scale);
+            ctx.stroke();
+          }
+          for (const st of mini.pts) {
+            const sr = st.mag <= 2.3 ? 2.4 : 1.5;
+            softDot(
+              ctx,
+              pr.sx + st.x * scale,
+              pr.sy + st.y * scale,
+              sr * (hovered ? 2.6 : 2),
+              hovered ? ORO_LUZ : LECHE,
+              a,
+              0.4
+            );
+          }
+          if (hovered) {
+            ctx.fillStyle = `rgba(244,236,222,${obsAlpha * 0.85})`;
+            ctx.fillText(FIGURES[o.sign].label, pr.sx, pr.sy + scale * 0.62 + 18);
+          }
+        }
+        ctx.letterSpacing = "0px";
+      }
+
+      /* ── the emblem: ancient ink behind the stars ── */
+      const reveal = smooth(0.74, 0.94, p) * env;
+      const emblemA = (reveal * 0.34 + rit * 0.35) * (0.8 + 0.2 * Math.sin(t * 0.4));
       if (emblemA > 0.01) {
         const frame = Math.min(FRAMES - 1, Math.floor((reveal * 0.85 + rit * 0.15) * (FRAMES - 1) + rit * 3));
         const img = emblem[frame];
         if (img?.complete && img.naturalWidth > 0) {
-          const eh = (3.6 * f) / d;
+          const eh = (3.4 * f) / d;
           const ew = eh * (img.naturalWidth / img.naturalHeight);
           ctx.globalCompositeOperation = "screen";
-          ctx.globalAlpha = Math.min(0.85, emblemA);
+          ctx.globalAlpha = Math.min(0.8, emblemA);
           ctx.drawImage(img, cx - ew / 2, cy - eh / 2, ew, eh);
           ctx.globalAlpha = 1;
           ctx.globalCompositeOperation = "source-over";
         }
       }
 
-      /* ── transition sparks (a figure dissolving into orbiting dust) ── */
+      /* dissolving figure → orbiting golden dust */
       if (sparks.length) {
         for (const sp of sparks) {
           const st = (now - sp.born) / 1000;
@@ -435,13 +566,12 @@ export default function ConstellationBirth() {
         }
       }
 
-      /* ── the constellation being born ── */
-      const goldMix = rit; // the ritual turns everything gold
+      /* ── the visited constellation ── */
+      const goldMix = rit;
       const lineColor = mixC(ORO, ORO_LUZ, goldMix);
 
-      /* lines: drawn one by one, with energy travelling through them */
       fig.lines.forEach(([a, b], i) => {
-        const ls = 0.56 + (i / fig.lines.length) * 0.16;
+        const ls = 0.5 + (i / fig.lines.length) * 0.16;
         const lt = smooth(ls, ls + 0.05, p) * env;
         if (lt <= 0.01) return;
         const pa = starPos(fig, a, gather);
@@ -462,17 +592,14 @@ export default function ConstellationBirth() {
         ctx.lineTo(ex, ey);
         ctx.stroke();
         ctx.shadowBlur = 0;
-
-        /* energy: small lights travelling the completed line */
         if (lt >= 1 && !reduced) {
           const k = (t * 0.14 + i * 0.37) % 1;
           softDot(ctx, A.sx + (B.sx - A.sx) * k, A.sy + (B.sy - A.sy) * k, 5, ORO_LUZ, 0.5 + goldMix * 0.3, 0.45);
         }
       });
 
-      /* stars: born one at a time — glow, expansion ring, spark burst */
       fig.stars.forEach((st, i) => {
-        const bs = 0.46 + i * 0.026;
+        const bs = 0.4 + i * 0.024;
         const birth = smooth(bs, bs + 0.045, p) * env;
         if (birth <= 0.01) return;
         const pos = starPos(fig, i, gather);
@@ -480,7 +607,6 @@ export default function ConstellationBirth() {
         if (!pr) return;
         const hero = st.mag <= 2.3;
 
-        /* wave response */
         let waveBoost = 0;
         for (const wv of waves) {
           const wt = (now - wv.start) / 1000 - wv.depths[i] * 0.14;
@@ -494,7 +620,6 @@ export default function ConstellationBirth() {
         const R = (hero ? 0.115 : 0.08) * pr.s * scl * (0.4 + 0.6 * birth);
         const alpha = (0.75 + 0.25 * birth) * birth * (1 + waveBoost * 0.3);
 
-        /* halo + flare rays + sparkle body + white core */
         softDot(ctx, pr.sx, pr.sy, R * 3.4 + (hovered ? 8 : 0), color, alpha * 0.6, 0.35);
         const rayLen = R * (hero ? 2.9 : 2.2) * (1 + waveBoost * 0.3);
         ctx.strokeStyle = `rgba(${color[0]},${color[1]},${color[2]},${alpha * 0.5})`;
@@ -512,7 +637,12 @@ export default function ConstellationBirth() {
         ctx.shadowBlur = 0;
         softDot(ctx, pr.sx, pr.sy, R * 0.5, [255, 255, 255], alpha * (hero ? 0.95 : 0.6), 0.45);
 
-        /* birth: expansion ring + radial sparks */
+        /* tiny particles escaping the star, very subtle */
+        if (!reduced && birth >= 1) {
+          const ek = (t * 0.1 + i * 0.6) % 1;
+          softDot(ctx, pr.sx + R * 2 * ek, pr.sy - R * (1 + ek), 1.6, color, (1 - ek) * 0.35, 0.4);
+        }
+
         if (birth < 1 && birth > 0.02) {
           const br = R * (1 + birth * 4);
           ctx.strokeStyle = `rgba(${color[0]},${color[1]},${color[2]},${(1 - birth) * 0.5})`;
@@ -522,20 +652,13 @@ export default function ConstellationBirth() {
           ctx.stroke();
           for (let k = 0; k < 6; k++) {
             const a = (k / 6) * Math.PI * 2 + st.tw;
-            softDot(
-              ctx,
-              pr.sx + Math.cos(a) * br * 1.1,
-              pr.sy + Math.sin(a) * br * 1.1,
-              2.4,
-              color,
-              (1 - birth) * 0.7,
-              0.4
-            );
+            softDot(ctx, pr.sx + Math.cos(a) * br * 1.1, pr.sy + Math.sin(a) * br * 1.1, 2.4, color, (1 - birth) * 0.7, 0.4);
           }
         }
       });
 
-      /* the ritual flash */
+      ctx.restore();
+
       if (press.flash && now - press.flash < 900) {
         const ft = (now - press.flash) / 900;
         const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.6);
@@ -568,8 +691,8 @@ export default function ConstellationBirth() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scrollYProgress]);
 
-  const selectorOpacity = useTransform(scrollYProgress, [0.28, 0.34], [0, 1]);
-  const captionOpacity = useTransform(scrollYProgress, [0.84, 0.9], [0, 1]);
+  const hintOpacity = useTransform(scrollYProgress, [0.3, 0.38, 0.5, 0.56], [0, 1, 1, 0]);
+  const ctaOpacity = useTransform(scrollYProgress, [0.88, 0.94], [0, 1]);
   const def = FIGURES[sign];
   const anchor = def.stars.find((s) => s.name && s.role);
 
@@ -581,62 +704,41 @@ export default function ConstellationBirth() {
           className="absolute inset-0 h-full w-full touch-none [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_84%,transparent_100%)]"
         />
 
-        {/* elegant star tooltip, driven from the engine */}
+        {/* floating typography — no box, just light */}
         <div
           ref={tooltipRef}
-          className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full border border-gold/30 bg-deep/70 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.25em] text-cream/85 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+          className="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-full whitespace-nowrap font-serif text-base italic text-cream/90 opacity-0 transition-opacity duration-300 [text-shadow:0_0_18px_rgba(217,174,111,0.6)]"
         />
 
-        {/* estado 1 — the chapter opens */}
+        {/* the chapter opens */}
         <Overlay progress={scrollYProgress} range={[0.02, 0.06, 0.14, 0.19]}>
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold/80">
-            Capítulo IV · Tu constelación
+            Capítulo IV · El observatorio
           </p>
           <h2 className="font-sans text-4xl font-black leading-[1.08] tracking-tight text-cream sm:text-6xl">
-            No aparece.{" "}
+            Tu constelación no se desbloquea.{" "}
             <span className="font-serif italic font-medium text-gold text-glow-gold">
               Se revela.
             </span>
           </h2>
           <p className="mx-auto mt-7 max-w-md text-lg leading-relaxed text-cream/60">
-            Cada acción repetida deja una señal. Las señales terminan formando
-            algo que antes no podías ver.
+            Cada acción repetida enciende otra estrella. Con el tiempo, esas
+            estrellas se vuelven algo que reconoces.
           </p>
         </Overlay>
 
-        {/* estado 3 — the sign selector emerges with the gravity */}
-        <motion.div
-          style={{ opacity: selectorOpacity }}
-          className="absolute inset-x-0 bottom-8 z-20 flex flex-col items-center gap-3 px-6"
+        {/* observatory hint */}
+        <motion.p
+          style={{ opacity: hintOpacity }}
+          className="pointer-events-none absolute inset-x-0 bottom-10 z-10 text-center text-[10px] uppercase tracking-[0.3em] text-cream/35"
         >
-          <p className="text-[10px] uppercase tracking-[0.3em] text-cream/40">
-            Elige tu signo
-          </p>
-          <div className="flex max-w-2xl flex-wrap items-center justify-center gap-1.5">
-            {SIGNS.map((s) => (
-              <button
-                key={s}
-                onClick={() => setSign(s)}
-                aria-label={FIGURES[s].label}
-                className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-500 ${
-                  sign === s
-                    ? "border-pink-soft/70 text-pink shadow-[0_0_18px_rgba(233,30,99,0.3)]"
-                    : "hairline border text-cream/45 hover:border-cream/25 hover:text-cream/85"
-                }`}
-              >
-                <Glyph sign={s} />
-              </button>
-            ))}
-          </div>
-          <p className="text-[9px] uppercase tracking-[0.25em] text-cream/25">
-            Mantén presionado para el ritual
-          </p>
-        </motion.div>
+          Explora el cielo — viaja a otra constelación
+        </motion.p>
 
-        {/* estado 7 — the discovery, named */}
+        {/* the discovery, named + the closing invitation */}
         <motion.div
-          style={{ opacity: captionOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[10%] z-10 mx-auto max-w-xl px-6 text-center"
+          style={{ opacity: ctaOpacity }}
+          className="pointer-events-none absolute inset-x-0 top-[8%] z-10 mx-auto max-w-xl px-6 text-center"
         >
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-8 bg-gold/30" />
@@ -650,6 +752,25 @@ export default function ConstellationBirth() {
               ? `${anchor.name} — ${anchor.role}.`
               : "Cada estrella, un día que volviste."}
           </p>
+        </motion.div>
+
+        <motion.div
+          style={{ opacity: ctaOpacity }}
+          className="absolute inset-x-0 bottom-10 z-20 mx-auto max-w-lg px-6 text-center"
+        >
+          <p className="text-base leading-relaxed text-cream/65">
+            Estas constelaciones existen desde hace siglos.{" "}
+            <span className="font-serif italic text-gold">La tuya no.</span>
+          </p>
+          <p className="mt-1 text-base text-cream/65">
+            La revelarás con tus propios datos.
+          </p>
+          <a
+            href="#beta"
+            className="mt-6 inline-flex items-center justify-center rounded-full bg-pink-soft px-8 py-3.5 text-sm font-semibold tracking-wide text-cream transition-all duration-500 hover:shadow-[0_0_40px_rgba(233,30,99,0.45)]"
+          >
+            Revela mi constelación
+          </a>
         </motion.div>
       </div>
     </section>
@@ -674,25 +795,5 @@ function Overlay({
     >
       {children}
     </motion.div>
-  );
-}
-
-function Glyph({ sign }: { sign: ZodiacSign }) {
-  const url = `url(/zodiaco/${sign}.svg)`;
-  return (
-    <span
-      aria-hidden
-      className="inline-block h-[18px] w-[18px] bg-current"
-      style={{
-        WebkitMaskImage: url,
-        maskImage: url,
-        WebkitMaskSize: "contain",
-        maskSize: "contain",
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-        WebkitMaskPosition: "center",
-        maskPosition: "center",
-      }}
-    />
   );
 }
