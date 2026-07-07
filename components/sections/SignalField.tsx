@@ -153,6 +153,49 @@ function buildParticles(): Particle[] {
   return out;
 }
 
+/* ── mini-constellation clusters: the sky is FULL of small figures ──
+   Like a star chart: many little groups of stars joined by fine golden
+   threads at different depths. The camera passes through some of them;
+   the Leo pattern is just the one that ends up mattering. */
+type Cluster = {
+  stars: { x: number; y: number; z: number; size: number; tw: number }[];
+  links: { a: number; b: number; birth: number }[];
+  dashed: boolean;
+  birth: number;
+};
+
+function buildClusters(): Cluster[] {
+  const clusters: Cluster[] = [];
+  for (let c = 0; c < 14; c++) {
+    const cx = (prand(c * 31 + 5) - 0.5) * 8.5;
+    const cy = (prand(c * 47 + 9) - 0.5) * 5.5;
+    const cz = 4.5 + prand(c * 53 + 13) * 19;
+    const n = 4 + Math.floor(prand(c * 61 + 17) * 3);
+    const stars = Array.from({ length: n }, (_, i) => ({
+      x: cx + (prand(c * 71 + i * 7 + 19) - 0.5) * 2.1,
+      y: cy + (prand(c * 83 + i * 11 + 23) - 0.5) * 1.6,
+      z: cz + (prand(c * 89 + i * 13 + 29) - 0.5) * 1.2,
+      size: 0.035 + prand(c * 97 + i * 17 + 31) * 0.045,
+      tw: prand(c * 101 + i * 19) * Math.PI * 2,
+    }));
+    // a chain through the stars + one or two cross links, like a chart figure
+    const links: Cluster["links"] = [];
+    for (let i = 0; i < n - 1; i++) {
+      links.push({ a: i, b: i + 1, birth: 0.44 + prand(c * 7 + i * 3) * 0.22 });
+    }
+    if (n > 4 && prand(c * 113) > 0.4) {
+      links.push({ a: 0, b: n - 2, birth: 0.5 + prand(c * 127) * 0.18 });
+    }
+    clusters.push({
+      stars,
+      links,
+      dashed: c % 3 === 0,
+      birth: 0.2 + prand(c * 131 + 41) * 0.18,
+    });
+  }
+  return clusters;
+}
+
 export default function SignalField() {
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -169,6 +212,7 @@ export default function SignalField() {
 
     const particles = buildParticles();
     const pattern = particles.filter((p) => p.slot);
+    const clusters = buildClusters();
     let W = 0;
     let H = 0;
     let raf = 0;
@@ -314,6 +358,58 @@ export default function SignalField() {
           const a = born * twinkle * Math.min(0.9, 3.2 / rel + 0.12) * fieldDim;
           const R = r * (pt.glow || pt.lit ? 4 : 2.6) * (pt.lit ? 1.3 : 1);
           softDot(ctx, pr.sx, pr.sy, R, color, a, pt.glow || pt.lit ? 0.4 : 0.3);
+        }
+      }
+
+      /* mini-constellations everywhere — the star-chart sky */
+      for (const cl of clusters) {
+        const born = smooth(cl.birth, cl.birth + 0.12, p);
+        if (born <= 0.01) continue;
+        const dimmed = born * fieldDim;
+
+        /* fine threads between the cluster's stars */
+        const linkBase = smooth(0.44, 0.48, p);
+        if (linkBase > 0) {
+          if (cl.dashed) ctx.setLineDash([3, 6]);
+          for (const ln of cl.links) {
+            const lt = smooth(ln.birth, ln.birth + 0.06, p);
+            if (lt <= 0) continue;
+            const A = cl.stars[ln.a];
+            const B = cl.stars[ln.b];
+            const dA = A.z - camZ;
+            const dB = B.z - camZ;
+            if (dA < 0.25 || dB < 0.25) continue;
+            const pa = project(A.x, A.y, dA, f, cx, cy);
+            const pb = project(B.x, B.y, dB, f, cx, cy);
+            if (!pa || !pb) continue;
+            const ex = pa.sx + (pb.sx - pa.sx) * lt;
+            const ey = pa.sy + (pb.sy - pa.sy) * lt;
+            const la = Math.min(0.4, 2.4 / dA) * dimmed * lt;
+            ctx.strokeStyle = `rgba(217, 174, 111, ${la})`;
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(pa.sx, pa.sy);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+          }
+          if (cl.dashed) ctx.setLineDash([]);
+        }
+
+        /* the cluster's small stars — tiny sparkles once connected */
+        for (const st of cl.stars) {
+          const d = st.z - camZ;
+          if (d < 0.25) continue;
+          const pr = project(st.x, st.y, d, f, cx, cy);
+          if (!pr) continue;
+          if (pr.sx < -40 || pr.sx > W + 40 || pr.sy < -40 || pr.sy > H + 40) continue;
+          const twk = reduced ? 1 : 0.6 + 0.4 * Math.sin(st.tw + t * 0.8);
+          const r = Math.max(0.5, st.size * pr.s);
+          const a = Math.min(0.85, 2.6 / d + 0.1) * dimmed * twk;
+          softDot(ctx, pr.sx, pr.sy, r * 2.6, ORO, a * 0.8, 0.4);
+          if (linkBase > 0 && r > 1.6) {
+            ctx.fillStyle = `rgba(255, 233, 194, ${a * 0.9})`;
+            sparkle(ctx, pr.sx, pr.sy, r * 0.9);
+          }
         }
       }
 
