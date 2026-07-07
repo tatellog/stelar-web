@@ -36,6 +36,49 @@ const smooth = (a: number, b: number, v: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/** A diffuse light: single radial-gradient falloff — never a hard circle.
+ *  `mid` shapes the falloff (higher = brighter, tighter center). */
+function softDot(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  R: number,
+  color: readonly [number, number, number],
+  alpha: number,
+  mid: number
+) {
+  if (alpha <= 0.004 || R <= 0.3) return;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, R);
+  g.addColorStop(0, `rgba(${color[0]},${color[1]},${color[2]},${alpha})`);
+  if (mid > 0) {
+    g.addColorStop(mid, `rgba(${color[0]},${color[1]},${color[2]},${alpha * 0.45})`);
+  }
+  g.addColorStop(1, `rgba(${color[0]},${color[1]},${color[2]},0)`);
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, R, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** Four-point sparkle body (the app's star shape), filled with the
+ *  current fillStyle. */
+function sparkle(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  R: number
+) {
+  const d = R * 0.24;
+  ctx.beginPath();
+  ctx.moveTo(x, y - R);
+  ctx.quadraticCurveTo(x + d, y - d, x + R, y);
+  ctx.quadraticCurveTo(x + d, y + d, x, y + R);
+  ctx.quadraticCurveTo(x - d, y + d, x - R, y);
+  ctx.quadraticCurveTo(x - d, y - d, x, y - R);
+  ctx.closePath();
+  ctx.fill();
+}
+
 /* ── the pattern: the real Leo figure on a plane deep in the field ─ */
 const PATTERN_Z = TRAVEL + 5.2;
 const FIG = figureFit("leo", { x: -2.3, y: -1.7, w: 4.6, h: 3.4 });
@@ -265,29 +308,12 @@ export default function SignalField() {
           const bok = 1 - smooth(0.2, 2.2, rel);
           const R = r * (1 + bok * 5);
           const a = born * twinkle * (0.28 - bok * 0.2) * fieldDim;
-          const g = ctx.createRadialGradient(pr.sx, pr.sy, 0, pr.sx, pr.sy, R);
-          g.addColorStop(0, `rgba(${color[0]},${color[1]},${color[2]},${a})`);
-          g.addColorStop(1, `rgba(${color[0]},${color[1]},${color[2]},0)`);
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.arc(pr.sx, pr.sy, R, 0, Math.PI * 2);
-          ctx.fill();
+          softDot(ctx, pr.sx, pr.sy, R, color, a, 0);
         } else {
+          /* every light is a diffuse glow — no hard-edged circles */
           const a = born * twinkle * Math.min(0.9, 3.2 / rel + 0.12) * fieldDim;
-          if (pt.glow || pt.lit) {
-            const R = r * 3.4;
-            const g = ctx.createRadialGradient(pr.sx, pr.sy, 0, pr.sx, pr.sy, R);
-            g.addColorStop(0, `rgba(${color[0]},${color[1]},${color[2]},${a * 0.5})`);
-            g.addColorStop(1, `rgba(${color[0]},${color[1]},${color[2]},0)`);
-            ctx.fillStyle = g;
-            ctx.beginPath();
-            ctx.arc(pr.sx, pr.sy, R, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${a})`;
-          ctx.beginPath();
-          ctx.arc(pr.sx, pr.sy, r, 0, Math.PI * 2);
-          ctx.fill();
+          const R = r * (pt.glow || pt.lit ? 4 : 2.6) * (pt.lit ? 1.3 : 1);
+          softDot(ctx, pr.sx, pr.sy, R, color, a, pt.glow || pt.lit ? 0.4 : 0.3);
         }
       }
 
@@ -317,7 +343,8 @@ export default function SignalField() {
         });
       }
 
-      /* pattern particles — indistinguishable at first, then the figure */
+      /* pattern particles — soft lights at first, then four-point stars
+         with cross flare as the figure gathers */
       const gather = smooth(0.4, 0.6, p);
       pattern.forEach((pt, i) => {
         const pos = particlePos(pt, p);
@@ -327,29 +354,43 @@ export default function SignalField() {
         const pulse = reduced ? 1 : 1 + 0.1 * gather * Math.sin(t * 1.6 + i);
         const twinkle = reduced ? 1 : 0.75 + 0.25 * Math.sin(pt.tw + t * pt.twS);
         const color = pt.lit ? MAGENTA : pt.color;
-        const r = Math.max(0.6, pt.size * pr.s * pulse * (pt.lit ? 1.5 : 1));
+        const r = Math.max(0.6, pt.size * pr.s * pulse * (pt.lit ? 1.4 : 1));
         const a = (0.55 + 0.45 * gather) * twinkle;
 
-        const R = r * (3 + gather * 1.5);
-        const g = ctx.createRadialGradient(pr.sx, pr.sy, 0, pr.sx, pr.sy, R);
-        g.addColorStop(0, `rgba(${color[0]},${color[1]},${color[2]},${a * 0.55})`);
-        g.addColorStop(1, `rgba(${color[0]},${color[1]},${color[2]},0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(pr.sx, pr.sy, R, 0, Math.PI * 2);
-        ctx.fill();
+        /* ambient halo, always diffuse */
+        softDot(ctx, pr.sx, pr.sy, r * (3.2 + gather * 1.6), color, a * 0.8, 0.35);
 
-        ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${Math.min(1, a + 0.2)})`;
-        ctx.beginPath();
-        ctx.arc(pr.sx, pr.sy, r, 0, Math.PI * 2);
-        ctx.fill();
-        /* white-hot core on the anchors */
-        if (hero) {
-          ctx.fillStyle = `rgba(255,255,255,${a})`;
+        /* the star body blooms with the gathering: cross rays + sparkle */
+        if (gather > 0.05) {
+          const flare = a * gather;
+          const rayLen = r * (hero ? 3.1 : 2.3);
+          ctx.strokeStyle = `rgba(${color[0]},${color[1]},${color[2]},${flare * 0.5})`;
+          ctx.lineWidth = Math.max(0.6, r * 0.09);
+          ctx.lineCap = "round";
           ctx.beginPath();
-          ctx.arc(pr.sx, pr.sy, r * 0.38, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.moveTo(pr.sx - rayLen, pr.sy);
+          ctx.lineTo(pr.sx + rayLen, pr.sy);
+          ctx.moveTo(pr.sx, pr.sy - rayLen);
+          ctx.lineTo(pr.sx, pr.sy + rayLen);
+          ctx.stroke();
+
+          ctx.shadowColor = `rgba(${color[0]},${color[1]},${color[2]},0.9)`;
+          ctx.shadowBlur = r * 0.9;
+          ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${Math.min(1, flare + 0.25)})`;
+          sparkle(ctx, pr.sx, pr.sy, r * (hero ? 1.15 : 0.95));
+          ctx.shadowBlur = 0;
         }
+
+        /* white-hot core — soft, never a hard ring */
+        softDot(
+          ctx,
+          pr.sx,
+          pr.sy,
+          r * (gather > 0.05 ? 0.55 : 0.8),
+          [255, 255, 255],
+          a * (hero ? 0.95 : 0.6),
+          0.45
+        );
       });
 
       raf = requestAnimationFrame(draw);
