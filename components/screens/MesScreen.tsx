@@ -1,74 +1,76 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { figureSubset } from "@/lib/zodiac/helpers";
+import Image from "next/image";
+import OrbitaChrome from "./OrbitaChrome";
+import { useSign } from "../SignContext";
 
-// The month's figure is the real Leo (first 6 stars) — the same
-// constellation the app reveals as your evidence accumulates.
-const LEO = figureSubset("leo", { x: 12, y: 14, w: 76, h: 66 }, 6);
-
-const NODES = LEO.pts.map((p, i) => ({
-  x: p.x,
-  y: p.y,
-  r: p.mag <= 2.3 ? 3.2 : 2.3,
-  c: p.mag <= 2.3 ? "#FF4886" : i % 2 ? "#F4ECDE" : "#D9AE6F",
-}));
-
-const LINKS = LEO.lines;
-
-/** "Mes" — the month's constellation revealing itself with stroke animation. */
+/** The real Mes view: the emblem resting inside its ceremonial frame,
+ *  "% revelado" and the month's discovery. */
 export default function MesScreen() {
+  const { sign } = useSign();
+  const name = sign.charAt(0).toUpperCase() + sign.slice(1);
+  const glyphUrl = `url(/zodiaco/${sign}.svg)`;
+
   return (
-    <div className="flex h-full flex-col px-5 pb-5 pt-12 text-cream">
-      <p className="text-[9px] uppercase tracking-[0.3em] text-gold/80">Mes</p>
-      <h3 className="font-sans text-xl font-semibold tracking-tight">¿Qué reveló este mes?</h3>
+    <OrbitaChrome
+      active="mes"
+      title="¿Qué estás construyendo?"
+      subtitle="No es una meta. Es lo que tus acciones empezaron a construir."
+    >
+      <div className="flex h-full flex-col items-center justify-center text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="relative h-36 w-36"
+        >
+          {/* golden halo + ceremonial frame + the emblem itself */}
+          <div className="absolute inset-2 rounded-full bg-[radial-gradient(circle,rgba(232,184,114,0.22)_0%,rgba(217,174,111,0.08)_55%,transparent_75%)]" />
+          <Image src="/reveal/emblem-frame.svg" alt="" fill sizes="144px" className="object-contain" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/emblems/${sign}/f10.png`}
+            alt={`Emblema de ${name}`}
+            className="absolute inset-[15%] h-[70%] w-[70%] object-contain"
+            draggable={false}
+          />
+          <span
+            aria-hidden
+            className="absolute left-1/2 top-0 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1 bg-gold"
+            style={{
+              WebkitMaskImage: glyphUrl,
+              maskImage: glyphUrl,
+              WebkitMaskSize: "contain",
+              maskSize: "contain",
+              WebkitMaskRepeat: "no-repeat",
+              maskRepeat: "no-repeat",
+              WebkitMaskPosition: "center",
+              maskPosition: "center",
+            }}
+          />
+        </motion.div>
 
-      <div className="relative mt-2 flex-1">
-        <svg viewBox="0 0 100 100" className="h-full w-full">
-          {LINKS.map(([a, b], i) => (
-            <motion.line
-              key={i}
-              x1={NODES[a].x}
-              y1={NODES[a].y}
-              x2={NODES[b].x}
-              y2={NODES[b].y}
-              stroke="rgba(244,236,222,0.4)"
-              strokeWidth="0.4"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: 1.1, delay: 0.6 + i * 0.3, ease: "easeInOut" }}
-            />
-          ))}
-          {NODES.map((n, i) => (
-            <motion.circle
-              key={i}
-              cx={n.x}
-              cy={n.y}
-              r={n.r}
-              fill={n.c}
-              className="glow-dot"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.15 + i * 0.15 }}
-            />
-          ))}
-        </svg>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 1 }}
+        >
+          <p className="font-serif text-xl italic leading-tight">{name}</p>
+          <p className="mt-0.5 text-[8px] uppercase tracking-[0.28em] text-gold">
+            87% revelado
+          </p>
+          <p className="mt-1.5 text-[8.5px] leading-snug text-cream/55">
+            Tu {name} se dibuja con tu constancia, no con tu peso.
+          </p>
+          <p className="mt-1 text-[9px] font-semibold text-pink">
+            Algo se reveló este mes.
+          </p>
+          <p className="mt-0.5 font-serif text-[9px] italic text-cream/60">
+            Tu {name} ya puede verse.
+          </p>
+        </motion.div>
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 2.6 }}
-        className="rounded-2xl border border-cream/10 bg-cream/[0.04] p-3"
-      >
-        <p className="text-[9px] uppercase tracking-[0.25em] text-pink">
-          Tu mes reveló
-        </p>
-        <p className="mt-1 text-[11px] leading-snug text-cream/80">
-          Volviste 4 veces después de un mal día. Esa es tu constante más
-          fuerte.
-        </p>
-      </motion.div>
-    </div>
+    </OrbitaChrome>
   );
 }
