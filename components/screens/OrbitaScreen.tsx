@@ -2,24 +2,20 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { figureSubset } from "@/lib/zodiac/helpers";
 
-const NODES = [
-  { x: 30, y: 34, r: 3.2, c: "#FF4886" },
-  { x: 62, y: 22, r: 2.4, c: "#D9AE6F" },
-  { x: 78, y: 46, r: 2.8, c: "#F4ECDE" },
-  { x: 52, y: 58, r: 3.6, c: "#FF4886" },
-  { x: 24, y: 66, r: 2.2, c: "#D9AE6F" },
-  { x: 70, y: 74, r: 2.6, c: "#F4ECDE" },
-];
+// The user's constellation on the Órbita screen is the real Leo figure
+// (first 6 stars), just like the app draws it.
+const LEO = figureSubset("leo", { x: 16, y: 20, w: 68, h: 60 }, 6);
 
-const LINKS = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 0],
-  [3, 5],
-  [4, 3],
-];
+const NODES = LEO.pts.map((p, i) => ({
+  x: p.x,
+  y: p.y,
+  r: p.mag <= 2.3 ? 3.4 : 2.4,
+  c: p.mag <= 2.3 ? "#FF4886" : i % 2 ? "#D9AE6F" : "#F4ECDE",
+}));
+
+const LINKS = LEO.lines;
 
 /** The Órbita view of the app: a personal constellation over concentric orbits. */
 export default function OrbitaScreen() {

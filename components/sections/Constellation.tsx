@@ -1,50 +1,37 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { useState } from "react";
+import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import Reveal from "../Reveal";
 import LottieGlow from "../LottieGlow";
 import skyAmbient from "@/lib/lottie/month-sky-ambient.json";
+import { FIGURES } from "@/lib/zodiac/figures";
+import type { ZodiacSign, ZodiacStar } from "@/lib/zodiac/types";
 
-const STARS = [
-  { x: 120, y: 220 },
-  { x: 200, y: 120 },
-  { x: 310, y: 170 },
-  { x: 400, y: 80 },
-  { x: 500, y: 140 },
-  { x: 580, y: 240 },
-  { x: 470, y: 290 },
-  { x: 330, y: 320 },
-  { x: 210, y: 300 },
-];
+const SIGNS = Object.keys(FIGURES) as ZodiacSign[];
 
-const LINKS: [number, number][] = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 4],
-  [4, 5],
-  [5, 6],
-  [6, 7],
-  [7, 8],
-  [8, 0],
-  [2, 7],
-];
+/** A star is a "hero" (anchor of the figure) below this magnitude —
+ *  same convention as the app's flare renderer. */
+const HERO_MAG = 2;
 
-/** A dark constellation that brightens as you scroll — revealed, not unlocked. */
+/**
+ * The real constellation chapter: the 12 hand-traced zodiac figures from
+ * the app (same coords, magnitudes and lines), lit the way the app lights
+ * them — magenta with a white-hot core, star by star, over the sign's
+ * pictorial art resting on its golden halo.
+ */
 export default function Constellation() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start 0.9", "end 0.45"],
-  });
+  const [sign, setSign] = useState<ZodiacSign>("leo");
+  const def = FIGURES[sign];
+  const namedAnchor = def.stars.find((s) => s.name && s.role);
 
   return (
-    <section ref={ref} className="relative py-32 sm:py-44">
+    <section className="relative py-32 sm:py-44">
       <div className="mx-auto max-w-5xl px-6 text-center">
         <Reveal>
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold/80">
-            Capítulo V · La constelación
+            Capítulo V · Tu constelación
           </p>
           <h2 className="font-sans text-4xl font-black leading-[1.1] tracking-tight text-cream sm:text-6xl">
             Tu constelación no se desbloquea.
@@ -57,105 +44,194 @@ export default function Constellation() {
 
         <Reveal delay={0.3} className="mx-auto mt-8 max-w-xl">
           <p className="text-lg leading-relaxed text-cream/60">
-            No aparece por magia. Aparece porque tus acciones dejaron
-            suficiente evidencia.
+            Cada día que vuelves enciende una estrella de tu signo. Cuando tu
+            evidencia completa la figura, tu constelación brilla entera.
           </p>
         </Reveal>
 
-        <div className="relative mx-auto mt-16 max-w-3xl">
-          {/* the app's month-sky ambient lottie, breathing underneath */}
+        {/* sign picker — the 12 real glyphs */}
+        <Reveal delay={0.45}>
+          <div className="mx-auto mt-12 flex max-w-2xl flex-wrap items-center justify-center gap-2">
+            {SIGNS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setSign(s)}
+                aria-label={FIGURES[s].label}
+                className={`flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-500 ${
+                  sign === s
+                    ? "border-pink-soft/70 text-pink shadow-[0_0_20px_rgba(233,30,99,0.25)]"
+                    : "hairline border text-cream/45 hover:border-cream/25 hover:text-cream/80"
+                }`}
+              >
+                <Glyph sign={s} />
+              </button>
+            ))}
+          </div>
+        </Reveal>
+
+        {/* the figure itself */}
+        <div className="relative mx-auto mt-10 max-w-md">
           <LottieGlow
             data={skyAmbient}
-            className="pointer-events-none absolute -inset-10 opacity-50"
+            className="pointer-events-none absolute -inset-14 opacity-40"
           />
-          <RevealingSky progress={scrollYProgress} />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={sign}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+            >
+              <SignFigure sign={sign} />
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <span className="h-px w-8 bg-gold/30" />
+                <p className="text-xs uppercase tracking-[0.35em] text-gold">
+                  {def.label}
+                </p>
+                <span className="h-px w-8 bg-gold/30" />
+              </div>
+              <p className="mt-3 min-h-[1.5rem] font-serif text-lg italic text-cream/55">
+                {namedAnchor
+                  ? `${namedAnchor.name} — ${namedAnchor.role}.`
+                  : "Cada estrella, un día que volviste."}
+              </p>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
   );
 }
 
-function RevealingSky({ progress }: { progress: MotionValue<number> }) {
-  const glow = useTransform(progress, [0.4, 1], [0, 0.5]);
-
+/** Glyph rendered from the app's real line SVGs via CSS mask so it
+ *  inherits the button's currentColor. */
+function Glyph({ sign }: { sign: ZodiacSign }) {
+  const url = `url(/zodiaco/${sign}.svg)`;
   return (
-    <svg viewBox="0 0 700 400" className="w-full" aria-hidden>
-      {/* ambient glow grows with the reveal */}
-      <motion.ellipse
-        cx="350"
-        cy="200"
-        rx="280"
-        ry="160"
-        fill="url(#skyGlow)"
-        style={{ opacity: glow }}
-      />
-
-      {LINKS.map(([a, b], i) => (
-        <SkyLine key={i} a={STARS[a]} b={STARS[b]} i={i} progress={progress} />
-      ))}
-      {STARS.map((s, i) => (
-        <SkyStar key={i} s={s} i={i} progress={progress} />
-      ))}
-
-      <defs>
-        <radialGradient id="skyGlow">
-          <stop offset="0%" stopColor="#FF4886" stopOpacity="0.12" />
-          <stop offset="60%" stopColor="#2B0D24" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#090207" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function SkyStar({
-  s,
-  i,
-  progress,
-}: {
-  s: { x: number; y: number };
-  i: number;
-  progress: MotionValue<number>;
-}) {
-  const start = (i / STARS.length) * 0.45;
-  // every star is faintly there from the beginning — it only brightens
-  const opacity = useTransform(progress, [start, start + 0.2], [0.12, 1]);
-  const r = i % 4 === 0 ? 4 : 2.8;
-  const fill = i % 4 === 0 ? "#FF4886" : i % 3 === 0 ? "#D9AE6F" : "#F4ECDE";
-  return (
-    <motion.circle
-      cx={s.x}
-      cy={s.y}
-      r={r}
-      fill={fill}
-      className="glow-dot"
-      style={{ opacity }}
+    <span
+      aria-hidden
+      className="inline-block h-5 w-5 bg-current"
+      style={{
+        WebkitMaskImage: url,
+        maskImage: url,
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      }}
     />
   );
 }
 
-function SkyLine({
-  a,
-  b,
-  i,
-  progress,
-}: {
-  a: { x: number; y: number };
-  b: { x: number; y: number };
-  i: number;
-  progress: MotionValue<number>;
-}) {
-  const start = 0.3 + (i / LINKS.length) * 0.55;
-  const opacity = useTransform(progress, [start, start + 0.12], [0.04, 0.55]);
+/** Star radius from magnitude — the app's flare convention scaled to a
+ *  100-unit viewBox: heroes read clearly bigger, faint connectors small. */
+function starR(s: ZodiacStar) {
+  return s.mag <= HERO_MAG ? 2.1 : Math.max(0.9, 1.75 - s.mag * 0.18);
+}
+
+function SignFigure({ sign }: { sign: ZodiacSign }) {
+  const def = FIGURES[sign];
+  const starDelay = (i: number) => 0.2 + i * 0.16;
+  const lineDelay = (i: number) => 0.5 + i * 0.16;
+
   return (
-    <motion.line
-      x1={a.x}
-      y1={a.y}
-      x2={b.x}
-      y2={b.y}
-      stroke="#F4ECDE"
-      strokeWidth="1"
-      style={{ opacity }}
-    />
+    <div className="relative mx-auto aspect-square w-full">
+      {/* the reveal's golden halo, behind the art */}
+      <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,246,229,0.10)_0%,rgba(232,184,114,0.09)_40%,rgba(217,174,111,0.05)_72%,transparent_100%)]" />
+
+      {/* the sign's pictorial art, resting free over the halo */}
+      <motion.div
+        className="absolute inset-[6%]"
+        initial={{ opacity: 0, scale: 0.97 }}
+        whileInView={{ opacity: 0.5, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <Image
+          src={`/zodiac-art/${sign}-art.png`}
+          alt={`Arte de ${def.label}`}
+          fill
+          sizes="(max-width: 640px) 90vw, 448px"
+          className="object-contain"
+        />
+      </motion.div>
+
+      {/* the live figure — the app's exact stars and lines */}
+      <svg viewBox="0 0 100 100" className="relative h-full w-full" aria-hidden>
+        {/* connecting lines, drawn in order */}
+        {def.lines.map(([a, b], i) => (
+          <motion.line
+            key={`l${i}`}
+            x1={def.stars[a].x * 100}
+            y1={def.stars[a].y * 100}
+            x2={def.stars[b].x * 100}
+            y2={def.stars[b].y * 100}
+            stroke="rgba(244,236,222,0.5)"
+            strokeWidth="0.35"
+            initial={{ pathLength: 0, opacity: 0 }}
+            whileInView={{ pathLength: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: lineDelay(i), ease: "easeInOut" }}
+          />
+        ))}
+
+        {def.stars.map((s, i) => {
+          const r = starR(s);
+          const hero = s.mag <= HERO_MAG;
+          return (
+            <motion.g
+              key={`s${i}`}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: starDelay(i) }}
+            >
+              {/* magenta halo — the achievement colour */}
+              <circle
+                cx={s.x * 100}
+                cy={s.y * 100}
+                r={r * 2.4}
+                fill={hero ? "rgba(233,30,99,0.28)" : "rgba(233,30,99,0.18)"}
+              />
+              {/* star body with white-hot core */}
+              <circle
+                cx={s.x * 100}
+                cy={s.y * 100}
+                r={r}
+                fill={hero ? "#FBD7E3" : "#F4ECDE"}
+                className="glow-dot"
+              />
+              {hero && (
+                <circle cx={s.x * 100} cy={s.y * 100} r={r * 0.45} fill="#FFFFFF" />
+              )}
+            </motion.g>
+          );
+        })}
+
+        {/* names on the anchor stars, arriving last */}
+        {def.stars.map((s, i) =>
+          s.name && s.mag <= 2.3 ? (
+            <motion.text
+              key={`n${i}`}
+              x={s.x * 100 + (s.x > 0.72 ? -3 : 3)}
+              y={s.y * 100 - 3}
+              textAnchor={s.x > 0.72 ? "end" : "start"}
+              fill="rgba(255,233,194,0.8)"
+              fontSize="3.4"
+              letterSpacing="0.5"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 1.6 + i * 0.1 }}
+            >
+              {s.name}
+            </motion.text>
+          ) : null
+        )}
+      </svg>
+    </div>
   );
 }

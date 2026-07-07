@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import Reveal from "../Reveal";
+import { figureSubset } from "@/lib/zodiac/helpers";
 
 const FEATURES: {
   name: string;
@@ -184,19 +185,8 @@ function ProgressLine() {
 }
 
 function MiniConstellation() {
-  const pts = [
-    { x: 40, y: 80 },
-    { x: 85, y: 30 },
-    { x: 140, y: 60 },
-    { x: 180, y: 25 },
-    { x: 165, y: 95 },
-  ];
-  const links = [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [2, 4],
-  ];
+  // The real Tauro figure (horns + Hyades V), miniature.
+  const { pts, lines: links } = figureSubset("tauro", { x: 25, y: 10, w: 170, h: 100 }, 8);
   return (
     <svg viewBox="0 0 220 120" className="h-32 w-full max-w-[220px]" aria-hidden>
       {links.map(([a, b], i) => (
@@ -219,8 +209,8 @@ function MiniConstellation() {
           key={i}
           cx={p.x}
           cy={p.y}
-          r={i === 2 ? 4 : 2.8}
-          fill={i === 2 ? "#FF4886" : "#F4ECDE"}
+          r={p.mag <= 2.3 ? 4 : 2.6}
+          fill={p.mag <= 2.3 ? "#FF4886" : "#F4ECDE"}
           className="glow-dot"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

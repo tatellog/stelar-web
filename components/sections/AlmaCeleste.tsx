@@ -151,9 +151,14 @@ export default function AlmaCeleste() {
           style={{ opacity: textOpacity, y: textY }}
           className="absolute bottom-[6%] max-w-xl px-6 text-center"
         >
-          <p className="text-xs uppercase tracking-[0.35em] text-gold">
-            Alma Celeste
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <p className="text-xs uppercase tracking-[0.35em] text-gold">
+              Alma Celeste
+            </p>
+            <span className="rounded-full border border-gold/30 px-2.5 py-0.5 text-[9px] uppercase tracking-[0.2em] text-gold/70">
+              Próximamente
+            </span>
+          </div>
           <h2 className="mt-3 font-sans text-3xl font-black leading-snug tracking-tight text-cream sm:text-4xl">
             Lo que repites empieza a{" "}
             <span className="font-serif italic font-medium text-gold text-glow-gold">

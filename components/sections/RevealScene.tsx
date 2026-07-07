@@ -9,6 +9,7 @@ import {
 } from "framer-motion";
 import LottieGlow from "../LottieGlow";
 import heroGlow from "@/lib/lottie/auth-hero-glow.json";
+import { figureSubset } from "@/lib/zodiac/helpers";
 
 /**
  * Pinned chapter: "Haz visible lo invisible".
@@ -28,26 +29,30 @@ type Signal = {
   r: number;
 };
 
-const SIGNALS: Signal[] = [
-  { label: "comida", fromX: 80, fromY: 60, toX: 190, toY: 210, color: "#FF4886", r: 4.5 },
-  { label: "sueño", fromX: 560, fromY: 40, toX: 330, toY: 100, color: "#F4ECDE", r: 3.4 },
-  { label: "entreno", fromX: 120, fromY: 330, toX: 470, toY: 150, color: "#D9AE6F", r: 3.8 },
-  { label: "agua", fromX: 620, fromY: 300, toX: 560, toY: 240, color: "#F4ECDE", r: 3 },
-  { label: "peso", fromX: 340, fromY: 370, toX: 430, toY: 300, color: "#FF4886", r: 3.6 },
-  { label: "ánimo", fromX: 40, fromY: 200, toX: 260, toY: 320, color: "#D9AE6F", r: 3 },
-  { label: "volver", fromX: 660, fromY: 130, toX: 610, toY: 120, color: "#F4ECDE", r: 3.2 },
+/* The pattern the signals converge into is the app's REAL Leo figure —
+   its first 7 stars (Regulus → Chort), so "patrón" literally reveals
+   the constellation the app draws. */
+const LEO = figureSubset("leo", { x: 90, y: 50, w: 540, h: 300 }, 7);
+
+const SIGNAL_META = [
+  { label: "comida", fromX: 80, fromY: 60, color: "#FF4886", r: 4.2 },
+  { label: "sueño", fromX: 560, fromY: 40, color: "#F4ECDE", r: 3.4 },
+  { label: "entreno", fromX: 120, fromY: 330, color: "#D9AE6F", r: 3.8 },
+  { label: "agua", fromX: 620, fromY: 300, color: "#F4ECDE", r: 3 },
+  { label: "peso", fromX: 340, fromY: 370, color: "#FF4886", r: 3.6 },
+  { label: "ánimo", fromX: 40, fromY: 200, color: "#D9AE6F", r: 3 },
+  { label: "volver", fromX: 660, fromY: 130, color: "#F4ECDE", r: 3.2 },
 ];
 
-const LINKS: [number, number][] = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 4],
-  [4, 5],
-  [5, 0],
-  [2, 6],
-  [1, 6],
-];
+const SIGNALS: Signal[] = SIGNAL_META.map((m, i) => ({
+  ...m,
+  toX: LEO.pts[i].x,
+  toY: LEO.pts[i].y,
+  // anchors of the real figure land slightly bigger
+  r: LEO.pts[i].mag <= 2.3 ? m.r + 0.8 : m.r,
+}));
+
+const LINKS = LEO.lines;
 
 const PHASES = [
   {

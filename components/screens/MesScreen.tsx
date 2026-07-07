@@ -1,25 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { figureSubset } from "@/lib/zodiac/helpers";
 
-const NODES = [
-  { x: 28, y: 40, r: 3, c: "#FF4886" },
-  { x: 55, y: 22, r: 2.4, c: "#F4ECDE" },
-  { x: 78, y: 38, r: 2.8, c: "#D9AE6F" },
-  { x: 70, y: 64, r: 3.4, c: "#FF4886" },
-  { x: 42, y: 74, r: 2.4, c: "#F4ECDE" },
-  { x: 22, y: 62, r: 2.2, c: "#D9AE6F" },
-];
+// The month's figure is the real Leo (first 6 stars) — the same
+// constellation the app reveals as your evidence accumulates.
+const LEO = figureSubset("leo", { x: 12, y: 14, w: 76, h: 66 }, 6);
 
-const LINKS = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 4],
-  [4, 5],
-  [5, 0],
-  [0, 3],
-];
+const NODES = LEO.pts.map((p, i) => ({
+  x: p.x,
+  y: p.y,
+  r: p.mag <= 2.3 ? 3.2 : 2.3,
+  c: p.mag <= 2.3 ? "#FF4886" : i % 2 ? "#F4ECDE" : "#D9AE6F",
+}));
+
+const LINKS = LEO.lines;
 
 /** "Mes" — the month's constellation revealing itself with stroke animation. */
 export default function MesScreen() {

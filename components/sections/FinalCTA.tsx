@@ -3,28 +3,13 @@
 import { motion } from "framer-motion";
 import Reveal from "../Reveal";
 import { PrimaryCTA } from "../CTAButton";
+import { figureInRect } from "@/lib/zodiac/helpers";
 
-const STARS = [
-  { x: 90, y: 60 },
-  { x: 200, y: 120 },
-  { x: 330, y: 50 },
-  { x: 460, y: 110 },
-  { x: 590, y: 45 },
-  { x: 700, y: 100 },
-  { x: 540, y: 170 },
-  { x: 260, y: 190 },
-];
-
-// almost complete — one link left undrawn, for the reader to finish
-const LINKS: [number, number][] = [
-  [0, 1],
-  [1, 2],
-  [2, 3],
-  [3, 4],
-  [4, 5],
-  [3, 6],
-  [1, 7],
-];
+// The app's real Aries figure across the closing sky —
+// almost complete: its last line is left undrawn, for the reader to finish.
+const ARIES = figureInRect("aries", { x: 120, y: 25, w: 560, h: 190 });
+const STARS = ARIES.pts;
+const LINKS = ARIES.lines.slice(0, -1);
 
 export default function FinalCTA() {
   return (
@@ -54,8 +39,8 @@ export default function FinalCTA() {
             key={i}
             cx={s.x}
             cy={s.y}
-            r={i % 3 === 0 ? 3 : 2}
-            fill={i % 4 === 0 ? "#D9AE6F" : "#F4ECDE"}
+            r={s.mag <= 2.3 ? 3 : 2}
+            fill={s.mag <= 2.3 ? "#D9AE6F" : "#F4ECDE"}
             className="glow-dot"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 0.9 }}

@@ -12,6 +12,7 @@ import {
 import PhoneMockup from "../PhoneMockup";
 import OrbitaScreen from "../screens/OrbitaScreen";
 import { PrimaryCTA, SecondaryCTA } from "../CTAButton";
+import { figureInRect } from "@/lib/zodiac/helpers";
 
 /**
  * Interactive opening chapter.
@@ -216,20 +217,12 @@ function HeroConstellation({
   pointerY: MotionValue<number>;
   scroll: MotionValue<number>;
 }) {
-  const points = [
-    { x: 180, y: 160 },
-    { x: 340, y: 90 },
-    { x: 520, y: 170 },
-    { x: 660, y: 110 },
-    { x: 820, y: 210 },
-    { x: 980, y: 140 },
-  ];
-  const entranceLinks = [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [3, 4],
-  ];
+  // The real Leo figure from the app, stretched across the hero sky.
+  // The first light is Regulus — el corazón del león.
+  const leo = figureInRect("leo", { x: 230, y: 40, w: 680, h: 300 });
+  const points = leo.pts;
+  const entranceLinks = leo.lines.slice(0, -1);
+  const missingLink = leo.lines[leo.lines.length - 1];
   // signals that only scrolling brings out
   const scrollSignals = [
     { x: 420, y: 250 },
@@ -267,15 +260,15 @@ function HeroConstellation({
             strokeWidth="0.8"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
-            transition={{ duration: 1.1, delay: 0.9 + i * 0.35, ease: "easeInOut" }}
+            transition={{ duration: 1.0, delay: 0.9 + i * 0.22, ease: "easeInOut" }}
           />
         ))}
         {/* the link entrance never drew — scroll completes it */}
         <motion.line
-          x1={points[4].x}
-          y1={points[4].y}
-          x2={points[5].x}
-          y2={points[5].y}
+          x1={points[missingLink[0]].x}
+          y1={points[missingLink[0]].y}
+          x2={points[missingLink[1]].x}
+          y2={points[missingLink[1]].y}
           stroke="rgba(217,174,111,0.4)"
           strokeWidth="0.8"
           style={{ pathLength: lastLink, opacity: lastLink }}
@@ -285,12 +278,12 @@ function HeroConstellation({
             key={i}
             cx={p.x}
             cy={p.y}
-            r={i % 2 === 0 ? 2.6 : 2}
-            fill={i === 2 ? "#D9AE6F" : "#F4ECDE"}
+            r={p.mag <= 2.3 ? 2.8 : 1.9}
+            fill={p.mag <= 2.3 ? "#D9AE6F" : "#F4ECDE"}
             className="glow-dot"
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.9 }}
-            transition={{ duration: 0.9, delay: 1.0 + i * 0.3 }}
+            transition={{ duration: 0.9, delay: 1.0 + i * 0.2 }}
           />
         ))}
       </motion.g>
@@ -310,7 +303,7 @@ function HeroConstellation({
           />
           {/* entrance trail */}
           <motion.path
-            d={`M ${points[0].x} ${points[0].y} Q ${points[0].x + 60} ${points[0].y - 70} ${points[1].x} ${points[1].y}`}
+            d={`M ${points[0].x} ${points[0].y} Q ${(points[0].x + points[1].x) / 2 - 25} ${(points[0].y + points[1].y) / 2} ${points[1].x} ${points[1].y}`}
             fill="none"
             stroke="url(#trail)"
             strokeWidth="1"
