@@ -15,11 +15,11 @@ import { FIGURES } from "@/lib/zodiac/figures";
 const FRAMES = 11;
 
 /**
- * Capítulo VII — El emblema. The emotional climax.
+ * Capítulo XI — El emblema. The emotional climax.
  * The visitor's constellation never disappears: as you scroll, its lines
  * brighten, particles converge, and the emblem is painted into being FROM
  * INSIDE the figure — frame by frame, driven by scroll. Discovered, not
- * generated.
+ * generated. Never fully revealed: it must feel like a promise.
  */
 export default function Emblem() {
   const ref = useRef<HTMLDivElement>(null);
@@ -36,8 +36,9 @@ export default function Emblem() {
   const introOpacity = useTransform(p, [0.03, 0.12, 0.24, 0.32], [0, 1, 1, 0]);
   // constellation: always there, brightening as the emblem approaches
   const figureGlow = useTransform(p, [0.15, 0.5], [0.45, 1]);
-  // the emblem, born from inside — scroll drives the paint frames
-  const emblemOpacity = useTransform(p, [0.3, 0.55], [0, 0.9]);
+  // the emblem, born from inside — scroll drives the paint frames.
+  // It never arrives at full light: the reveal is a promise, not a prize.
+  const emblemOpacity = useTransform(p, [0.3, 0.55], [0, 0.72]);
   // ceremonial layers
   const auraOpacity = useTransform(p, [0.45, 0.8], [0, 0.8]);
   const haloOpacity = useTransform(p, [0.55, 0.78], [0, 0.85]);
@@ -45,11 +46,12 @@ export default function Emblem() {
   const textOpacity = useTransform(p, [0.8, 0.9], [0, 1]);
   const textY = useTransform(p, [0.8, 0.9], [24, 0]);
 
-  // scroll → paint frame (preloaded so the paint never stutters)
+  // scroll → paint frame (preloaded so the paint never stutters).
+  // The paint stops before the last frames: partially revealed, on purpose.
   const [frame, setFrame] = useState(0);
-  const frameValue = useTransform(p, [0.32, 0.75], [0, FRAMES - 1]);
+  const frameValue = useTransform(p, [0.32, 0.75], [0, FRAMES - 3]);
   useMotionValueEvent(frameValue, "change", (v) => {
-    setFrame(Math.min(FRAMES - 1, Math.max(0, Math.round(v))));
+    setFrame(Math.min(FRAMES - 3, Math.max(0, Math.round(v))));
   });
   useEffect(() => {
     for (let i = 0; i < FRAMES; i++) {
@@ -67,7 +69,7 @@ export default function Emblem() {
           className="absolute top-[14%] z-10 max-w-2xl px-6 text-center"
         >
           <p className="mb-3 text-xs uppercase tracking-[0.35em] text-gold/80">
-            Capítulo VII · El emblema
+            Capítulo XI · El emblema
           </p>
           <h2 className="font-sans text-3xl font-black leading-tight tracking-tight text-cream sm:text-5xl">
             Tus hábitos dejan más que datos.{" "}
@@ -143,13 +145,11 @@ export default function Emblem() {
           style={{ opacity: textOpacity, y: textY }}
           className="absolute bottom-[7%] z-10 max-w-xl px-6 text-center"
         >
-          <p className="text-base leading-relaxed text-cream/65 sm:text-lg">
-            Poco a poco tu evidencia revela tu emblema celeste. No porque
-            completaste un reto.{" "}
-            <span className="font-serif italic text-gold">
-              Porque tus acciones se repitieron lo suficiente para volverse
-              parte de ti.
-            </span>
+          <p className="font-serif text-xl italic text-gold sm:text-2xl">
+            No lo desbloqueas. Lo revelas.
+          </p>
+          <p className="mt-4 text-base leading-relaxed text-cream/65 sm:text-lg">
+            Cada acción repetida ilumina una parte de tu emblema.
           </p>
         </motion.div>
       </div>
