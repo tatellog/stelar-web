@@ -86,7 +86,7 @@ export default function OrbitaAction() {
 
   return (
     <section id="orbita" ref={ref} className="relative h-[320vh]">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden pt-16 lg:pt-0">
         {/* the sky changes with each reading */}
         {LEVELS.map((l, i) => (
           <motion.div
@@ -102,25 +102,25 @@ export default function OrbitaAction() {
 
         <motion.div
           style={{ opacity: introOpacity }}
-          className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 px-6 lg:grid-cols-2 lg:gap-16"
+          className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-6 px-6 sm:gap-10 lg:grid-cols-2 lg:gap-16"
         >
           <div>
             <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
               Capítulo VIII · Órbita en acción
             </p>
-            <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl lg:text-5xl">
+            <h2 className="font-sans text-2xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl lg:text-5xl">
               Tu día, tu semana y tu mes tienen{" "}
               <span className="font-serif italic font-medium text-pink text-glow-pink">
                 lecturas distintas.
               </span>
             </h2>
-            <p className="mt-5 max-w-md text-base leading-relaxed text-cream/60">
+            <p className="mt-5 hidden max-w-md text-base leading-relaxed text-cream/60 sm:block">
               Stelar no muestra los mismos datos tres veces. Cada nivel
               responde una pregunta diferente.
             </p>
 
             {/* the question of this level */}
-            <div className="mt-8 min-h-[10.5rem] sm:min-h-[11.5rem]">
+            <div className="mt-5 min-h-[8rem] sm:mt-8 sm:min-h-[11.5rem]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={level.id}
@@ -130,12 +130,12 @@ export default function OrbitaAction() {
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <p
-                    className="font-serif text-2xl italic sm:text-3xl"
+                    className="font-serif text-xl italic sm:text-3xl"
                     style={{ color: level.accent, textShadow: `0 0 26px ${level.accent}55` }}
                   >
                     {level.question}
                   </p>
-                  <p className="mt-3 max-w-sm text-sm leading-relaxed text-cream/55">
+                  <p className="mt-3 hidden max-w-sm text-sm leading-relaxed text-cream/55 sm:block">
                     {level.reading}
                   </p>
                   <ul className="mt-4 flex flex-col gap-1.5">
@@ -160,7 +160,7 @@ export default function OrbitaAction() {
             </div>
 
             {/* travel between readings */}
-            <div className="mt-8 flex items-center gap-3">
+            <div className="mt-5 flex items-center gap-3 sm:mt-8">
               {LEVELS.map((l, i) => (
                 <button
                   key={l.id}
@@ -177,22 +177,28 @@ export default function OrbitaAction() {
             </div>
           </div>
 
-          <div className="mx-auto w-full max-w-[240px] sm:max-w-[290px]">
+          <div className="mx-auto w-full max-w-[168px] sm:max-w-[290px]">
             <div className="animate-float-slow">
-              <PhoneMockup>
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={level.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="h-full"
-                  >
-                    {level.node}
-                  </motion.div>
-                </AnimatePresence>
-              </PhoneMockup>
+              {/* on mobile the phone renders at 240px and scales to 0.75 so the
+                  miniature UI keeps its proportions (its type sizes are fixed px) */}
+              <div className="aspect-[9/19] w-full">
+                <div className="w-[240px] origin-top-left scale-[0.7] sm:w-full sm:scale-100">
+                  <PhoneMockup>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={level.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="h-full"
+                      >
+                        {level.node}
+                      </motion.div>
+                    </AnimatePresence>
+                  </PhoneMockup>
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>

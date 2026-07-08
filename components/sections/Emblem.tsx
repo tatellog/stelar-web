@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import {
   motion,
   useScroll,
@@ -39,10 +38,8 @@ export default function Emblem() {
   // the emblem, born from inside — scroll drives the paint frames.
   // It never arrives at full light: the reveal is a promise, not a prize.
   const emblemOpacity = useTransform(p, [0.3, 0.55], [0, 0.72]);
-  // ceremonial layers — present, never a muddy blob
-  const auraOpacity = useTransform(p, [0.45, 0.8], [0, 0.38]);
-  const haloOpacity = useTransform(p, [0.55, 0.78], [0, 0.6]);
-  const haloScale = useTransform(p, [0.55, 0.85], [0.85, 1]);
+  // golden aura — a pure radial falloff, no visible rim
+  const auraOpacity = useTransform(p, [0.42, 0.75], [0, 0.85]);
   const textOpacity = useTransform(p, [0.8, 0.9], [0, 1]);
   const textY = useTransform(p, [0.8, 0.9], [24, 0]);
 
@@ -79,27 +76,19 @@ export default function Emblem() {
           </h2>
         </motion.div>
 
-        <div className="relative w-full max-w-[22rem] px-6 sm:max-w-md">
-          {/* golden aura */}
+        <div className="relative w-full max-w-[24rem] px-6 sm:max-w-[34rem]">
+          {/* golden aura — smooth radial falloff, dissolves into the sky
+              with no rim (the SVG aura read as a hard circle) */}
           <motion.div
             style={{ opacity: auraOpacity }}
-            className="pointer-events-none absolute -inset-16"
-          >
-            <Image src="/reveal/golden-aura.svg" alt="" fill sizes="100vw" className="object-contain" />
-          </motion.div>
+            className="pointer-events-none absolute -inset-24 bg-[radial-gradient(circle_at_50%_48%,rgba(255,246,229,0.13)_0%,rgba(217,174,111,0.09)_30%,rgba(217,174,111,0.035)_55%,rgba(217,174,111,0.012)_72%,transparent_88%)] sm:-inset-32"
+          />
 
-          {/* ceremonial halo */}
-          <motion.div
-            style={{ opacity: haloOpacity, scale: haloScale }}
-            className="pointer-events-none absolute -inset-4"
-          >
-            <Image src="/reveal/ceremonial-halo.svg" alt="" fill sizes="100vw" className="object-contain" />
-          </motion.div>
-
-          {/* the emblem, painted into being by the scroll */}
+          {/* the emblem, painted into being by the scroll — same art box as
+              the constellation (the figure was traced over this art) */}
           <motion.div
             style={{ opacity: emblemOpacity }}
-            className="absolute inset-[10%]"
+            className="absolute inset-0"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
