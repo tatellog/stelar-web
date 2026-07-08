@@ -1,5 +1,7 @@
 "use client";
 
+import { softDotRGB } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 import { useEffect, useRef } from "react";
 import {
   motion,
@@ -40,7 +42,8 @@ const smooth = (a: number, b: number, v: number) => {
 
 type RGB = readonly [number, number, number];
 
-/** A diffuse light: single radial falloff — never a hard circle. */
+/** A diffuse light: single radial falloff — never a hard circle.
+ *  Delegates to the shared sprite-backed stamp (zero per-call allocs). */
 function softDot(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -51,16 +54,7 @@ function softDot(
   mid: number,
 ) {
   if (alpha <= 0.004 || R <= 0.3) return;
-  const g = ctx.createRadialGradient(x, y, 0, x, y, R);
-  g.addColorStop(0, `rgba(${color[0]},${color[1]},${color[2]},${alpha})`);
-  if (mid > 0) {
-    g.addColorStop(mid, `rgba(${color[0]},${color[1]},${color[2]},${alpha * 0.45})`);
-  }
-  g.addColorStop(1, `rgba(${color[0]},${color[1]},${color[2]},0)`);
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x, y, R, 0, Math.PI * 2);
-  ctx.fill();
+  softDotRGB(ctx, x, y, R, color, alpha, mid);
 }
 
 const LECHE: RGB = [244, 236, 222];
@@ -288,7 +282,6 @@ export default function SignalField() {
 
     let W = 0;
     let H = 0;
-    let raf = 0;
     let running = true;
     let hovered = -1;
 
@@ -595,18 +588,17 @@ export default function SignalField() {
         }
       }
 
-      raf = requestAnimationFrame(draw);
     };
 
     resize();
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
     window.addEventListener("resize", resize);
     window.addEventListener("pointermove", onPointer, { passive: true });
     canvas.addEventListener("click", onClick);
 
     return () => {
       running = false;
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointer);
       canvas.removeEventListener("click", onClick);
@@ -615,7 +607,7 @@ export default function SignalField() {
 
   return (
     <section id="senales" ref={ref} className="relative h-[560vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden">
         {/* the canvas dissolves at its edges — no hard seams */}
         <canvas
           ref={canvasRef}

@@ -1,6 +1,31 @@
 /** Shared Canvas 2D drawing language for the journey's scenes.
  *  Every light is a single radial falloff — never a hard circle. */
 
+/* The falloff is rasterized ONCE per (color, core) into a small sprite
+ * and stamped with drawImage + globalAlpha. Same pixels as the old
+ * per-call createRadialGradient, but zero allocations per frame — the
+ * scenes stamp thousands of these every frame. */
+const SPRITE_R = 64;
+const spriteCache = new Map<string, HTMLCanvasElement>();
+
+function dotSprite(color: string, core: number): HTMLCanvasElement {
+  const key = `${color}|${core.toFixed(2)}`;
+  let s = spriteCache.get(key);
+  if (!s) {
+    s = document.createElement("canvas");
+    s.width = s.height = SPRITE_R * 2;
+    const c = s.getContext("2d")!;
+    const g = c.createRadialGradient(SPRITE_R, SPRITE_R, 0, SPRITE_R, SPRITE_R, SPRITE_R);
+    g.addColorStop(0, colorA(color, 1));
+    g.addColorStop(core, colorA(color, 0.45));
+    g.addColorStop(1, colorA(color, 0));
+    c.fillStyle = g;
+    c.fillRect(0, 0, SPRITE_R * 2, SPRITE_R * 2);
+    spriteCache.set(key, s);
+  }
+  return s;
+}
+
 export function softDot(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -11,14 +36,42 @@ export function softDot(
   core = 0.35,
 ) {
   if (alpha <= 0 || r <= 0) return;
-  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-  g.addColorStop(0, colorA(color, alpha));
-  g.addColorStop(core, colorA(color, alpha * 0.45));
-  g.addColorStop(1, colorA(color, 0));
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fill();
+  const prev = ctx.globalAlpha;
+  ctx.globalAlpha = prev * Math.min(1, alpha);
+  ctx.drawImage(dotSprite(color, core), x - r, y - r, r * 2, r * 2);
+  ctx.globalAlpha = prev;
+}
+
+/** softDot for scenes that keep colors as [r,g,b] tuples. mid <= 0 skips
+ *  the middle stop (a thinner falloff), matching the legacy local copies. */
+export function softDotRGB(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  r: number,
+  c: readonly [number, number, number],
+  alpha: number,
+  mid = 0.35,
+) {
+  if (alpha <= 0 || r <= 0) return;
+  const key = `${c[0]},${c[1]},${c[2]}|${mid.toFixed(2)}`;
+  let s = spriteCache.get(key);
+  if (!s) {
+    s = document.createElement("canvas");
+    s.width = s.height = SPRITE_R * 2;
+    const sc = s.getContext("2d")!;
+    const g = sc.createRadialGradient(SPRITE_R, SPRITE_R, 0, SPRITE_R, SPRITE_R, SPRITE_R);
+    g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},1)`);
+    if (mid > 0) g.addColorStop(mid, `rgba(${c[0]},${c[1]},${c[2]},0.45)`);
+    g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+    sc.fillStyle = g;
+    sc.fillRect(0, 0, SPRITE_R * 2, SPRITE_R * 2);
+    spriteCache.set(key, s);
+  }
+  const prev = ctx.globalAlpha;
+  ctx.globalAlpha = prev * Math.min(1, alpha);
+  ctx.drawImage(s, x - r, y - r, r * 2, r * 2);
+  ctx.globalAlpha = prev;
 }
 
 export function sparkle(

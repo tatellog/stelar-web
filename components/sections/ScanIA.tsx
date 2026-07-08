@@ -11,6 +11,7 @@ import PhoneMockup from "../PhoneMockup";
 import PhoneEmerge from "../PhoneEmerge";
 import ScanResultScreen from "../screens/ScanResultScreen";
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 
 /**
  * Capítulo VII — Scan IA. The COMPLETE flow, told as one continuous
@@ -98,7 +99,6 @@ export default function ScanIA() {
     resize();
     window.addEventListener("resize", resize);
 
-    let raf = 0;
     const draw = (t: number) => {
       ctx.clearRect(0, 0, W, H);
       const p = progress.current;
@@ -167,12 +167,11 @@ export default function ScanIA() {
           );
         }
       }
-      raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
     };
   }, []);
@@ -222,7 +221,7 @@ export default function ScanIA() {
 
   return (
     <section ref={ref} className="relative h-[520vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
         {/* chapter opening — what this is, in one line, plus proof */}
@@ -276,6 +275,10 @@ export default function ScanIA() {
               src="/art/meal-scan.jpg"
               alt="Salmón con tomates cherry y crema"
               className="h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+              width={800}
+              height={800}
               draggable={false}
             />
             <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,transparent_55%,rgba(10,6,8,0.35)_100%)]" />

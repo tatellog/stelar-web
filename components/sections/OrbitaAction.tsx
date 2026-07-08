@@ -93,7 +93,7 @@ export default function OrbitaAction() {
 
   return (
     <section id="orbita" ref={ref} className="relative h-[320vh]">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden pt-16 lg:pt-0">
+      <div className="sticky top-0 flex h-dvh items-center overflow-hidden pt-16 lg:pt-0">
         {/* the sky changes with each reading */}
         {LEVELS.map((l, i) => (
           <motion.div

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 
 /**
  * Capítulo VII — Todo termina en un mismo universo.
@@ -138,7 +139,6 @@ export default function Ecosystem() {
       };
     };
 
-    let raf = 0;
     const draw = (now: number) => {
       const t = now / 1000;
       const p = progress.current;
@@ -433,9 +433,8 @@ export default function Ecosystem() {
       }
 
       canvas.style.cursor = hovered >= 0 ? "pointer" : "default";
-      raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
 
     /* tap = this astro falls now. The hit-test runs on the event coords —
        on touch there is no pointermove before the click. */
@@ -459,7 +458,7 @@ export default function Ecosystem() {
     canvas.addEventListener("click", onClick);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("pointermove", onPointer);
       canvas.removeEventListener("click", onClick);
@@ -473,7 +472,7 @@ export default function Ecosystem() {
 
   return (
     <section ref={ref} className="relative h-[520vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 h-full w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]"
@@ -518,7 +517,7 @@ export default function Ecosystem() {
 
         <motion.div
           style={{ opacity: finalOpacity }}
-          className="absolute inset-x-0 bottom-[8%] z-10 mx-auto max-w-2xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 bottom-[8%] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <div className="pointer-events-none mx-auto flex max-w-lg flex-wrap items-center justify-center gap-2">
             {["Entrenos", "Sueño", "Pasos", "Ritmo cardiaco", "Actividad"].map((k) => (
@@ -535,7 +534,7 @@ export default function Ecosystem() {
           </p>
           <a
             href="#beta"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm tracking-wide text-pink transition-colors hover:text-cream"
+            className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 py-2 text-sm tracking-wide text-pink transition-colors hover:text-cream"
           >
             Conecta tu universo <span aria-hidden>→</span>
           </a>

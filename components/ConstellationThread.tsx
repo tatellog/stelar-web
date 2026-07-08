@@ -5,6 +5,7 @@ import { useScroll } from "framer-motion";
 import { useSign } from "./SignContext";
 import { figureFit } from "@/lib/zodiac/helpers";
 import { softDot, sparkle, colorA, ramp, prand } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 
 /**
  * El hilo — the protagonist of the whole landing.
@@ -56,7 +57,6 @@ export default function ConstellationThread() {
     resize();
     window.addEventListener("resize", resize);
 
-    let raf = 0;
     const draw = (now: number) => {
       ctx.clearRect(0, 0, W, H);
       const p = progress.current;
@@ -64,7 +64,6 @@ export default function ConstellationThread() {
 
       const alive = ramp(p, IGNITE0, IGNITE0 + 0.02) * (1 - ramp(p, FADE0, FADE1));
       if (alive <= 0.01) {
-        raf = requestAnimationFrame(draw);
         return;
       }
 
@@ -139,12 +138,11 @@ export default function ConstellationThread() {
         softDot(ctx, sx, sy, 1.2, "#E8B872", 0.22 * Math.sin(kt * Math.PI) * alive, 0.4);
       }
 
-      raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
     };
   }, []);

@@ -30,6 +30,10 @@ export default function FinalCTA() {
         <motion.img
           src={`/emblems/${sign}/f10.png`}
           alt=""
+          loading="lazy"
+          decoding="async"
+          width={480}
+          height={480}
           animate={{ scale: [1, 1.045, 1], opacity: [0.14, 0.2, 0.14] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           className="h-full w-full object-contain"
@@ -217,7 +221,7 @@ function BetaButton() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="tu@email.com"
             disabled={state === "sending"}
-            className="w-52 bg-transparent px-5 py-3.5 text-sm text-cream placeholder:text-cream/35 focus:outline-none sm:w-64"
+            className="w-48 bg-transparent px-5 py-3 text-base text-cream placeholder:text-cream/35 focus:outline-none sm:w-64"
           />
           <button
             type="submit"

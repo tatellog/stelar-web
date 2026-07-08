@@ -1,5 +1,7 @@
 "use client";
 
+import { softDotRGB } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 import { useEffect, useRef } from "react";
 import {
   motion,
@@ -75,14 +77,7 @@ function softDot(
   midStop = 0.35
 ) {
   if (alpha <= 0.004 || R <= 0.3) return;
-  const g = ctx.createRadialGradient(x, y, 0, x, y, R);
-  g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${alpha})`);
-  g.addColorStop(midStop, `rgba(${c[0]},${c[1]},${c[2]},${alpha * 0.45})`);
-  g.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x, y, R, 0, Math.PI * 2);
-  ctx.fill();
+  softDotRGB(ctx, x, y, R, c, alpha, midStop);
 }
 
 function sparklePath(ctx: CanvasRenderingContext2D, x: number, y: number, R: number) {
@@ -222,7 +217,6 @@ export default function ConstellationBirth() {
 
     let W = 0;
     let H = 0;
-    let raf = 0;
     let running = true;
     let hoverIdx = -1;
     let hoverSign: ZodiacSign | null = null;
@@ -685,11 +679,10 @@ export default function ConstellationBirth() {
         ctx.fillRect(0, 0, W, H);
       }
 
-      raf = requestAnimationFrame(draw);
     };
 
     resize();
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
     window.addEventListener("resize", resize);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     canvas.addEventListener("click", onClick);
@@ -698,7 +691,7 @@ export default function ConstellationBirth() {
 
     return () => {
       running = false;
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("click", onClick);
@@ -715,7 +708,7 @@ export default function ConstellationBirth() {
 
   return (
     <section id="constelacion" ref={ref} className="relative h-[520vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 h-full w-full [touch-action:pan-y] [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_84%,transparent_100%)]"
@@ -773,7 +766,7 @@ export default function ConstellationBirth() {
 
         <motion.div
           style={{ opacity: ctaOpacity }}
-          className="absolute inset-x-0 bottom-10 z-20 mx-auto max-w-lg px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 bottom-10 z-20 mx-auto max-w-lg px-6 text-center"
         >
           <p className="text-base leading-relaxed text-cream/65">
             Estas constelaciones existen desde hace siglos.{" "}
@@ -784,7 +777,7 @@ export default function ConstellationBirth() {
           </p>
           <a
             href="#beta"
-            className="mt-6 inline-flex items-center justify-center rounded-full bg-pink-soft px-8 py-3.5 text-sm font-semibold tracking-wide text-cream transition-all duration-500 hover:shadow-[0_0_40px_rgba(233,30,99,0.45)]"
+            className="pointer-events-auto mt-6 inline-flex items-center justify-center rounded-full bg-pink-soft px-8 py-3.5 text-sm font-semibold tracking-wide text-cream transition-all duration-500 hover:shadow-[0_0_40px_rgba(233,30,99,0.45)]"
           >
             Revela mi constelación
           </a>

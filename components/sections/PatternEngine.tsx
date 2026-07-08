@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { softDot, sparkle, colorA, ramp, prand } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 
 /**
  * Capítulo VI — IA Pattern Engine.
@@ -88,7 +89,6 @@ export default function PatternEngine() {
     resize();
     window.addEventListener("resize", resize);
 
-    let raf = 0;
     let hovered = -1;
 
     const nodePos = (n: Node, i: number, t: number) => {
@@ -292,12 +292,11 @@ export default function PatternEngine() {
         ctx.fillText(n.label.toUpperCase(), x, y + R * 0.62 + 14);
       });
 
-      raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
     };
   }, []);
@@ -308,7 +307,7 @@ export default function PatternEngine() {
 
   return (
     <section ref={ref} className="relative h-[320vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden">
         <div
           className="absolute inset-0"
           onPointerMove={(e) => {

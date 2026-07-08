@@ -29,44 +29,38 @@ export default function Hero() {
         style={{ opacity: fade, y: drift }}
         className="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 text-center"
       >
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.6, delay: 1.2 }}
-          className="mb-6 text-xs uppercase tracking-[0.4em] text-gold/90"
+        {/* CSS-only entrance: the headline is the LCP — it must paint
+            before hydration, not 1.6s after it */}
+        <p
+          className="hero-rise mb-6 text-xs uppercase tracking-[0.4em] text-gold/90"
+          style={{ animationDelay: "0.1s" }}
         >
           Haz visible lo invisible
-        </motion.p>
+        </p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.8, delay: 1.6, ease: [0.22, 1, 0.36, 1] }}
-          className="font-sans text-4xl font-black leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-6xl"
+        <h1
+          className="hero-rise font-sans text-4xl font-black leading-[1.05] tracking-tight text-cream sm:text-5xl lg:text-6xl"
+          style={{ animationDelay: "0.25s" }}
         >
           Perder peso no es{" "}
           <span className="font-serif italic font-medium text-pink text-glow-pink">
             la parte más difícil.
           </span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 2.3, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-7 max-w-xl text-lg leading-relaxed text-cream/70"
+        <p
+          className="hero-rise mt-7 max-w-xl text-lg leading-relaxed text-cream/70"
+          style={{ animationDelay: "0.55s" }}
         >
           La parte más difícil es que no puedes ver los patrones que están
           formando tus resultados.
-        </motion.p>
+        </p>
 
         {/* the invitation: not a button — the journey begins by descending */}
-        <motion.a
+        <a
           href="#senales"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.3, delay: 3.0 }}
-          className="group mt-14 flex flex-col items-center gap-4"
+          className="hero-rise group mt-14 flex flex-col items-center gap-4"
+          style={{ animationDelay: "0.9s" }}
         >
           <span className="text-[11px] uppercase tracking-[0.35em] text-cream/50 transition-colors duration-500 group-hover:text-cream/80">
             Desliza para comenzar el viaje
@@ -79,7 +73,7 @@ export default function Hero() {
               className="absolute inset-x-0 h-8 bg-gradient-to-b from-transparent via-gold/80 to-transparent"
             />
           </span>
-        </motion.a>
+        </a>
       </motion.div>
     </section>
   );

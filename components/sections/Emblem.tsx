@@ -59,7 +59,7 @@ export default function Emblem() {
 
   return (
     <section id="emblema" ref={ref} className="relative h-[380vh]">
-      <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
+      <div className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden">
         {/* the chapter opens */}
         <motion.div
           style={{ opacity: introOpacity }}
@@ -95,6 +95,10 @@ export default function Emblem() {
               src={`/emblems/${sign}/f${String(frame).padStart(2, "0")}.png`}
               alt={`Emblema de ${def.label}`}
               className="h-full w-full object-contain"
+              loading="lazy"
+              decoding="async"
+              width={480}
+              height={480}
               draggable={false}
             />
           </motion.div>

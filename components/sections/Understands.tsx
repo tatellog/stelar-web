@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { softDot, sparkle, colorA, ramp, prand } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 
 /**
  * Capítulo VI — Todo lo que Stelar puede entender de ti.
@@ -136,7 +137,6 @@ export default function Understands() {
     window.addEventListener("pointermove", onPointer, { passive: true });
     canvas.addEventListener("click", onClick);
 
-    let raf = 0;
     const draw = (now: number) => {
       ctx.clearRect(0, 0, W, H);
       const p = progress.current;
@@ -274,12 +274,11 @@ export default function Understands() {
       }
 
       ctx.restore();
-      raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointer);
       canvas.removeEventListener("click", onClick);
@@ -294,7 +293,7 @@ export default function Understands() {
 
   return (
     <section ref={ref} className="relative h-[420vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 h-full w-full [touch-action:pan-y] [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_88%,transparent_100%)]"

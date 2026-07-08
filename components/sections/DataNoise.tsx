@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useSign } from "../SignContext";
 import { figureArt } from "@/lib/zodiac/helpers";
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
+import { runWhenVisible } from "@/lib/visibleLoop";
 
 /**
  * Capítulo IX — el momento donde aparece la evidencia. The climax.
@@ -189,7 +190,6 @@ export default function DataNoise() {
 
     const bell = (v: number) => Math.exp(-v * v * 4);
 
-    let raf = 0;
     const draw = (now: number) => {
       const t = now / 1000;
       const p = progress.current;
@@ -451,14 +451,13 @@ export default function DataNoise() {
       }
 
       canvas.style.cursor = p > 0.7 ? "pointer" : "default";
-      raf = requestAnimationFrame(draw);
     };
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
 
     canvas.addEventListener("pointermove", onPointer);
     canvas.addEventListener("click", onClick);
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", resize);
       canvas.removeEventListener("pointermove", onPointer);
       canvas.removeEventListener("click", onClick);
@@ -473,7 +472,7 @@ export default function DataNoise() {
 
   return (
     <section ref={ref} className="relative h-[520vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden">
         <canvas
           ref={canvasRef}
           className="absolute inset-0 h-full w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]"

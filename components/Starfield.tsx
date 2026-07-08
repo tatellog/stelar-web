@@ -1,5 +1,6 @@
 "use client";
 
+import { runWhenVisible } from "@/lib/visibleLoop";
 import { useEffect, useRef } from "react";
 
 type Star = {
@@ -35,7 +36,6 @@ export default function Starfield({ density = 0.00014 }: { density?: number }) {
     if (!ctx) return;
 
     let stars: Star[] = [];
-    let raf = 0;
     let running = true;
     let W = 0;
     let H = 0;
@@ -123,18 +123,17 @@ export default function Starfield({ density = 0.00014 }: { density?: number }) {
         ctx.fillStyle = `rgba(${HUES[s.hue]}, ${s.baseAlpha * twinkle})`;
         ctx.fill();
       }
-      raf = requestAnimationFrame(draw);
     };
 
     seed();
-    raf = requestAnimationFrame(draw);
+    const stopLoop = runWhenVisible(canvas, draw);
     window.addEventListener("resize", seed);
     window.addEventListener("pointermove", onPointer, { passive: true });
     window.addEventListener("pointerleave", onLeave);
 
     return () => {
       running = false;
-      cancelAnimationFrame(raf);
+      stopLoop();
       window.removeEventListener("resize", seed);
       window.removeEventListener("pointermove", onPointer);
       window.removeEventListener("pointerleave", onLeave);

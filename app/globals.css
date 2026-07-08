@@ -118,10 +118,32 @@ body {
   transform-origin: center;
 }
 
+/* hero entrance in pure CSS: the LCP paints with the first frame,
+   before any JavaScript hydrates */
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-float-slow,
   .animate-orbit,
   .animate-orbit-reverse {
     animation: none;
+  }
+
+  .hero-rise {
+    animation-duration: 0.01s;
+    animation-delay: 0s !important;
   }
 }
