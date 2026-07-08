@@ -3,8 +3,6 @@
 import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
-import { useSign } from "../SignContext";
-import { figureArt } from "@/lib/zodiac/helpers";
 
 /**
  * Capítulo VII — Todo termina en un mismo universo.
@@ -14,9 +12,9 @@ import { figureArt } from "@/lib/zodiac/helpers";
  * The hole itself is a vortex: a dense field of tiny stars whose light
  * stretches into concentric trails spiraling around the void. Each
  * astro falls with its own physics, breaks into brand-colored
- * particles and is absorbed. Then silence — and rivers of gold settle
- * into the visitor's real constellation. apps dispersas → datos
- * absorbidos → energía transformada → constelación revelada.
+ * particles and is absorbed. Then silence — and the hole gives back
+ * slow rivers of gold. apps dispersas → datos absorbidos →
+ * energía transformada.
  */
 
 type Source = {
@@ -60,7 +58,6 @@ export default function Ecosystem() {
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const progress = useRef(0);
-  const { sign } = useSign();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -108,7 +105,6 @@ export default function Ecosystem() {
     const prevFall = new Map<string, number>();
     const pulses: { t0: number }[] = [];
     let hovered = -1;
-    let starHover = -1;
 
     const onPointer = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
@@ -164,8 +160,7 @@ export default function Ecosystem() {
       const grav1 = ramp(p, 0.16, 0.3); // the force being born
       const hole = ramp(p, 0.3, 0.42); // the hole materializes
       const silence = ramp(p, 0.78, 0.84);
-      const emission = ramp(p, 0.83, 0.93); // rivers of gold
-      const constel = ramp(p, 0.875, 0.965);
+      const emission = ramp(p, 0.83, 0.95); // rivers of gold
 
       const bhR = R * (0.024 * grav1 + 0.078 * hole);
       const diskAlpha = hole * (1 - silence * 0.55) * (1 - emission * 0.45);
@@ -369,100 +364,20 @@ export default function Ecosystem() {
       });
 
       /* ── the transformation: rivers of gold ───────────────────── */
-      const fig = figureArt(sign, R * 0.54);
-      const figCx = cx;
-      const figCy = cy;
-      const stars = fig.pts.map((pt) => ({ x: figCx + pt.x, y: figCy + pt.y, mag: pt.mag }));
-
       if (emission > 0) {
         for (let i = 0; i < N_GOLD; i++) {
           const u = prand(i * 3.3);
           const streamId = i % 4;
           const w = Math.max(0, Math.min(1, emission * 1.45 - u * 0.45));
           if (w <= 0) continue;
-          // a curved river out of the hole
+          // a curved river out of the hole, drifting into the dark
           const baseAng = (streamId / 4) * Math.PI * 2 + 0.8;
           const ang = baseAng + w * 2.3 + Math.sin(t * 0.2 + i) * 0.04;
-          const rad = w * R * 0.4 + bhR * 0.4;
-          const rx = cx + Math.cos(ang) * rad;
-          const ry = cy + Math.sin(ang) * rad * 0.82;
-          // …that settles into the constellation
-          const st = stars[i % stars.length];
-          const grab = ramp(p, 0.88, 0.94);
-          const jx = (prand(i * 7.9) - 0.5) * 26 * (1 - grab);
-          const jy = (prand(i * 9.7) - 0.5) * 26 * (1 - grab);
-          const x = rx + (st.x + jx - rx) * grab;
-          const y = ry + (st.y + jy - ry) * grab;
-          const settle = ramp(constel, 0.5, 1);
-          const a = Math.sin(Math.min(1, w) * Math.PI) * 0.55 * emission * (1 - settle * 0.85);
+          const rad = w * R * 0.44 + bhR * 0.4;
+          const x = cx + Math.cos(ang) * rad;
+          const y = cy + Math.sin(ang) * rad * 0.82;
+          const a = Math.sin(Math.min(1, w) * Math.PI) * 0.5 * emission;
           softDot(ctx, x, y, 1.6 + prand(i * 5.1) * 2.2, i % 5 === 0 ? "#FFF6E5" : "#E8B872", a, 0.42);
-        }
-      }
-
-      /* ── the constellation, born from the energy ──────────────── */
-      starHover = -1;
-      if (constel > 0) {
-        // star hover?
-        if (pointer.sx >= 0) {
-          let bd = 34;
-          stars.forEach((st, k) => {
-            const d = Math.hypot(pointer.sx - st.x, pointer.sy - st.y);
-            if (d < bd) {
-              bd = d;
-              starHover = k;
-            }
-          });
-        }
-
-        // lines: stroke animation + sparks riding them
-        fig.lines.forEach(([a, b], li) => {
-          const lt = ramp(p, 0.905 + li * 0.006, 0.925 + li * 0.006);
-          if (lt <= 0) return;
-          const A = stars[a];
-          const B = stars[b];
-          const ex = A.x + (B.x - A.x) * lt;
-          const ey = A.y + (B.y - A.y) * lt;
-          const isHot = starHover === a || starHover === b;
-          ctx.strokeStyle = colorA("#D9AE6F", (0.34 + (isHot ? 0.3 : 0)) * lt);
-          ctx.lineWidth = isHot ? 1.2 : 0.8;
-          ctx.lineCap = "round";
-          ctx.beginPath();
-          ctx.moveTo(A.x, A.y);
-          ctx.lineTo(ex, ey);
-          ctx.stroke();
-          if (lt >= 1) {
-            const k = (t * 0.16 + li * 0.37) % 1;
-            softDot(ctx, A.x + (B.x - A.x) * k, A.y + (B.y - A.y) * k, 3.4, "#FFE9C2", 0.5, 0.45);
-          }
-        });
-
-        // stars: ignite one by one, breathe, small flare
-        stars.forEach((st, k) => {
-          const born = ramp(p, 0.885 + k * 0.007, 0.9 + k * 0.007);
-          if (born <= 0) return;
-          const hero = st.mag <= 2.3;
-          const isHot = starHover === k;
-          const breath = 1 + (isHot ? 0.16 : 0.07) * Math.sin(t * 1.6 + k * 2.4);
-          const r = (hero ? 3.4 : 2.2) * breath * (isHot ? 1.2 : 1);
-          softDot(ctx, st.x, st.y, r * 5.2, hero ? "#FBD7E3" : "#E8B872", born * (hero ? 0.5 : 0.38), 0.3);
-          // a small flare — short cross rays, never huge
-          ctx.strokeStyle = colorA("#FFF6E5", 0.5 * born);
-          ctx.lineWidth = 0.8;
-          ctx.beginPath();
-          ctx.moveTo(st.x - r * 2.1, st.y);
-          ctx.lineTo(st.x + r * 2.1, st.y);
-          ctx.moveTo(st.x, st.y - r * 2.1);
-          ctx.lineTo(st.x, st.y + r * 2.1);
-          ctx.stroke();
-          softDot(ctx, st.x, st.y, r, "#FFF6E5", born * 0.95, 0.5);
-        });
-
-        // hover tooltip — no box, just words
-        if (starHover >= 0 && pointer.sx >= 0) {
-          ctx.fillStyle = colorA("#E8B872", 0.9);
-          ctx.font = "italic 500 15px 'Cormorant Garamond', serif";
-          ctx.textAlign = "center";
-          ctx.fillText("Tus datos ya no viven separados.", pointer.sx, pointer.sy - 22);
         }
       }
 
@@ -485,7 +400,7 @@ export default function Ecosystem() {
       canvas.removeEventListener("pointermove", onPointer);
       canvas.removeEventListener("click", onClick);
     };
-  }, [sign]);
+  }, []);
 
   const p = scrollYProgress;
   const introOpacity = useTransform(p, [0.02, 0.07, 0.16, 0.23], [0, 1, 1, 0]);
