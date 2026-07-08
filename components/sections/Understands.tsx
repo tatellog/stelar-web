@@ -84,10 +84,14 @@ export default function Understands() {
     let focus = -1;
     let zoom = 0; // eased 0..1
 
-    /* position of a category on its tilted elliptical orbit —
-       portrait screens open the ellipse vertically so labels breathe */
+    /* the ellipse opens continuously with the viewport's aspect ratio —
+       a binary portrait check made near-square viewports (tablets) jump */
+    const sqOf = () =>
+      Math.min(0.8, Math.max(SQUASH, SQUASH + (H / W - 0.85) * 0.75));
+
+    /* position of a category on its tilted elliptical orbit */
     const catPos = (c: Cat, t: number, R: number, cx: number, cy: number, slow: number) => {
-      const sq = H > W ? 0.74 : SQUASH;
+      const sq = sqOf();
       const a = c.phase + t * c.speed * slow;
       const ex = Math.cos(a) * c.r * R;
       const ey = Math.sin(a) * c.r * R * sq;
@@ -176,7 +180,7 @@ export default function Understands() {
         ctx.lineWidth = 0.5;
         if (i % 3 === 1) ctx.setLineDash([2, 7]);
         ctx.beginPath();
-        ctx.ellipse(0, 0, c.r * R, c.r * R * (H > W ? 0.74 : SQUASH), 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, c.r * R, c.r * R * sqOf(), 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.restore();
@@ -254,8 +258,10 @@ export default function Understands() {
         softDot(ctx, pos.x + Math.cos(ma) * s * 2.4, pos.y + Math.sin(ma) * s * 1.5, 1.1, c.color, 0.5 * al, 0.45);
 
         /* the name is always visible once born — this chapter exists to
-           make the breadth of the product legible */
-        const la = born * (0.55 + (isHot ? 0.4 : 0)) * (0.6 + 0.4 * pos.depth);
+           make the breadth of the product legible. On very tight systems
+           (landscape phones) only the hovered/focused astro is named. */
+        const tight = R < 175;
+        const la = (tight && !isHot ? 0 : born) * (0.55 + (isHot ? 0.4 : 0)) * (0.6 + 0.4 * pos.depth);
         ctx.fillStyle = colorA("#F4ECDE", Math.min(0.95, la));
         ctx.font = "600 10px 'Hanken Grotesk', sans-serif";
         ctx.textAlign = "center";

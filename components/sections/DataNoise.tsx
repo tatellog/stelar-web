@@ -4,6 +4,14 @@ import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useSign } from "../SignContext";
 import { figureArt } from "@/lib/zodiac/helpers";
+
+/* the projected figure is stable per (sign, scale) — never per frame */
+const figArtCache = new Map<string, ReturnType<typeof figureArt>>();
+function getFigArt(sign: Parameters<typeof figureArt>[0], S: number) {
+  const key = `${sign}|${S.toFixed(1)}`;
+  if (!figArtCache.has(key)) figArtCache.set(key, figureArt(sign, S));
+  return figArtCache.get(key)!;
+}
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
 import { runWhenVisible } from "@/lib/visibleLoop";
 
@@ -338,7 +346,7 @@ export default function DataNoise() {
 
       /* ── the constellation ──────────────────────────────────────── */
       const S = R * 0.6;
-      const fig = figureArt(sign, S);
+      const fig = getFigArt(sign, S);
       lineList = fig.lines;
       const stars = fig.pts.map((pt) => {
         const pos = proj(cx + pt.x - emblemOff.x * S, cy + pt.y - emblemOff.y * S, 0.3);

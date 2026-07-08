@@ -172,7 +172,7 @@ export default function OrbitaAction() {
                 <button
                   key={l.id}
                   onClick={() => jumpTo(i)}
-                  className={`rounded-full border px-4 py-1.5 text-xs tracking-[0.2em] transition-all duration-500 ${
+                  className={`rounded-full border px-4 py-2.5 text-xs tracking-[0.2em] transition-all duration-500 ${
                     i === idx
                       ? "border-pink-soft/60 text-cream shadow-[0_0_18px_rgba(233,30,99,0.2)]"
                       : "hairline border text-cream/40 hover:text-cream/70"

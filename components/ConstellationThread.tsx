@@ -57,6 +57,10 @@ export default function ConstellationThread() {
     resize();
     window.addEventListener("resize", resize);
 
+    // the fitted figure is recomputed only when sign or viewport change
+    let figCache: ReturnType<typeof figureFit> | null = null;
+    let figCacheKey = "";
+
     const draw = (now: number) => {
       ctx.clearRect(0, 0, W, H);
       const p = progress.current;
@@ -76,7 +80,12 @@ export default function ConstellationThread() {
         w: S,
         h: S,
       };
-      const fig = figureFit(signRef.current, rect, 0.1);
+      const figKey = `${signRef.current}|${W}x${H}`;
+      if (figCacheKey !== figKey) {
+        figCache = figureFit(signRef.current, rect, 0.1);
+        figCacheKey = figKey;
+      }
+      const fig = figCache!;
       const n = fig.pts.length;
 
       /* lines shimmer once both ends are lit */

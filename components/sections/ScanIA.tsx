@@ -7,6 +7,7 @@ import {
   useTransform,
   useMotionValueEvent,
   useInView,
+  type MotionValue,
 } from "framer-motion";
 import PhoneMockup from "../PhoneMockup";
 import PhoneEmerge from "../PhoneEmerge";
@@ -197,6 +198,7 @@ export default function ScanIA() {
 
   // detected ingredients
   const chipsOpacity = useTransform(p, [0.3, 0.36, 0.5, 0.56], [0, 1, 1, 0]);
+  const tagGlow = useTransform(p, [0.31, 0.36, 0.43, 0.48], [0, 1, 1, 0]);
   const editHint = useTransform(p, [0.43, 0.46, 0.52, 0.55], [0, 1, 1, 0]);
 
   // the user adjusts before saving — the IA never has the last word
@@ -204,21 +206,15 @@ export default function ScanIA() {
   // phone (save beat), typed line, and orbit finale — all state-driven:
   // scroll MotionValues freeze inside phone mockups
   const [showPhone, setShowPhone] = useState(false);
-  const [chars, setChars] = useState(0);
-  const [textDone, setTextDone] = useState(false);
   const [showOrbit, setShowOrbit] = useState(false);
   useMotionValueEvent(p, "change", (v) => {
     setCremaG(v >= 0.465 ? 20 : 30);
     setShowPhone(v >= 0.56 && v < 0.73);
-    setChars(Math.round(Math.max(0, Math.min(1, (v - 0.75) / 0.05)) * TYPED.length));
-    setTextDone(v >= 0.81 && v < 0.9);
     setShowOrbit(v >= 0.9);
   });
 
   // edit → everything recalculates instantly, orbit included
   const totalKcal = cremaG === 20 ? "503 kcal" : "548 kcal";
-
-  const textBeat = useTransform(p, [0.73, 0.77, 0.86, 0.9], [0, 1, 1, 0]);
   const saveCaption = useTransform(p, [0.58, 0.62, 0.68, 0.72], [0, 1, 1, 0]);
   const orbitOpacity = useTransform(p, [0.895, 0.94], [0, 1]);
 
@@ -307,15 +303,16 @@ export default function ScanIA() {
             className="absolute inset-0 rounded-full border-2 border-gold-soft/90 shadow-[0_0_32px_rgba(232,184,114,0.4),inset_0_0_20px_rgba(232,184,114,0.15)]"
           />
 
-          {/* hover: the IA already sees the plate */}
+          {/* the IA names what it sees — revealed by the scan itself
+              (hover never fires on touch) */}
           {TAGS.map((tag) => (
-            <span
+            <motion.span
               key={tag.text}
-              style={{ left: tag.x, top: tag.y }}
-              className="absolute whitespace-nowrap rounded-full border border-gold/40 bg-deep/80 px-3 py-1 font-serif text-xs italic text-gold opacity-0 backdrop-blur-sm transition-all duration-700 group-hover:opacity-100"
+              style={{ left: tag.x, top: tag.y, opacity: tagGlow }}
+              className="absolute hidden whitespace-nowrap rounded-full border border-gold/40 bg-deep/80 px-3 py-1 font-serif text-xs italic text-gold backdrop-blur-sm sm:block"
             >
               {tag.text}
-            </span>
+            </motion.span>
           ))}
           <span className="absolute bottom-[4%] right-[4%] flex items-center gap-1.5 rounded-full bg-deep/70 px-3 py-1.5 text-[11px] tracking-wide text-cream/85 opacity-0 backdrop-blur-md transition-all duration-700 group-hover:opacity-100">
             ⟲ Reescanear
@@ -437,46 +434,7 @@ export default function ScanIA() {
         </div>
 
         {/* the second path: no photo — just write it */}
-        <motion.div
-          style={{ opacity: textBeat }}
-          className="pointer-events-none absolute inset-x-0 top-[30%] z-10 mx-auto max-w-md px-6 text-center"
-        >
-          <p className="text-xs uppercase tracking-[0.3em] text-cream/45">
-            ¿Sin foto?{" "}
-            <span className="normal-case tracking-normal font-serif italic text-gold">Escríbelo.</span>
-          </p>
-          <div className="mt-6 rounded-full border border-cream/15 bg-deep/60 px-6 py-3.5 backdrop-blur-sm">
-            <p className="font-serif text-lg italic text-cream/85">
-              {TYPED.slice(0, chars)}
-              {inView && (
-                <motion.span
-                  animate={{ opacity: [1, 0, 1] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="text-gold"
-                >
-                  |
-                </motion.span>
-              )}
-            </p>
-          </div>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-            {TEXT_RESULT.map((r, i) => (
-              <motion.span
-                key={r.label}
-                initial={false}
-                animate={{ opacity: textDone ? 1 : 0, y: textDone ? 0 : 10 }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
-                className="rounded-2xl border border-cream/12 bg-deep/60 px-4 py-2 text-sm text-cream/85 backdrop-blur-sm"
-                style={{ boxShadow: `0 0 22px ${r.color}22` }}
-              >
-                {r.label}{" "}
-                <span className="text-xs" style={{ color: r.color }}>
-                  {r.value}
-                </span>
-              </motion.span>
-            ))}
-          </div>
-        </motion.div>
+        <TextLog p={p} inView={inView} />
 
         {/* the finale: saving feeds the orbit, instantly */}
         <motion.div
@@ -512,5 +470,61 @@ export default function ScanIA() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+/** The text-log beat lives in its own component: the typewriter drives
+ *  ~26 state updates across its scroll band, and only THIS subtree
+ *  should re-render for them — never the whole chapter. */
+function TextLog({ p, inView }: { p: MotionValue<number>; inView: boolean }) {
+  const [chars, setChars] = useState(0);
+  const [textDone, setTextDone] = useState(false);
+  useMotionValueEvent(p, "change", (v) => {
+    setChars(Math.round(Math.max(0, Math.min(1, (v - 0.75) / 0.05)) * TYPED.length));
+    setTextDone(v >= 0.81 && v < 0.9);
+  });
+  const textBeat = useTransform(p, [0.73, 0.77, 0.86, 0.9], [0, 1, 1, 0]);
+
+  return (
+    <motion.div
+      style={{ opacity: textBeat }}
+      className="pointer-events-none absolute inset-x-0 top-[30%] z-10 mx-auto max-w-md px-6 text-center"
+    >
+      <p className="text-xs uppercase tracking-[0.3em] text-cream/45">
+        ¿Sin foto?{" "}
+        <span className="normal-case tracking-normal font-serif italic text-gold">Escríbelo.</span>
+      </p>
+      <div className="mt-6 rounded-full border border-cream/15 bg-deep/60 px-6 py-3.5 backdrop-blur-sm">
+        <p className="font-serif text-lg italic text-cream/85">
+          {TYPED.slice(0, chars)}
+          {inView && (
+            <motion.span
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+              className="text-gold"
+            >
+              |
+            </motion.span>
+          )}
+        </p>
+      </div>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        {TEXT_RESULT.map((r, i) => (
+          <motion.span
+            key={r.label}
+            initial={false}
+            animate={{ opacity: textDone ? 1 : 0, y: textDone ? 0 : 10 }}
+            transition={{ duration: 0.5, delay: i * 0.15 }}
+            className="rounded-2xl border border-cream/12 bg-deep/60 px-4 py-2 text-sm text-cream/85 backdrop-blur-sm"
+            style={{ boxShadow: `0 0 22px ${r.color}22` }}
+          >
+            {r.label}{" "}
+            <span className="text-xs" style={{ color: r.color }}>
+              {r.value}
+            </span>
+          </motion.span>
+        ))}
+      </div>
+    </motion.div>
   );
 }
