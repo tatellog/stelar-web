@@ -260,14 +260,20 @@ export default function DataNoise() {
             const rr = r0 * Math.pow(1 - pull, 1.4);
             const th = th0 + tk.swirlDir * pull * (1.7 + prand(seed * 5.3) * 1.5);
 
-            // the cloud: swirling, crossing, brighter and brighter
-            const cloudR = R * (0.035 + prand(seed * 6.1) * 0.12) * (1 - gather * 0.25);
-            const thc = th0 + t * (0.4 + prand(seed * 7.7) * 0.7) * tk.swirlDir;
+            // the accumulation: a tilted river of golden glitter that
+            // keeps flowing — dense at its core, loose at the edges
+            const dirA = -0.52;
+            let sPos = (prand(seed * 6.1) * 2 - 1) + t * 0.045 * tk.swirlDir;
+            sPos = ((sPos % 2) + 2) % 2 - 1;
+            const nRaw = prand(seed * 7.7) * 2 - 1;
+            const nOff = Math.pow(Math.abs(nRaw), 1.7) * Math.sign(nRaw);
+            const bandLen = R * 0.27;
+            const bandW = R * 0.052 * (1 + Math.abs(sPos) * 0.8);
             let x = cx + Math.cos(th) * rr;
             let y = cy + Math.sin(th) * rr * 0.94;
             if (gather > 0) {
-              const gx2 = cx + Math.cos(thc) * cloudR;
-              const gy2 = cy + Math.sin(thc) * cloudR * 0.82;
+              const gx2 = cx + Math.cos(dirA) * sPos * bandLen - Math.sin(dirA) * nOff * bandW;
+              const gy2 = cy + Math.sin(dirA) * sPos * bandLen + Math.cos(dirA) * nOff * bandW;
               x += (gx2 - x) * gather;
               y += (gy2 - y) * gather;
             }
@@ -284,31 +290,44 @@ export default function DataNoise() {
               y += Math.cos(t * 0.24 + seed * 1.3) * 24 * cloudFade;
               a *= 0.5;
             }
+            if (gather > 0) a *= 1 - Math.abs(sPos) * 0.45; // the river fades at its ends
             if (a <= 0.01) continue;
-            const sz = 0.7 + prand(seed * 9.7) * 1.5 + gather * 0.4;
-            ctx.fillStyle = colorA(prand(seed * 10.1) > 0.85 ? "#FFF6E5" : "#E8B872", Math.min(0.85, a));
-            ctx.beginPath();
-            ctx.arc(x, y, sz, 0, Math.PI * 2);
-            ctx.fill();
+            const roll = prand(seed * 10.1);
+            const color =
+              roll > 0.93 ? "#FFF6E5" : roll > 0.74 ? "#FF9E57" : roll > 0.48 ? "#FFC56B" : "#E8B872";
+            if (roll < 0.09 && gather > 0.25) {
+              // out-of-focus grains — bokeh, like the reference
+              softDot(ctx, x, y, 3.6 + prand(seed * 11.9) * 2.6, color, Math.min(0.5, a * 0.6), 0.3);
+            } else {
+              const sz = 0.6 + prand(seed * 9.7) * (roll > 0.8 ? 2 : 1.2) + gather * 0.3;
+              ctx.fillStyle = colorA(color, Math.min(0.9, a));
+              ctx.beginPath();
+              ctx.arc(x, y, sz, 0, Math.PI * 2);
+              ctx.fill();
+            }
           }
         }
       });
 
-      /* ── the luminous heart of the cloud ────────────────────────── */
+      /* ── the heart: an elegant star with an anamorphic flare ────── */
       if (gather > 0) {
-        const bloom = gather * (1 - cloudFade) * (0.35 + 0.08 * Math.sin(t * 1.1)) + flare1 * 0.4;
-        softDot(ctx, cx, cy, R * (0.1 + gather * 0.1), "#FFE9C2", Math.min(0.75, bloom), 0.25);
-        softDot(ctx, cx, cy, R * 0.045, "#FFF6E5", Math.min(0.9, bloom * 1.3), 0.4);
-      }
-
-      /* ── the cinematic flare that reveals the first star ────────── */
-      if (flare1 > 0.02) {
+        const int2 = gather * (1 - cloudFade) * (0.75 + 0.1 * Math.sin(t * 1.2)) + flare1;
+        const breathe2 = 1 + 0.05 * Math.sin(t * 1.4);
+        // the long horizontal flare, thin and cinematic
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.scale(7, 0.55); // anamorphic
-        softDot(ctx, 0, 0, R * 0.09, "#FFE9C2", 0.55 * flare1, 0.3);
+        ctx.scale(17 + flare1 * 9, 0.36);
+        softDot(ctx, 0, 0, R * 0.045 * breathe2, "#FFE9C2", 0.42 * int2, 0.22);
         ctx.restore();
-        softDot(ctx, cx, cy, R * 0.05, "#FFF6E5", 0.8 * flare1, 0.45);
+        // a subtler vertical ray
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(0.42, 4.6);
+        softDot(ctx, 0, 0, R * 0.038, "#FFE9C2", 0.2 * int2, 0.28);
+        ctx.restore();
+        // tight warm halo + white-hot core — never a fuzzy ball
+        softDot(ctx, cx, cy, R * 0.05 * breathe2, "#FFC56B", 0.42 * int2, 0.3);
+        softDot(ctx, cx, cy, R * 0.013, "#FFF6E5", Math.min(1, int2), 0.55);
       }
 
       /* ── the constellation ──────────────────────────────────────── */
