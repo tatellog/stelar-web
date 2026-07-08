@@ -91,17 +91,17 @@ export default function FinalCTA() {
       <div className="relative z-10 mx-auto max-w-3xl px-6 pt-24 text-center">
         <Reveal>
           <h2 className="font-sans text-4xl font-black leading-[1.08] tracking-tight text-cream sm:text-6xl">
-            No puedes cambiar lo que{" "}
+            No necesitas más datos.{" "}
             <span className="font-serif italic font-medium text-pink text-glow-pink">
-              no puedes ver.
+              Necesitas entender lo que te están diciendo.
             </span>
           </h2>
         </Reveal>
 
         <Reveal delay={0.3}>
           <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-cream/60">
-            Stelar convierte tus registros en evidencia visual para mostrarte
-            los patrones que están construyendo tus resultados.
+            Stelar transforma tus registros diarios en evidencia visual para
+            que por fin entiendas los hábitos que construyen tus resultados.
           </p>
         </Reveal>
 

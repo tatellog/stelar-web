@@ -12,11 +12,11 @@ import ScanResultScreen from "../screens/ScanResultScreen";
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
 
 /**
- * Capítulo VII — Scan IA. The real flow of the app, told as a scene:
- * the photograph floats in inside its circular frame, the magenta ring
- * scans it ("Escaneando tu plato…"), the ring turns gold when the plate
- * is understood, the detected ingredients emerge as light — and the
- * evidence enters the phone, ready to CONFIRMAR.
+ * Capítulo VII — Scan IA. The COMPLETE flow, told as one continuous
+ * animation: photo → the IA estimates ingredients and portions → the
+ * user adjusts → save → the orbit updates instantly. Then the second
+ * path: no photo? just write it. Always the same message underneath:
+ * the IA helps, the user has the last word.
  */
 
 const PHOTO = { x: 0.5, y: 0.42 }; // viewport fractions
@@ -31,7 +31,7 @@ const INGREDIENTS = [
     y: 0.32,
   },
   { label: "Tomates cherry", value: "50 g", color: "#FF4886", x: 0.81, y: 0.3 },
-  { label: "Crema", value: "30 g", color: "#F4ECDE", x: 0.2, y: 0.6 },
+  { label: "Crema", value: "", color: "#F4ECDE", x: 0.2, y: 0.6, editable: true },
   {
     label: "En total",
     value: "548 kcal",
@@ -47,7 +47,15 @@ const TAGS = [
   { text: "salmón", x: "-14%", y: "22%" },
   { text: "tomates cherry", x: "72%", y: "10%" },
   { text: "crema", x: "80%", y: "70%" },
-  { text: "proteína estimada", x: "-20%", y: "76%" },
+  { text: "porciones estimadas", x: "-20%", y: "76%" },
+];
+
+const TYPED = "Pechuga de pollo con arroz";
+
+const TEXT_RESULT = [
+  { label: "Pechuga de pollo", value: "160 g", color: "#E0AEA0" },
+  { label: "Arroz", value: "120 g", color: "#E8B872" },
+  { label: "En total", value: "471 kcal", color: "#D9AE6F" },
 ];
 
 const N = 210;
@@ -100,9 +108,9 @@ export default function ScanIA() {
       const kx = W < 640 ? 0.62 : 1;
 
       // the understanding, leaving the plate as light
-      const burst = ramp(p, 0.46, 0.58);
-      const gather = ramp(p, 0.5, 0.66);
-      const fadeAll = ramp(p, 0.7, 0.78);
+      const burst = ramp(p, 0.28, 0.38);
+      const gather = ramp(p, 0.31, 0.44);
+      const fadeAll = ramp(p, 0.5, 0.57);
 
       if (burst > 0 && fadeAll < 1) {
         for (let i = 0; i < N; i++) {
@@ -131,13 +139,31 @@ export default function ScanIA() {
         }
 
         // the flash of understanding — the ring closes in gold
-        const flash = ramp(p, 0.46, 0.5) * (1 - ramp(p, 0.52, 0.6));
+        const flash = ramp(p, 0.28, 0.32) * (1 - ramp(p, 0.34, 0.42));
         if (flash > 0) {
           ctx.strokeStyle = colorA("#FFE9C2", flash * 0.85);
           ctx.lineWidth = 1.6;
           ctx.beginPath();
-          ctx.arc(cx, cy, photoR * (1.06 + ramp(p, 0.46, 0.6) * 0.4), 0, Math.PI * 2);
+          ctx.arc(cx, cy, photoR * (1.06 + ramp(p, 0.28, 0.42) * 0.4), 0, Math.PI * 2);
           ctx.stroke();
+        }
+      }
+
+      /* the words dissolving into light during the text-log beat */
+      const textGlow = ramp(p, 0.79, 0.83) * (1 - ramp(p, 0.86, 0.9));
+      if (textGlow > 0) {
+        for (let i = 0; i < 40; i++) {
+          const a = prand(i * 5.3) * Math.PI * 2;
+          const rr = (20 + prand(i * 9.1) * 90) * (0.4 + textGlow);
+          softDot(
+            ctx,
+            W / 2 + Math.cos(a) * rr * 1.6,
+            H * 0.4 + Math.sin(a) * rr * 0.6,
+            1.4 + prand(i * 13.7) * 2,
+            "#E8B872",
+            textGlow * 0.6 * (0.4 + 0.6 * Math.sin(t * 0.003 + i)),
+            0.35,
+          );
         }
       }
       raf = requestAnimationFrame(draw);
@@ -151,49 +177,78 @@ export default function ScanIA() {
   }, []);
 
   const p = scrollYProgress;
-  const introOpacity = useTransform(p, [0.02, 0.08, 0.16, 0.23], [0, 1, 1, 0]);
+  const introOpacity = useTransform(p, [0.02, 0.07, 0.14, 0.2], [0, 1, 1, 0]);
 
   // the photograph in its circular frame
-  const photoOpacity = useTransform(p, [0.1, 0.2, 0.7, 0.77], [0, 1, 1, 0]);
-  const photoScale = useTransform(p, [0.1, 0.24, 0.5, 0.66], [0.62, 1, 1, 0.9]);
-  const photoYv = useTransform(p, [0.1, 0.24], [70, 0]);
+  const photoOpacity = useTransform(p, [0.08, 0.16, 0.5, 0.57], [0, 1, 1, 0]);
+  const photoScale = useTransform(p, [0.08, 0.2, 0.44, 0.54], [0.62, 1, 1, 0.9]);
+  const photoYv = useTransform(p, [0.08, 0.2], [70, 0]);
 
   // magenta scanning ring → gold completed ring
-  const scanRing = useTransform(p, [0.22, 0.28, 0.44, 0.49], [0, 1, 1, 0]);
-  const goldRing = useTransform(p, [0.46, 0.52, 0.68, 0.75], [0, 1, 1, 0]);
-  const scanCaption = useTransform(p, [0.24, 0.3, 0.42, 0.47], [0, 1, 1, 0]);
-  const doneCaption = useTransform(p, [0.5, 0.56, 0.64, 0.7], [0, 1, 1, 0]);
-  const poweredBy = useTransform(p, [0.22, 0.3, 0.62, 0.7], [0, 1, 1, 0]);
+  const scanRing = useTransform(p, [0.15, 0.19, 0.26, 0.3], [0, 1, 1, 0]);
+  const goldRing = useTransform(p, [0.28, 0.33, 0.46, 0.53], [0, 1, 1, 0]);
+  const scanCaption = useTransform(p, [0.16, 0.2, 0.25, 0.29], [0, 1, 1, 0]);
+  const doneCaption = useTransform(p, [0.31, 0.35, 0.39, 0.43], [0, 1, 1, 0]);
+  const editCaption = useTransform(p, [0.43, 0.47, 0.51, 0.55], [0, 1, 1, 0]);
+  const poweredBy = useTransform(p, [0.16, 0.24, 0.86, 0.92], [0, 1, 1, 0]);
 
   // detected ingredients
-  const chipsOpacity = useTransform(p, [0.56, 0.64, 0.7, 0.77], [0, 1, 1, 0]);
+  const chipsOpacity = useTransform(p, [0.3, 0.36, 0.5, 0.56], [0, 1, 1, 0]);
+  const editHint = useTransform(p, [0.43, 0.46, 0.52, 0.55], [0, 1, 1, 0]);
 
-  // the phone receives the evidence
+  // the user adjusts before saving — the IA never has the last word
+  const [cremaG, setCremaG] = useState(30);
+  // phone (save beat), typed line, and orbit finale — all state-driven:
+  // scroll MotionValues freeze inside phone mockups
   const [showPhone, setShowPhone] = useState(false);
-  useMotionValueEvent(p, "change", (v) => setShowPhone(v >= 0.76));
+  const [chars, setChars] = useState(0);
+  const [textDone, setTextDone] = useState(false);
+  const [showOrbit, setShowOrbit] = useState(false);
+  useMotionValueEvent(p, "change", (v) => {
+    setCremaG(v >= 0.465 ? 20 : 30);
+    setShowPhone(v >= 0.56 && v < 0.73);
+    setChars(Math.round(Math.max(0, Math.min(1, (v - 0.75) / 0.05)) * TYPED.length));
+    setTextDone(v >= 0.81 && v < 0.9);
+    setShowOrbit(v >= 0.9);
+  });
+
+  const textBeat = useTransform(p, [0.73, 0.77, 0.86, 0.9], [0, 1, 1, 0]);
+  const saveCaption = useTransform(p, [0.58, 0.62, 0.68, 0.72], [0, 1, 1, 0]);
+  const orbitOpacity = useTransform(p, [0.895, 0.94], [0, 1]);
 
   return (
-    <section ref={ref} className="relative h-[400vh]">
+    <section ref={ref} className="relative h-[520vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
-        {/* chapter opening */}
+        {/* chapter opening — what this is, in one line, plus proof */}
         <motion.div
           style={{ opacity: introOpacity }}
           className="pointer-events-none absolute inset-x-0 top-[10%] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
-            Capítulo VI · Scan IA
+            Capítulo VII · Scan IA
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
-            Registra comida{" "}
+            Registra comidas{" "}
             <span className="font-serif italic font-medium text-pink text-glow-pink">
-              sin romper tu día.
+              en segundos.
             </span>
           </h2>
           <p className="mt-5 text-base leading-relaxed text-cream/60 sm:text-lg">
-            Una foto puede convertirse en nutrición.
+            Toma una foto o descríbela. Stelar estima ingredientes y porciones
+            — y tú ajustas todo antes de guardar.
           </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            {["Escaneo ≈ 5 seg", "Quick log < 10 seg", "Foto o texto"].map((chip) => (
+              <span
+                key={chip}
+                className="rounded-full border border-cream/12 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.2em] text-cream/55"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
         </motion.div>
 
         {/* the photograph, inside its circular frame — like in the app */}
@@ -255,7 +310,7 @@ export default function ScanIA() {
           </span>
         </motion.div>
 
-        {/* captions under the frame */}
+        {/* captions under the frame — the flow, step by step */}
         <motion.p
           style={{ opacity: scanCaption }}
           className="pointer-events-none absolute inset-x-0 top-[68%] z-10 text-center text-base text-cream/75"
@@ -264,7 +319,21 @@ export default function ScanIA() {
         </motion.p>
         <motion.p
           style={{ opacity: doneCaption }}
-          className="pointer-events-none absolute inset-x-0 top-[68%] z-10 text-center font-serif text-lg italic text-gold"
+          className="pointer-events-none absolute inset-x-0 top-[68%] z-10 text-center text-base text-cream/75"
+        >
+          Ingredientes detectados.{" "}
+          <span className="font-serif italic text-gold">Porciones estimadas.</span>
+        </motion.p>
+        <motion.p
+          style={{ opacity: editCaption }}
+          className="pointer-events-none absolute inset-x-0 top-[68%] z-10 text-center text-base text-cream/75"
+        >
+          La IA estima.{" "}
+          <span className="font-serif italic text-gold">Tú tienes la última palabra.</span>
+        </motion.p>
+        <motion.p
+          style={{ opacity: saveCaption }}
+          className="pointer-events-none absolute inset-x-0 top-[80%] z-10 text-center font-serif text-lg italic text-gold"
         >
           Lo dejaste anotado. Eso ya es algo.
         </motion.p>
@@ -274,7 +343,7 @@ export default function ScanIA() {
           style={{ opacity: poweredBy }}
           className="pointer-events-none absolute inset-x-0 bottom-[6%] z-10 text-center text-[11px] uppercase tracking-[0.35em] text-cream/45"
         >
-          <span className="text-pink">✦</span> Powered by IA
+          <span className="text-pink">✦</span> Powered by IA · tú siempre tienes el control
         </motion.p>
 
         {/* the detected ingredients, as the app names them */}
@@ -302,12 +371,32 @@ export default function ScanIA() {
                 >
                   {c.label}
                 </span>
-                <span
-                  className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs text-cream/80"
-                  style={{ color: c.color }}
-                >
-                  {c.value}
-                </span>
+                {c.editable ? (
+                  <span className="flex items-center gap-1.5">
+                    <motion.span style={{ opacity: editHint }} className="text-xs text-cream/45">
+                      −
+                    </motion.span>
+                    <motion.span
+                      key={cremaG}
+                      initial={{ scale: 1.25, color: "#FFE9C2" }}
+                      animate={{ scale: 1, color: "#F4ECDE" }}
+                      transition={{ duration: 0.5 }}
+                      className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs"
+                    >
+                      {cremaG} g
+                    </motion.span>
+                    <motion.span style={{ opacity: editHint }} className="text-xs text-cream/45">
+                      +
+                    </motion.span>
+                  </span>
+                ) : (
+                  <span
+                    className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs"
+                    style={{ color: c.color }}
+                  >
+                    {c.value}
+                  </span>
+                )}
               </div>
               {c.detail && (
                 <p className="mt-1 text-[11px] text-cream/50">{c.detail}</p>
@@ -326,6 +415,77 @@ export default function ScanIA() {
           <PhoneMockup>
             <ScanResultScreen show={showPhone} />
           </PhoneMockup>
+        </motion.div>
+
+        {/* the second path: no photo — just write it */}
+        <motion.div
+          style={{ opacity: textBeat }}
+          className="pointer-events-none absolute inset-x-0 top-[30%] z-10 mx-auto max-w-md px-6 text-center"
+        >
+          <p className="text-xs uppercase tracking-[0.3em] text-cream/45">
+            ¿Sin foto?{" "}
+            <span className="normal-case tracking-normal font-serif italic text-gold">Escríbelo.</span>
+          </p>
+          <div className="mt-6 rounded-full border border-cream/15 bg-deep/60 px-6 py-3.5 backdrop-blur-sm">
+            <p className="font-serif text-lg italic text-cream/85">
+              {TYPED.slice(0, chars)}
+              <motion.span
+                animate={{ opacity: [1, 0, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className="text-gold"
+              >
+                |
+              </motion.span>
+            </p>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            {TEXT_RESULT.map((r, i) => (
+              <motion.span
+                key={r.label}
+                initial={false}
+                animate={{ opacity: textDone ? 1 : 0, y: textDone ? 0 : 10 }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                className="rounded-2xl border border-cream/12 bg-deep/60 px-4 py-2 text-sm text-cream/85 backdrop-blur-sm"
+                style={{ boxShadow: `0 0 22px ${r.color}22` }}
+              >
+                {r.label}{" "}
+                <span className="text-xs" style={{ color: r.color }}>
+                  {r.value}
+                </span>
+              </motion.span>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* the finale: saving feeds the orbit, instantly */}
+        <motion.div
+          style={{ opacity: orbitOpacity }}
+          className="pointer-events-none absolute inset-x-0 top-1/2 z-10 -translate-y-1/2 px-6 text-center"
+        >
+          <div className="relative mx-auto h-28 w-28">
+            <motion.div
+              initial={false}
+              animate={showOrbit ? { scale: [0.85, 1], opacity: [0, 1] } : {}}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="absolute inset-0 rounded-full border border-gold/50 shadow-[0_0_34px_rgba(232,184,114,0.25)]"
+            />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0"
+            >
+              <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-soft shadow-[0_0_10px_#E8B872]" />
+            </motion.div>
+            <span className="absolute inset-0 flex items-center justify-center font-serif text-base italic text-gold">
+              +548 kcal
+            </span>
+          </div>
+          <p className="mt-6 text-base text-cream/75">
+            Guardas —{" "}
+            <span className="font-serif italic text-gold">
+              y tu órbita se actualiza al instante.
+            </span>
+          </p>
         </motion.div>
       </div>
     </section>

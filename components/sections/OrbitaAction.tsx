@@ -38,7 +38,7 @@ const LEVELS = [
     question: "¿Qué empezó a repetirse?",
     reading:
       "La semana no es una lista de días: es la forma que tus hábitos empiezan a tomar.",
-    points: ["Relaciones entre hábitos", "Evidencia semanal", "Patrones emergentes"],
+    points: ["Comportamiento semanal", "Patrones emergentes", "Consistencia"],
     tint: "rgba(217,174,111,0.12)",
     accent: "#E8B872",
     node: <SemanaScreen />,
@@ -48,8 +48,12 @@ const LEVELS = [
     label: "Mes",
     question: "¿Qué reveló este mes sobre mí?",
     reading:
-      "El mes muestra lo que se sostuvo, lo que todavía no — y el patrón que domina tu historia.",
-    points: ["Patrón dominante", "Lo que se sostuvo", "Lo que todavía no se sostiene"],
+      "El mes muestra tus promedios, lo que se sostuvo — y el patrón que domina tu historia.",
+    points: [
+      "Promedios: calorías · proteína · sueño",
+      "Progreso de tu constelación",
+      "Patrones detectados",
+    ],
     tint: "rgba(193,143,255,0.12)",
     accent: "#C18FFF",
     node: <MesScreen />,
@@ -106,12 +110,12 @@ export default function OrbitaAction() {
         >
           <div>
             <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
-              Capítulo VIII · Órbita en acción
+              Capítulo IX · Órbita en acción
             </p>
             <h2 className="font-sans text-2xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl lg:text-5xl">
-              Tu día, tu semana y tu mes tienen{" "}
+              Un día no cuenta{" "}
               <span className="font-serif italic font-medium text-pink text-glow-pink">
-                lecturas distintas.
+                toda la historia.
               </span>
             </h2>
             <p className="mt-5 hidden max-w-md text-base leading-relaxed text-cream/60 sm:block">

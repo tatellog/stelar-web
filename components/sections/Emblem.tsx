@@ -66,7 +66,7 @@ export default function Emblem() {
           className="absolute top-[14%] z-10 max-w-2xl px-6 text-center"
         >
           <p className="mb-3 text-xs uppercase tracking-[0.35em] text-gold/80">
-            Capítulo X · El emblema
+            Capítulo XII · El emblema
           </p>
           <h2 className="font-sans text-3xl font-black leading-tight tracking-tight text-cream sm:text-5xl">
             Tus hábitos dejan más que datos.{" "}
