@@ -37,7 +37,7 @@ export default function Emblem() {
   const figureGlow = useTransform(p, [0.15, 0.5], [0.45, 1]);
   // the emblem, born from inside — scroll drives the paint frames.
   // It never arrives at full light: the reveal is a promise, not a prize.
-  const emblemOpacity = useTransform(p, [0.3, 0.55], [0, 0.72]);
+  const emblemOpacity = useTransform(p, [0.2, 0.48], [0, 0.72]);
   // golden aura — a pure radial falloff, no visible rim
   const auraOpacity = useTransform(p, [0.42, 0.75], [0, 0.85]);
   const textOpacity = useTransform(p, [0.8, 0.9], [0, 1]);
@@ -46,7 +46,7 @@ export default function Emblem() {
   // scroll → paint frame (preloaded so the paint never stutters).
   // The paint stops before the last frames: partially revealed, on purpose.
   const [frame, setFrame] = useState(0);
-  const frameValue = useTransform(p, [0.32, 0.75], [0, FRAMES - 3]);
+  const frameValue = useTransform(p, [0.22, 0.72], [0, FRAMES - 3]);
   useMotionValueEvent(frameValue, "change", (v) => {
     setFrame(Math.min(FRAMES - 3, Math.max(0, Math.round(v))));
   });

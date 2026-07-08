@@ -329,6 +329,13 @@ export default function ConstellationBirth() {
     const onPointerMove = (e: PointerEvent) => {
       pointer.tx = (e.clientX / W) * 2 - 1;
       pointer.ty = (e.clientY / H) * 2 - 1;
+      updateHover(e);
+    };
+
+    /* hit-testing shared by hover (mouse) and tap (touch: pointerdown
+       fires without any previous pointermove, so the tap must set the
+       hover state itself before the click handler reads it) */
+    const updateHover = (e: { clientX: number; clientY: number }) => {
       const rect = canvas.getBoundingClientRect();
       if (e.clientY < rect.top || e.clientY > rect.bottom) {
         hoverIdx = -1;
@@ -413,7 +420,8 @@ export default function ConstellationBirth() {
       if (hoverSign) selectRef.current(hoverSign);
     };
 
-    const onDown = () => {
+    const onDown = (e: PointerEvent) => {
+      updateHover(e);
       press.held = true;
       press.since = performance.now();
       press.waved = false;
@@ -710,7 +718,7 @@ export default function ConstellationBirth() {
       <div className="sticky top-0 h-screen overflow-hidden">
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 h-full w-full touch-none [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_84%,transparent_100%)]"
+          className="absolute inset-0 h-full w-full [touch-action:pan-y] [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_84%,transparent_100%)]"
         />
 
         {/* floating typography — no box, just light */}

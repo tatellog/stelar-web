@@ -95,10 +95,13 @@ export default function PatternEngine() {
       // gentle drift — the lights breathe in place
       const fx = Math.sin(t * 0.00023 + i * 2.1) * 14;
       const fy = Math.cos(t * 0.00019 + i * 1.7) * 11;
-      // portrait screens: pull the cloud tighter horizontally
-      const kx = W < 640 ? 0.86 : 1;
+      // portrait screens: compact the figure on BOTH axes — otherwise the
+      // fractions of a tall viewport stretch it into a skinny column
+      const mob = W < 640;
+      const kx = mob ? 0.9 : 1;
+      const ky = mob ? 0.55 : 1;
       const x = (0.5 + (n.x - 0.5) * kx) * W + fx;
-      const y = n.y * H + fy;
+      const y = (0.47 + (n.y - 0.47) * ky) * H + fy;
       return { x, y };
     };
 
