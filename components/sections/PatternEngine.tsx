@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { softDot, sparkle, colorA, ramp } from "@/lib/canvas";
+import { softDot, sparkle, colorA, ramp, prand } from "@/lib/canvas";
 
 /**
  * Capítulo VI — IA Pattern Engine.
@@ -99,11 +99,124 @@ export default function PatternEngine() {
       return { x, y };
     };
 
+    const GREEK = ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "λ", "μ", "ν", "σ"];
+
     const draw = (t: number) => {
       ctx.clearRect(0, 0, W, H);
       const p = progress.current;
 
       const pos = NODES.map((n, i) => nodePos(n, i, t));
+
+      /* ── the finale: the network opens into a celestial chart ──── */
+      const chart = ramp(p, 0.58, 0.86);
+      if (chart > 0) {
+        const R = Math.min(W, H);
+        const parX = pointer.current.x >= 0 ? pointer.current.x / W - 0.5 : 0;
+        const parY = pointer.current.y >= 0 ? pointer.current.y / H - 0.5 : 0;
+        const ccx = W / 2 + parX * 12;
+        const ccy = H * 0.48 + parY * 10;
+
+        // a soft nebula behind the heart of the map
+        softDot(ctx, ccx, ccy, R * 0.34, "#FBD7E3", 0.05 * chart, 0.2);
+        softDot(ctx, ccx, ccy, R * 0.2, "#FFE9C2", 0.05 * chart, 0.25);
+
+        // cartographic rings — some solid, some dashed, slightly tilted
+        for (let l = 0; l < 5; l++) {
+          const rr = R * (0.14 + l * 0.13);
+          const born = ramp(chart, l * 0.1, l * 0.1 + 0.35);
+          if (born <= 0) continue;
+          if (l % 2 === 1) ctx.setLineDash([2, 8]);
+          ctx.strokeStyle = colorA("#F4ECDE", 0.07 * born);
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.ellipse(ccx, ccy, rr, rr * 0.94, -0.06, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        // radial graticule spokes
+        for (let l = 0; l < 10; l++) {
+          const ang = (l / 10) * Math.PI * 2 + 0.2;
+          const born = ramp(chart, 0.15 + l * 0.03, 0.4 + l * 0.03);
+          if (born <= 0) continue;
+          ctx.strokeStyle = colorA("#F4ECDE", 0.04 * born);
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(ccx + Math.cos(ang) * R * 0.12, ccy + Math.sin(ang) * R * 0.11);
+          ctx.lineTo(ccx + Math.cos(ang) * R * 0.68, ccy + Math.sin(ang) * R * 0.64);
+          ctx.stroke();
+        }
+
+        // hundreds of chart stars, born in waves
+        for (let i = 0; i < 240; i++) {
+          const born = ramp(chart, prand(i * 1.7) * 0.6, prand(i * 1.7) * 0.6 + 0.3);
+          if (born <= 0) continue;
+          const x = prand(i * 3.3) * W + Math.sin(t * 0.0002 + i) * 3;
+          const y = prand(i * 7.1) * H + Math.cos(t * 0.00017 + i * 1.3) * 2.5;
+          const mag = prand(i * 9.7);
+          const tw = 0.5 + 0.5 * Math.abs(Math.sin(t * 0.0006 + i * 2.1));
+          const a = (0.14 + mag * 0.4) * born * tw;
+          ctx.fillStyle = colorA("#F4ECDE", a);
+          ctx.beginPath();
+          ctx.arc(x, y, 0.4 + mag * 1.2, 0, Math.PI * 2);
+          ctx.fill();
+          // the brightest get a tiny cross flare and an atlas label
+          if (mag > 0.93) {
+            ctx.strokeStyle = colorA("#FFF6E5", a * 0.8);
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(x - 5, y);
+            ctx.lineTo(x + 5, y);
+            ctx.moveTo(x, y - 5);
+            ctx.lineTo(x, y + 5);
+            ctx.stroke();
+            ctx.fillStyle = colorA("#F4ECDE", 0.3 * born);
+            ctx.font = "400 8px 'Hanken Grotesk', sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(GREEK[i % GREEK.length], x + 7, y - 4);
+          }
+        }
+
+        // small chart figures: clusters joined by hairline strokes
+        for (let c = 0; c < 11; c++) {
+          const born = ramp(chart, 0.2 + prand(c * 13.1) * 0.5, 0.45 + prand(c * 13.1) * 0.5);
+          if (born <= 0) continue;
+          const ang = prand(c * 5.9) * Math.PI * 2;
+          const rad = R * (0.22 + prand(c * 8.3) * 0.42);
+          const fx = ccx + Math.cos(ang) * rad;
+          const fy = ccy + Math.sin(ang) * rad * 0.9;
+          const n = 4 + Math.floor(prand(c * 11.3) * 3);
+          let px2 = 0;
+          let py2 = 0;
+          for (let k = 0; k < n; k++) {
+            const sx = fx + (prand(c * 17 + k * 7) - 0.5) * R * 0.13;
+            const sy = fy + (prand(c * 23 + k * 11) - 0.5) * R * 0.1;
+            ctx.fillStyle = colorA("#F4ECDE", 0.5 * born);
+            ctx.beginPath();
+            ctx.arc(sx, sy, 0.9 + prand(c * 29 + k) * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            if (k > 0) {
+              ctx.strokeStyle = colorA("#F4ECDE", 0.13 * born);
+              ctx.lineWidth = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(px2, py2);
+              ctx.lineTo(sx, sy);
+              ctx.stroke();
+            }
+            px2 = sx;
+            py2 = sy;
+          }
+        }
+
+        // the bright star at the heart of the map
+        const breath = 1 + 0.05 * Math.sin(t * 0.0014);
+        ctx.save();
+        ctx.translate(ccx, ccy);
+        ctx.scale(9, 0.4);
+        softDot(ctx, 0, 0, R * 0.03 * breath, "#FFE9C2", 0.3 * chart, 0.25);
+        ctx.restore();
+        softDot(ctx, ccx, ccy, R * 0.05 * breath, "#FFE9C2", 0.35 * chart, 0.25);
+        softDot(ctx, ccx, ccy, R * 0.009, "#FFF6E5", 0.95 * chart, 0.55);
+      }
 
       // hover detection
       hovered = -1;
