@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useInView } from "framer-motion";
 import Reveal from "../Reveal";
 import { useSign } from "../SignContext";
 import { FIGURES } from "@/lib/zodiac/figures";
@@ -15,6 +15,9 @@ import { joinBeta } from "@/lib/beta";
 export default function FinalCTA() {
   const { sign } = useSign();
   const def = FIGURES[sign];
+  // infinite animations only tick while the closing sky is on screen
+  const artRef = useRef<HTMLDivElement>(null);
+  const artInView = useInView(artRef, { margin: "-10%" });
 
   return (
     <section id="beta" className="relative overflow-hidden py-36 sm:py-48">
@@ -25,16 +28,21 @@ export default function FinalCTA() {
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 3.4, ease: "easeOut" }}
+        ref={artRef}
         className="pointer-events-none absolute left-1/2 top-1/2 h-[21rem] w-[21rem] -translate-x-1/2 -translate-y-1/2 sm:h-[30rem] sm:w-[30rem]"
       >
         <motion.img
-          src={`/emblems/${sign}/f10.png`}
+          src={`/emblems/${sign}/f10.webp`}
           alt=""
           loading="lazy"
           decoding="async"
           width={480}
           height={480}
-          animate={{ scale: [1, 1.045, 1], opacity: [0.14, 0.2, 0.14] }}
+          animate={
+            artInView
+              ? { scale: [1, 1.045, 1], opacity: [0.14, 0.2, 0.14] }
+              : { scale: 1, opacity: 0.14 }
+          }
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           className="h-full w-full object-contain"
         />
@@ -69,7 +77,7 @@ export default function FinalCTA() {
           ))}
           {/* energy keeps traveling every finished connection — the
               constellation is complete, and alive */}
-          {def.lines.map(([a, b], i) => (
+          {artInView && def.lines.map(([a, b], i) => (
             <motion.circle
               key={`e${i}`}
               r={0.7}

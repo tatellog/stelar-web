@@ -109,7 +109,7 @@ export default function DataNoise() {
     let emblemPts: { x: number; y: number; b: number }[] = [];
     const emblemOff = { x: 0, y: 0 }; // art-space offset that centers the animal
     const emblem = new Image();
-    emblem.src = `/emblems/${sign}/f10.png`;
+    emblem.src = `/emblems/${sign}/f10.webp`;
     emblem.onload = () => {
       const S = 150;
       const off = document.createElement("canvas");
@@ -481,7 +481,7 @@ export default function DataNoise() {
         {/* chapter opening */}
         <motion.div
           style={{ opacity: introOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[9%] z-10 mx-auto max-w-2xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[max(9%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
             Capítulo XI · La evidencia
@@ -497,7 +497,7 @@ export default function DataNoise() {
         {/* while the dust gathers */}
         <motion.div
           style={{ opacity: midOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[10%] z-10 mx-auto max-w-xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[max(10%,5.5rem)] z-10 mx-auto max-w-xl px-6 text-center"
         >
           <p className="font-sans text-2xl font-black leading-snug tracking-tight text-cream sm:text-3xl">
             No puedes cambiar{" "}

@@ -50,11 +50,24 @@ export default function Emblem() {
   useMotionValueEvent(frameValue, "change", (v) => {
     setFrame(Math.min(FRAMES - 3, Math.max(0, Math.round(v))));
   });
+  // preload the paint frames only when the chapter approaches — ~1 MB of
+  // PNGs must not compete with the hero's first load
   useEffect(() => {
-    for (let i = 0; i < FRAMES; i++) {
-      const img = new window.Image();
-      img.src = `/emblems/${sign}/f${String(i).padStart(2, "0")}.png`;
-    }
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        for (let i = 0; i < FRAMES; i++) {
+          const img = new window.Image();
+          img.src = `/emblems/${sign}/f${String(i).padStart(2, "0")}.webp`;
+        }
+        io.disconnect();
+      },
+      { rootMargin: "1600px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, [sign]);
 
   return (
@@ -63,7 +76,7 @@ export default function Emblem() {
         {/* the chapter opens */}
         <motion.div
           style={{ opacity: introOpacity }}
-          className="absolute top-[14%] z-10 max-w-2xl px-6 text-center"
+          className="absolute top-[max(14%,5.5rem)] z-10 max-w-2xl px-6 text-center"
         >
           <p className="mb-3 text-xs uppercase tracking-[0.35em] text-gold/80">
             Capítulo XII · El emblema
@@ -76,7 +89,7 @@ export default function Emblem() {
           </h2>
         </motion.div>
 
-        <div className="relative w-full max-w-[24rem] px-6 sm:max-w-[34rem]">
+        <div className="relative w-full max-w-[min(24rem,80vh)] px-6 sm:max-w-[min(34rem,72vh)]">
           {/* golden aura — smooth radial falloff, dissolves into the sky
               with no rim (the SVG aura read as a hard circle) */}
           <motion.div
@@ -92,7 +105,7 @@ export default function Emblem() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={`/emblems/${sign}/f${String(frame).padStart(2, "0")}.png`}
+              src={`/emblems/${sign}/f${String(frame).padStart(2, "0")}.webp`}
               alt={`Emblema de ${def.label}`}
               className="h-full w-full object-contain"
               loading="lazy"

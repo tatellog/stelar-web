@@ -1,25 +1,28 @@
+import dynamic from "next/dynamic";
 import Starfield from "@/components/Starfield";
 import ConstellationThread from "@/components/ConstellationThread";
 import Nav from "@/components/Nav";
 import { SignProvider } from "@/components/SignContext";
 import Hero from "@/components/sections/Hero";
-
-import SignalField from "@/components/sections/SignalField";
-import ConstellationBirth from "@/components/sections/ConstellationBirth";
-import PatternEngine from "@/components/sections/PatternEngine";
-import Understands from "@/components/sections/Understands";
-import ScanIA from "@/components/sections/ScanIA";
-import Ecosystem from "@/components/sections/Ecosystem";
-import OrbitaAction from "@/components/sections/OrbitaAction";
-import PatternExamples from "@/components/sections/PatternExamples";
-import DataNoise from "@/components/sections/DataNoise";
-import Emblem from "@/components/sections/Emblem";
-import ProductOverview from "@/components/sections/ProductOverview";
-import Roadmap from "@/components/sections/Roadmap";
-import Plans from "@/components/sections/Plans";
-import FAQ from "@/components/sections/FAQ";
-import FinalCTA from "@/components/sections/FinalCTA";
 import Footer from "@/components/Footer";
+
+/* everything below the fold ships in its own chunk: the hero hydrates
+   with a fraction of the JS and the rest streams in behind it */
+const SignalField = dynamic(() => import("@/components/sections/SignalField"));
+const ConstellationBirth = dynamic(() => import("@/components/sections/ConstellationBirth"));
+const PatternEngine = dynamic(() => import("@/components/sections/PatternEngine"));
+const Understands = dynamic(() => import("@/components/sections/Understands"));
+const ScanIA = dynamic(() => import("@/components/sections/ScanIA"));
+const Ecosystem = dynamic(() => import("@/components/sections/Ecosystem"));
+const OrbitaAction = dynamic(() => import("@/components/sections/OrbitaAction"));
+const PatternExamples = dynamic(() => import("@/components/sections/PatternExamples"));
+const DataNoise = dynamic(() => import("@/components/sections/DataNoise"));
+const Emblem = dynamic(() => import("@/components/sections/Emblem"));
+const ProductOverview = dynamic(() => import("@/components/sections/ProductOverview"));
+const Roadmap = dynamic(() => import("@/components/sections/Roadmap"));
+const Plans = dynamic(() => import("@/components/sections/Plans"));
+const FAQ = dynamic(() => import("@/components/sections/FAQ"));
+const FinalCTA = dynamic(() => import("@/components/sections/FinalCTA"));
 
 /*
  * El viaje — capítulos del brief V2:

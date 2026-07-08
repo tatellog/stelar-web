@@ -30,7 +30,7 @@ export default function MesScreen() {
           <Image src="/reveal/emblem-frame.svg" alt="" fill sizes="144px" className="object-contain" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`/emblems/${sign}/f10.png`}
+            src={`/emblems/${sign}/f10.webp`}
             alt={`Emblema de ${name}`}
             className="absolute inset-[15%] h-[70%] w-[70%] object-contain"
             draggable={false}

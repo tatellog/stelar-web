@@ -117,7 +117,8 @@ function FridayBars() {
         fill="none"
         stroke="#FFE9C2"
         strokeWidth={0.6}
-        animate={{ r: [5, 11], opacity: [0.7, 0] }}
+        whileInView={{ r: [5, 11], opacity: [0.7, 0] }}
+        viewport={{ margin: "-10%" }}
         transition={{ duration: 2.2, repeat: Infinity, delay: 2, ease: "easeOut" }}
       />
     </svg>
@@ -207,7 +208,8 @@ function TrainProtein() {
         fill="none"
         stroke="#FF9E57"
         strokeWidth={0.7}
-        animate={{ r: [6, 14], opacity: [0.7, 0] }}
+        whileInView={{ r: [6, 14], opacity: [0.7, 0] }}
+        viewport={{ margin: "-10%" }}
         transition={{ duration: 1.8, repeat: Infinity, delay: 0.6, ease: "easeOut" }}
       />
       <text x={30} y={62} textAnchor="middle" fill="#FF9E57" opacity={0.85} style={{ font: "600 6.5px 'Hanken Grotesk', sans-serif" }}>
@@ -231,7 +233,8 @@ function TrainProtein() {
         r={2}
         cy={45}
         fill="#FFE9C2"
-        animate={{ cx: [40, 104], opacity: [0, 0.9, 0] }}
+        whileInView={{ cx: [40, 104], opacity: [0, 0.9, 0] }}
+        viewport={{ margin: "-10%" }}
         transition={{ duration: 1.6, repeat: Infinity, delay: 1.6, ease: "easeInOut" }}
       />
       {/* …and the protein fills to its goal */}
@@ -322,7 +325,8 @@ function WaterDeficit() {
         fill="none"
         stroke="#FF4886"
         strokeWidth={0.5}
-        animate={{ opacity: [0, 0.35, 0] }}
+        whileInView={{ opacity: [0, 0.35, 0] }}
+        viewport={{ margin: "-10%" }}
         transition={{ duration: 2.6, repeat: Infinity, delay: 3 }}
       />
       <text x={128} y={48} textAnchor="middle" fill="#FBD7E3" opacity={0.9} style={{ font: "italic 8px 'Cormorant Garamond', serif" }}>

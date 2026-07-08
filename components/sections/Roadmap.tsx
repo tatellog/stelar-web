@@ -63,7 +63,8 @@ export default function Roadmap() {
             >
               <motion.span
                 className="inline-block h-2 w-2 rounded-full bg-cream/30"
-                animate={{ opacity: [0.3, 0.8, 0.3] }}
+                whileInView={{ opacity: [0.3, 0.8, 0.3] }}
+                viewport={{ margin: "-10%" }}
                 transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.5 }}
               />
               <p className="mt-2 text-sm font-semibold text-cream/60">{item}</p>

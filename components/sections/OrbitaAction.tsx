@@ -109,25 +109,25 @@ export default function OrbitaAction() {
 
         <motion.div
           style={{ opacity: introOpacity }}
-          className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-6 px-6 sm:gap-10 lg:grid-cols-2 lg:gap-16"
+          className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-6 px-6 sm:gap-10 md:grid-cols-2 md:gap-12 lg:gap-16"
         >
           <div>
             <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
               Capítulo IX · Órbita en acción
             </p>
-            <h2 className="font-sans text-2xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl lg:text-5xl">
+            <h2 className="font-sans text-2xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl lg:text-5xl [@media(max-height:560px)]:text-2xl">
               Un día no cuenta{" "}
               <span className="font-serif italic font-medium text-pink text-glow-pink">
                 toda la historia.
               </span>
             </h2>
-            <p className="mt-5 hidden max-w-md text-base leading-relaxed text-cream/60 sm:block">
+            <p className="mt-5 hidden max-w-md text-base leading-relaxed text-cream/60 sm:block [@media(max-height:560px)]:hidden">
               Stelar no muestra los mismos datos tres veces. Cada nivel
               responde una pregunta diferente.
             </p>
 
             {/* the question of this level */}
-            <div className="mt-5 min-h-[8rem] sm:mt-8 sm:min-h-[11.5rem]">
+            <div className="mt-5 min-h-[8rem] sm:mt-8 sm:min-h-[11.5rem] [@media(max-height:560px)]:mt-4 [@media(max-height:560px)]:min-h-[7rem]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={level.id}
@@ -142,7 +142,7 @@ export default function OrbitaAction() {
                   >
                     {level.question}
                   </p>
-                  <p className="mt-3 hidden max-w-sm text-sm leading-relaxed text-cream/55 sm:block">
+                  <p className="mt-3 hidden max-w-sm text-sm leading-relaxed text-cream/55 sm:block [@media(max-height:560px)]:hidden">
                     {level.reading}
                   </p>
                   <ul className="mt-4 flex flex-col gap-1.5">
@@ -184,12 +184,12 @@ export default function OrbitaAction() {
             </div>
           </div>
 
-          <div className="mx-auto w-full max-w-[168px] sm:max-w-[290px]">
+          <div className="mx-auto w-full max-w-[168px] sm:max-w-[min(290px,38vh)] [@media(min-width:640px)_and_(max-height:560px)]:max-w-[150px]">
             <div className="animate-float-slow">
               {/* on mobile the phone renders at 240px and scales to 0.75 so the
                   miniature UI keeps its proportions (its type sizes are fixed px) */}
               <div className="aspect-[9/19] w-full">
-                <div className="w-[240px] origin-top-left scale-[0.7] sm:w-full sm:scale-100">
+                <div className="w-[240px] origin-top-left scale-[0.7] sm:w-full sm:scale-100 [@media(min-width:640px)_and_(max-height:560px)]:w-[240px] [@media(min-width:640px)_and_(max-height:560px)]:scale-[0.625]">
                   <PhoneEmerge show={emerged}>
                     <PhoneMockup>
                       {/* the camera slides between the readings — moving

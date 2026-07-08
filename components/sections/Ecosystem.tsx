@@ -481,7 +481,7 @@ export default function Ecosystem() {
         {/* chapter opening */}
         <motion.div
           style={{ opacity: introOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[9%] z-10 mx-auto max-w-2xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[max(9%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
             Capítulo VIII · Wearables
@@ -502,7 +502,7 @@ export default function Ecosystem() {
         {/* after the transformation */}
         <motion.div
           style={{ opacity: finalOpacity, y: finalY }}
-          className="pointer-events-none absolute inset-x-0 top-[7%] z-10 mx-auto max-w-2xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[max(7%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <h2 className="font-sans text-2xl font-black leading-[1.12] tracking-tight text-cream sm:text-4xl">
             Tu información se vuelve{" "}

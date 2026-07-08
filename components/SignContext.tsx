@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
 import type { ZodiacSign } from "@/lib/zodiac/types";
 
 /** The visitor's chosen sign — picked in the Constellation chapter and
@@ -14,7 +15,8 @@ export function SignProvider({ children }: { children: ReactNode }) {
   const [sign, setSign] = useState<ZodiacSign>("leo");
   return (
     <SignContext.Provider value={{ sign, setSign }}>
-      {children}
+      {/* respects prefers-reduced-motion across every framer animation */}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </SignContext.Provider>
   );
 }

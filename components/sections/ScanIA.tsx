@@ -6,6 +6,7 @@ import {
   useScroll,
   useTransform,
   useMotionValueEvent,
+  useInView,
 } from "framer-motion";
 import PhoneMockup from "../PhoneMockup";
 import PhoneEmerge from "../PhoneEmerge";
@@ -71,6 +72,8 @@ export default function ScanIA() {
     target: ref,
     offset: ["start start", "end end"],
   });
+  // infinite spinners/caret only tick while the chapter is on screen
+  const inView = useInView(ref, { margin: "-5%" });
 
   useEffect(() =>
     scrollYProgress.on("change", (v) => {
@@ -227,7 +230,7 @@ export default function ScanIA() {
         {/* chapter opening — what this is, in one line, plus proof */}
         <motion.div
           style={{ opacity: introOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[10%] z-10 mx-auto max-w-2xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[max(10%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
             Capítulo VII · Scan IA
@@ -287,13 +290,15 @@ export default function ScanIA() {
           {/* magenta scanning ring */}
           <motion.div style={{ opacity: scanRing }} className="absolute inset-0">
             <div className="absolute inset-0 rounded-full border-[3px] border-[#FF4886]/90 shadow-[0_0_28px_rgba(255,72,134,0.45),inset_0_0_22px_rgba(255,72,134,0.2)]" />
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 5.5, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0"
-            >
-              <span className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FF4886] shadow-[0_0_12px_#FF4886]" />
-            </motion.div>
+            {inView && (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 5.5, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0"
+              >
+                <span className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FF4886] shadow-[0_0_12px_#FF4886]" />
+              </motion.div>
+            )}
           </motion.div>
 
           {/* gold ring — the plate, understood */}
@@ -423,7 +428,7 @@ export default function ScanIA() {
         ))}
 
         {/* the evidence assembles the phone out of the universe */}
-        <div className="absolute left-1/2 top-[13%] z-10 w-[210px] -translate-x-1/2">
+        <div className="absolute left-1/2 top-[max(13%,5.5rem)] z-10 w-[min(210px,36vh)] -translate-x-1/2">
           <PhoneEmerge show={showPhone}>
             <PhoneMockup>
               <ScanResultScreen show={showPhone} />
@@ -443,13 +448,15 @@ export default function ScanIA() {
           <div className="mt-6 rounded-full border border-cream/15 bg-deep/60 px-6 py-3.5 backdrop-blur-sm">
             <p className="font-serif text-lg italic text-cream/85">
               {TYPED.slice(0, chars)}
-              <motion.span
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-                className="text-gold"
-              >
-                |
-              </motion.span>
+              {inView && (
+                <motion.span
+                  animate={{ opacity: [1, 0, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="text-gold"
+                >
+                  |
+                </motion.span>
+              )}
             </p>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
@@ -483,13 +490,15 @@ export default function ScanIA() {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="absolute inset-0 rounded-full border border-gold/50 shadow-[0_0_34px_rgba(232,184,114,0.25)]"
             />
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0"
-            >
-              <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-soft shadow-[0_0_10px_#E8B872]" />
-            </motion.div>
+            {inView && (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0"
+              >
+                <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-soft shadow-[0_0_10px_#E8B872]" />
+              </motion.div>
+            )}
             <span className="absolute inset-0 flex items-center justify-center font-serif text-base italic text-gold">
               +{totalKcal}
             </span>

@@ -662,7 +662,7 @@ function Overlay({
   return (
     <motion.div
       style={{ opacity, y }}
-      className="pointer-events-none absolute inset-x-0 top-[13%] z-10 mx-auto max-w-3xl px-6 text-center"
+      className="pointer-events-none absolute inset-x-0 top-[max(13%,5.5rem)] z-10 mx-auto max-w-3xl px-6 text-center"
     >
       {children}
     </motion.div>

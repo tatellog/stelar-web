@@ -18,9 +18,9 @@ import { runWhenVisible } from "@/lib/visibleLoop";
  */
 
 const IGNITE0 = 0.03; // first star, on the hero
-const IGNITE1 = 0.68; // last star, entering the patterns chapter
-const FADE0 = 0.76; // hand-off to the evidence/emblem chapters
-const FADE1 = 0.84;
+const IGNITE1 = 0.58; // last star, entering the patterns chapter
+const FADE0 = 0.64; // hand-off before the evidence/emblem climax
+const FADE1 = 0.71;
 
 export default function ConstellationThread() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

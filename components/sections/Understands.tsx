@@ -302,7 +302,7 @@ export default function Understands() {
         {/* chapter opening */}
         <motion.div
           style={{ opacity: introOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[8%] z-10 mx-auto max-w-2xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[max(8%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
             Capítulo VI · Tu universo

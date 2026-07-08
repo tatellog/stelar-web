@@ -159,7 +159,7 @@ function getEmblem(sign: string) {
       sign,
       Array.from({ length: FRAMES }, (_, i) => {
         const img = new Image();
-        img.src = `/emblems/${sign}/f${String(i).padStart(2, "0")}.png`;
+        img.src = `/emblems/${sign}/f${String(i).padStart(2, "0")}.webp`;
         return img;
       })
     );
@@ -194,7 +194,9 @@ export default function ConstellationBirth() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    getEmblem(signRef.current);
+    // NOTE: emblem frames are NOT preloaded here — getEmblem() kicks off
+    // the requests on the first visible frame (the loop is IO-gated), so
+    // ~1 MB of PNGs never competes with the initial page load
     SIGNS.forEach(getMini);
 
     const dust = Array.from({ length: 560 }, (_, i) => ({
@@ -593,16 +595,21 @@ export default function ConstellationBirth() {
         const ex = A.sx + (B.sx - A.sx) * lt;
         const ey = A.sy + (B.sy - A.sy) * lt;
         const shimmer = reduced ? 1 : 0.8 + 0.2 * Math.sin(t * 0.9 + i * 1.7);
-        ctx.strokeStyle = `rgba(${lineColor[0]},${lineColor[1]},${lineColor[2]},${(0.4 + goldMix * 0.3) * lt * shimmer})`;
-        ctx.lineWidth = 1.1;
+        /* the glow is a wide low-alpha understroke — never shadowBlur,
+           which forces a blur pass per draw call */
         ctx.lineCap = "round";
-        ctx.shadowColor = `rgba(${lineColor[0]},${lineColor[1]},${lineColor[2]},0.7)`;
-        ctx.shadowBlur = lt >= 1 ? 5 : 2;
+        ctx.strokeStyle = `rgba(${lineColor[0]},${lineColor[1]},${lineColor[2]},${0.16 * lt * shimmer})`;
+        ctx.lineWidth = lt >= 1 ? 4 : 2.4;
         ctx.beginPath();
         ctx.moveTo(A.sx, A.sy);
         ctx.lineTo(ex, ey);
         ctx.stroke();
-        ctx.shadowBlur = 0;
+        ctx.strokeStyle = `rgba(${lineColor[0]},${lineColor[1]},${lineColor[2]},${(0.4 + goldMix * 0.3) * lt * shimmer})`;
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(A.sx, A.sy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
         if (lt >= 1 && !reduced) {
           const k = (t * 0.14 + i * 0.37) % 1;
           softDot(ctx, A.sx + (B.sx - A.sx) * k, A.sy + (B.sy - A.sy) * k, 5, ORO_LUZ, 0.5 + goldMix * 0.3, 0.45);
@@ -641,11 +648,10 @@ export default function ConstellationBirth() {
         ctx.moveTo(pr.sx, pr.sy - rayLen);
         ctx.lineTo(pr.sx, pr.sy + rayLen);
         ctx.stroke();
-        ctx.shadowColor = `rgba(${color[0]},${color[1]},${color[2]},0.9)`;
-        ctx.shadowBlur = R * 0.9;
+        // the sparkle's bloom: one extra soft stamp instead of shadowBlur
+        softDot(ctx, pr.sx, pr.sy, R * 1.5, color, alpha * 0.5, 0.4);
         ctx.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${Math.min(1, alpha + 0.2)})`;
         sparklePath(ctx, pr.sx, pr.sy, R);
-        ctx.shadowBlur = 0;
         softDot(ctx, pr.sx, pr.sy, R * 0.5, [255, 255, 255], alpha * (hero ? 0.95 : 0.6), 0.45);
 
         /* tiny particles escaping the star, very subtle */
@@ -748,7 +754,7 @@ export default function ConstellationBirth() {
         {/* the discovery, named + the closing invitation */}
         <motion.div
           style={{ opacity: ctaOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[8%] z-10 mx-auto max-w-xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[max(8%,5.5rem)] z-10 mx-auto max-w-xl px-6 text-center"
         >
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-8 bg-gold/30" />
@@ -801,7 +807,7 @@ function Overlay({
   return (
     <motion.div
       style={{ opacity, y }}
-      className="pointer-events-none absolute inset-x-0 top-[14%] z-10 mx-auto max-w-3xl px-6 text-center"
+      className="pointer-events-none absolute inset-x-0 top-[max(14%,5.5rem)] z-10 mx-auto max-w-3xl px-6 text-center"
     >
       {children}
     </motion.div>
