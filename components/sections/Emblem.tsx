@@ -39,9 +39,9 @@ export default function Emblem() {
   // the emblem, born from inside — scroll drives the paint frames.
   // It never arrives at full light: the reveal is a promise, not a prize.
   const emblemOpacity = useTransform(p, [0.3, 0.55], [0, 0.72]);
-  // ceremonial layers
-  const auraOpacity = useTransform(p, [0.45, 0.8], [0, 0.8]);
-  const haloOpacity = useTransform(p, [0.55, 0.78], [0, 0.85]);
+  // ceremonial layers — present, never a muddy blob
+  const auraOpacity = useTransform(p, [0.45, 0.8], [0, 0.38]);
+  const haloOpacity = useTransform(p, [0.55, 0.78], [0, 0.6]);
   const haloScale = useTransform(p, [0.55, 0.85], [0.85, 1]);
   const textOpacity = useTransform(p, [0.8, 0.9], [0, 1]);
   const textY = useTransform(p, [0.8, 0.9], [24, 0]);
@@ -117,26 +117,45 @@ export default function Emblem() {
             aria-hidden
             style={{ opacity: figureGlow }}
           >
+            <defs>
+              <radialGradient id="emblemStarHero">
+                <stop offset="0%" stopColor="rgba(251,215,227,0.55)" />
+                <stop offset="40%" stopColor="rgba(233,30,99,0.18)" />
+                <stop offset="100%" stopColor="rgba(233,30,99,0)" />
+              </radialGradient>
+              <radialGradient id="emblemStarDim">
+                <stop offset="0%" stopColor="rgba(255,233,194,0.4)" />
+                <stop offset="45%" stopColor="rgba(232,184,114,0.12)" />
+                <stop offset="100%" stopColor="rgba(232,184,114,0)" />
+              </radialGradient>
+            </defs>
             {def.lines.map(([a, b], i) => (
               <BrighteningLine key={i} def={def} a={a} b={b} i={i} progress={p} />
             ))}
-            {def.stars.map((s, i) => (
-              <g key={i}>
-                <circle
-                  cx={s.x * 100}
-                  cy={s.y * 100}
-                  r={s.mag <= 2 ? 4.6 : 3}
-                  fill={s.mag <= 2 ? "rgba(233,30,99,0.3)" : "rgba(233,30,99,0.16)"}
-                />
-                <circle
-                  cx={s.x * 100}
-                  cy={s.y * 100}
-                  r={s.mag <= 2 ? 1.9 : 1.2}
-                  fill={s.mag <= 2 ? "#FBD7E3" : "#F4ECDE"}
-                  className="glow-dot"
-                />
-              </g>
-            ))}
+            {def.stars.map((s, i) => {
+              const hero = s.mag <= 2;
+              const x = s.x * 100;
+              const y = s.y * 100;
+              const r = hero ? 2.3 : 1.5; // four-point body
+              const w = r * 0.26;
+              return (
+                <g key={i}>
+                  {/* diffuse halo — a single soft falloff, never a ring */}
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={hero ? 6.5 : 4}
+                    fill={`url(#${hero ? "emblemStarHero" : "emblemStarDim"})`}
+                  />
+                  {/* the star itself: a small four-point sparkle */}
+                  <path
+                    d={`M ${x} ${y - r} Q ${x + w} ${y - w} ${x + r} ${y} Q ${x + w} ${y + w} ${x} ${y + r} Q ${x - w} ${y + w} ${x - r} ${y} Q ${x - w} ${y - w} ${x} ${y - r} Z`}
+                    fill={hero ? "#FFF6E5" : "#F4ECDE"}
+                    opacity={hero ? 0.95 : 0.8}
+                  />
+                </g>
+              );
+            })}
           </motion.svg>
         </div>
 
@@ -172,7 +191,7 @@ function BrighteningLine({
 }) {
   // each line brightens in sequence as the emblem approaches
   const start = 0.12 + (i / def.lines.length) * 0.25;
-  const opacity = useTransform(progress, [start, start + 0.1], [0.18, 0.7]);
+  const opacity = useTransform(progress, [start, start + 0.1], [0.14, 0.5]);
   return (
     <motion.line
       x1={def.stars[a].x * 100}
@@ -180,7 +199,8 @@ function BrighteningLine({
       x2={def.stars[b].x * 100}
       y2={def.stars[b].y * 100}
       stroke="#D9AE6F"
-      strokeWidth="0.4"
+      strokeWidth="0.3"
+      strokeLinecap="round"
       style={{ opacity }}
     />
   );
