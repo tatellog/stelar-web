@@ -4,7 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Reveal from "../Reveal";
 import { useSign } from "../SignContext";
-import { figureInRect } from "@/lib/zodiac/helpers";
+import { FIGURES } from "@/lib/zodiac/figures";
 
 /**
  * Capítulo XII — Final.
@@ -13,63 +13,80 @@ import { figureInRect } from "@/lib/zodiac/helpers";
  */
 export default function FinalCTA() {
   const { sign } = useSign();
-  const fig = figureInRect(sign, { x: 140, y: 30, w: 520, h: 260 });
+  const def = FIGURES[sign];
 
   return (
     <section id="beta" className="relative overflow-hidden py-36 sm:py-48">
-      {/* the emblem, breathing softly behind everything */}
+      {/* the emblem and its constellation, aligned in the same art box —
+          the figure was traced over the emblem, so they share coordinates */}
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 3, ease: "easeOut" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[21rem] w-[21rem] -translate-x-1/2 -translate-y-1/2 sm:h-[30rem] sm:w-[30rem]"
       >
         <motion.img
           src={`/emblems/${sign}/f10.png`}
           alt=""
-          animate={{ scale: [1, 1.045, 1], opacity: [0.13, 0.19, 0.13] }}
+          animate={{ scale: [1, 1.045, 1], opacity: [0.14, 0.2, 0.14] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           className="h-full w-full object-contain"
         />
+        <svg viewBox="0 0 100 100" aria-hidden className="absolute inset-0 h-full w-full">
+          <defs>
+            <radialGradient id="ctaStarHero">
+              <stop offset="0%" stopColor="rgba(251,215,227,0.5)" />
+              <stop offset="40%" stopColor="rgba(233,30,99,0.15)" />
+              <stop offset="100%" stopColor="rgba(233,30,99,0)" />
+            </radialGradient>
+            <radialGradient id="ctaStarDim">
+              <stop offset="0%" stopColor="rgba(255,233,194,0.36)" />
+              <stop offset="45%" stopColor="rgba(232,184,114,0.1)" />
+              <stop offset="100%" stopColor="rgba(232,184,114,0)" />
+            </radialGradient>
+          </defs>
+          {def.lines.map(([a, b], i) => (
+            <motion.line
+              key={i}
+              x1={def.stars[a].x * 100}
+              y1={def.stars[a].y * 100}
+              x2={def.stars[b].x * 100}
+              y2={def.stars[b].y * 100}
+              stroke="rgba(217,174,111,0.4)"
+              strokeWidth="0.3"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              whileInView={{ pathLength: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, delay: 0.4 + i * 0.16, ease: "easeInOut" }}
+            />
+          ))}
+          {def.stars.map((st, i) => {
+            const hero = st.mag <= 2.3;
+            const x = st.x * 100;
+            const y = st.y * 100;
+            const r = hero ? 2 : 1.3;
+            const w = r * 0.26;
+            return (
+              <motion.g
+                key={i}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.3 + i * 0.1 }}
+              >
+                <circle cx={x} cy={y} r={hero ? 5.5 : 3.4} fill={`url(#${hero ? "ctaStarHero" : "ctaStarDim"})`} />
+                <path
+                  d={`M ${x} ${y - r} Q ${x + w} ${y - w} ${x + r} ${y} Q ${x + w} ${y + w} ${x} ${y + r} Q ${x - w} ${y + w} ${x - r} ${y} Q ${x - w} ${y - w} ${x} ${y - r} Z`}
+                  fill={hero ? "#FFF6E5" : "#F4ECDE"}
+                  opacity={hero ? 0.9 : 0.72}
+                />
+              </motion.g>
+            );
+          })}
+        </svg>
       </motion.div>
-
-      {/* the constellation, complete at last — very faint */}
-      <svg
-        viewBox="0 0 800 320"
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-6 mx-auto w-full max-w-4xl opacity-70"
-      >
-        {fig.lines.map(([a, b], i) => (
-          <motion.line
-            key={i}
-            x1={fig.pts[a].x}
-            y1={fig.pts[a].y}
-            x2={fig.pts[b].x}
-            y2={fig.pts[b].y}
-            stroke="rgba(217,174,111,0.22)"
-            strokeWidth="0.8"
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.4, delay: 0.3 + i * 0.18, ease: "easeInOut" }}
-          />
-        ))}
-        {fig.pts.map((s, i) => (
-          <motion.circle
-            key={i}
-            cx={s.x}
-            cy={s.y}
-            r={s.mag <= 2.3 ? 2.8 : 1.8}
-            fill={s.mag <= 2.3 ? "#D9AE6F" : "#F4ECDE"}
-            className="glow-dot"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 0.75 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: i * 0.1 }}
-          />
-        ))}
-      </svg>
 
       <div className="relative z-10 mx-auto max-w-3xl px-6 pt-24 text-center">
         <Reveal>

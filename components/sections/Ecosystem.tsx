@@ -367,7 +367,10 @@ export default function Ecosystem() {
             ctx.fillStyle = colorA("#F4ECDE", Math.min(0.92, la));
             ctx.font = "600 10px 'Hanken Grotesk', sans-serif";
             ctx.textAlign = "center";
-            ctx.fillText(s.name.toUpperCase(), pos.x, pos.y + size * 1.9 + 10);
+            // keep the label inside the viewport on narrow screens
+            const half = ctx.measureText(s.name.toUpperCase()).width / 2;
+            const lx = Math.min(W - 10 - half, Math.max(10 + half, pos.x));
+            ctx.fillText(s.name.toUpperCase(), lx, pos.y + size * 1.9 + 10);
           }
         }
 

@@ -283,7 +283,7 @@ export default function ScanIA() {
             key={c.label}
             style={{
               opacity: chipsOpacity,
-              left: `calc(50% + (${c.x} - 0.5) * min(100%, 80rem))`,
+              left: `calc(50% + (${c.x} - 0.5) * min(100% - 11rem, 80rem))`,
               top: `${c.y * 100}%`,
             }}
             className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
