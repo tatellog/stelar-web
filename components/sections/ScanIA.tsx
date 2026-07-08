@@ -1,36 +1,56 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValueEvent,
+} from "framer-motion";
 import PhoneMockup from "../PhoneMockup";
+import ScanResultScreen from "../screens/ScanResultScreen";
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
 
 /**
- * Capítulo VII — Scan IA.
- * A photograph floats into the center, freezes… and dissolves into
- * particles. The particles order themselves into nutrition — proteína,
- * calorías, carbohidratos, grasas — and the evidence enters the phone.
- * Not a form. Magic.
+ * Capítulo VII — Scan IA. The real flow of the app, told as a scene:
+ * the photograph floats in inside its circular frame, the magenta ring
+ * scans it ("Escaneando tu plato…"), the ring turns gold when the plate
+ * is understood, the detected ingredients emerge as light — and the
+ * evidence enters the phone, ready to CONFIRMAR.
  */
 
-const CLUSTERS = [
-  { label: "Proteína", value: "38 g", color: "#E0AEA0", x: 0.22, y: 0.34 },
-  { label: "Calorías", value: "520 kcal", color: "#E91E63", x: 0.78, y: 0.3 },
-  { label: "Carbohidratos", value: "45 g", color: "#E8B872", x: 0.2, y: 0.62 },
-  { label: "Grasas", value: "18 g", color: "#FFC56B", x: 0.8, y: 0.6 },
+const PHOTO = { x: 0.5, y: 0.42 }; // viewport fractions
+
+const INGREDIENTS = [
+  {
+    label: "Salmón",
+    value: "150 g",
+    detail: "38 g proteína · 309 kcal",
+    color: "#E0AEA0",
+    x: 0.19,
+    y: 0.32,
+  },
+  { label: "Tomates cherry", value: "50 g", color: "#FF4886", x: 0.81, y: 0.3 },
+  { label: "Crema", value: "30 g", color: "#F4ECDE", x: 0.2, y: 0.6 },
+  {
+    label: "En total",
+    value: "548 kcal",
+    detail: "39 g proteína · 2 g azúcar",
+    color: "#E8B872",
+    x: 0.8,
+    y: 0.62,
+    total: true,
+  },
 ];
 
 const TAGS = [
-  { text: "pollo", x: "-12%", y: "18%" },
-  { text: "arroz", x: "78%", y: "6%" },
-  { text: "verduras", x: "84%", y: "72%" },
-  { text: "proteína estimada", x: "-18%", y: "78%" },
+  { text: "salmón", x: "-14%", y: "22%" },
+  { text: "tomates cherry", x: "72%", y: "10%" },
+  { text: "crema", x: "80%", y: "70%" },
+  { text: "proteína estimada", x: "-20%", y: "76%" },
 ];
 
-const PARTICLE_COLORS = ["#E8B872", "#F4ECDE", "#9BB98F", "#E0AEA0", "#FFC56B"];
-const N = 240;
-const PHOTO = { x: 0.5, y: 0.42 }; // viewport fractions
-const PHONE = { x: 0.5, y: 0.6 };
+const N = 210;
 
 export default function ScanIA() {
   const ref = useRef<HTMLDivElement>(null);
@@ -74,63 +94,49 @@ export default function ScanIA() {
       ctx.clearRect(0, 0, W, H);
       const p = progress.current;
 
-      const explode = ramp(p, 0.32, 0.48);
-      const gather = ramp(p, 0.5, 0.68);
-      const intake = ramp(p, 0.78, 0.94);
+      const cx = PHOTO.x * W;
+      const cy = PHOTO.y * H;
+      const photoR = Math.min(H * 0.21, W * 0.3, 175);
+      const kx = W < 640 ? 0.62 : 1;
 
-      if (explode > 0 && intake < 1) {
-        const photoR = Math.min(H * 0.24, W * 0.32, 190);
-        const cx = PHOTO.x * W;
-        const cy = PHOTO.y * H;
-        const kx = W < 640 ? 0.7 : 1;
+      // the understanding, leaving the plate as light
+      const burst = ramp(p, 0.46, 0.58);
+      const gather = ramp(p, 0.5, 0.66);
+      const fadeAll = ramp(p, 0.7, 0.78);
 
+      if (burst > 0 && fadeAll < 1) {
         for (let i = 0; i < N; i++) {
-          // birth point: inside the plate
           const a0 = prand(i * 3.1) * Math.PI * 2;
-          const r0 = Math.sqrt(prand(i * 5.7)) * photoR * 0.7;
-          const bx = cx + Math.cos(a0) * r0;
-          const by = cy + Math.sin(a0) * r0 * 0.8;
+          // born on the ring itself
+          const bx = cx + Math.cos(a0) * photoR;
+          const by = cy + Math.sin(a0) * photoR;
 
-          // explosion: outward with per-particle distance
-          const dist = (0.6 + prand(i * 7.3)) * photoR * 1.5;
-          const ex = bx + Math.cos(a0) * dist * explode;
-          const ey = by + Math.sin(a0) * dist * explode - explode * 30;
+          const dist = (0.3 + prand(i * 7.3)) * photoR * 0.9;
+          const ex = bx + Math.cos(a0) * dist * burst;
+          const ey = by + Math.sin(a0) * dist * burst;
 
-          // gather: each particle belongs to a macro cluster
-          const c = CLUSTERS[i % CLUSTERS.length];
-          const jx = (prand(i * 11.9) - 0.5) * 90;
-          const jy = (prand(i * 13.7) - 0.5) * 60;
+          const c = INGREDIENTS[i % INGREDIENTS.length];
+          const jx = (prand(i * 11.9) - 0.5) * 110;
+          const jy = (prand(i * 13.7) - 0.5) * 54;
           const gx = (0.5 + (c.x - 0.5) * kx) * W + jx;
           const gy = c.y * H + jy;
 
-          // intake: everything streams into the phone
-          const px = PHONE.x * W + (prand(i * 17.3) - 0.5) * 40;
-          const py = PHONE.y * H + (prand(i * 19.1) - 0.5) * 80;
+          const x = ex + (gx - ex) * gather + Math.sin(t * 0.0004 + i) * 2.5;
+          const y = ey + (gy - ey) * gather + Math.cos(t * 0.00035 + i * 1.3) * 2.5;
 
-          let x = ex + (gx - ex) * gather;
-          let y = ey + (gy - ey) * gather;
-          x += (px - x) * intake;
-          y += (py - y) * intake;
-
-          // drift + shimmer
-          x += Math.sin(t * 0.0004 + i) * 2.5;
-          y += Math.cos(t * 0.00035 + i * 1.3) * 2.5;
-
-          const color =
-            gather > 0.5 ? c.color : PARTICLE_COLORS[i % PARTICLE_COLORS.length];
-          const tw = 0.65 + 0.35 * Math.sin(t * 0.002 + i * 2.2);
-          const alpha = explode * (1 - intake * 0.92) * tw * 0.85;
-          const r = 1.6 + prand(i * 23.3) * 2.6 + gather * 0.6;
-          softDot(ctx, x, y, r * 2.8, color, alpha, 0.32);
+          const tw = 0.6 + 0.4 * Math.sin(t * 0.002 + i * 2.2);
+          const alpha = burst * (1 - fadeAll) * tw * 0.8;
+          const r = 1.5 + prand(i * 23.3) * 2.4;
+          softDot(ctx, x, y, r * 2.8, c.color, alpha, 0.32);
         }
 
-        // freeze flash — the instant the photo is captured
-        const flash = ramp(p, 0.3, 0.34) * (1 - ramp(p, 0.36, 0.44));
+        // the flash of understanding — the ring closes in gold
+        const flash = ramp(p, 0.46, 0.5) * (1 - ramp(p, 0.52, 0.6));
         if (flash > 0) {
-          ctx.strokeStyle = colorA("#FFE9C2", flash * 0.9);
-          ctx.lineWidth = 1.4;
+          ctx.strokeStyle = colorA("#FFE9C2", flash * 0.85);
+          ctx.lineWidth = 1.6;
           ctx.beginPath();
-          ctx.arc(cx, cy, photoR * (1 + ramp(p, 0.3, 0.44) * 0.5), 0, Math.PI * 2);
+          ctx.arc(cx, cy, photoR * (1.06 + ramp(p, 0.46, 0.6) * 0.4), 0, Math.PI * 2);
           ctx.stroke();
         }
       }
@@ -145,30 +151,29 @@ export default function ScanIA() {
   }, []);
 
   const p = scrollYProgress;
-  const introOpacity = useTransform(p, [0.02, 0.08, 0.2, 0.27], [0, 1, 1, 0]);
+  const introOpacity = useTransform(p, [0.02, 0.08, 0.16, 0.23], [0, 1, 1, 0]);
 
-  // the photograph: floats in from below, centers, freezes, dissolves
-  const photoX = useTransform(p, [0.1, 0.27], ["-30%", "0%"]);
-  const photoY = useTransform(p, [0.1, 0.27], ["34%", "0%"]);
-  const photoRotate = useTransform(p, [0.1, 0.27, 0.32], [-9, -2, 0]);
-  const photoScale = useTransform(p, [0.1, 0.27, 0.31], [0.72, 1, 1.04]);
-  const photoOpacity = useTransform(p, [0.12, 0.22, 0.32, 0.42], [0, 1, 1, 0]);
+  // the photograph in its circular frame
+  const photoOpacity = useTransform(p, [0.1, 0.2, 0.7, 0.77], [0, 1, 1, 0]);
+  const photoScale = useTransform(p, [0.1, 0.24, 0.5, 0.66], [0.62, 1, 1, 0.9]);
+  const photoYv = useTransform(p, [0.1, 0.24], [70, 0]);
 
-  // macro labels appear as the particles settle
-  const clusterOpacity = useTransform(p, [0.58, 0.68, 0.76, 0.86], [0, 1, 1, 0]);
-  const midCopy = useTransform(p, [0.56, 0.64, 0.74, 0.82], [0, 1, 1, 0]);
+  // magenta scanning ring → gold completed ring
+  const scanRing = useTransform(p, [0.22, 0.28, 0.44, 0.49], [0, 1, 1, 0]);
+  const goldRing = useTransform(p, [0.46, 0.52, 0.68, 0.75], [0, 1, 1, 0]);
+  const scanCaption = useTransform(p, [0.24, 0.3, 0.42, 0.47], [0, 1, 1, 0]);
+  const doneCaption = useTransform(p, [0.5, 0.56, 0.64, 0.7], [0, 1, 1, 0]);
+  const poweredBy = useTransform(p, [0.22, 0.3, 0.62, 0.7], [0, 1, 1, 0]);
+
+  // detected ingredients
+  const chipsOpacity = useTransform(p, [0.56, 0.64, 0.7, 0.77], [0, 1, 1, 0]);
 
   // the phone receives the evidence
-  const phoneOpacity = useTransform(p, [0.74, 0.84], [0, 1]);
-  const phoneY = useTransform(p, [0.74, 0.88], [70, 0]);
-  const row1 = useTransform(p, [0.84, 0.88], [0, 1]);
-  const row2 = useTransform(p, [0.86, 0.9], [0, 1]);
-  const row3 = useTransform(p, [0.88, 0.92], [0, 1]);
-  const row4 = useTransform(p, [0.9, 0.94], [0, 1]);
-  const rows = [row1, row2, row3, row4];
+  const [showPhone, setShowPhone] = useState(false);
+  useMotionValueEvent(p, "change", (v) => setShowPhone(v >= 0.76));
 
   return (
-    <section ref={ref} className="relative h-[380vh]">
+    <section ref={ref} className="relative h-[400vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
 
@@ -191,39 +196,51 @@ export default function ScanIA() {
           </p>
         </motion.div>
 
-        {/* the photograph */}
+        {/* the photograph, inside its circular frame — like in the app */}
         <motion.div
           style={{
-            x: photoX,
-            y: photoY,
-            rotate: photoRotate,
-            scale: photoScale,
             opacity: photoOpacity,
+            scale: photoScale,
+            y: photoYv,
             left: `${PHOTO.x * 100}%`,
             top: `${PHOTO.y * 100}%`,
-            marginLeft: "-19vh",
-            marginTop: "-19vh",
           }}
-          className="group absolute z-10 h-[38vh] max-h-[330px] w-[38vh] max-w-[330px]"
+          className="group absolute z-10 h-[42vh] max-h-[350px] w-[42vh] max-w-[350px] -translate-x-1/2 -translate-y-1/2"
         >
-          <div className="relative h-full w-full overflow-hidden rounded-3xl border border-cream/15 shadow-[0_30px_80px_rgba(0,0,0,0.55)] transition-shadow duration-700 group-hover:shadow-[0_0_60px_rgba(232,184,114,0.35)]">
-            {/* the table */}
-            <div className="absolute inset-0 bg-[linear-gradient(150deg,#241014_0%,#170a0d_60%,#100608_100%)]" />
-            {/* the plate */}
-            <div className="absolute left-1/2 top-1/2 h-[74%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_38%_32%,#F7F0E2_0%,#E9DFC9_55%,#CBBFA4_100%)] shadow-[inset_0_-8px_24px_rgba(0,0,0,0.18),0_18px_40px_rgba(0,0,0,0.45)]" />
-            {/* pollo */}
-            <div className="absolute left-[30%] top-[34%] h-[26%] w-[34%] rounded-[45%] bg-[radial-gradient(circle_at_35%_30%,#E8B872_0%,#C98F4E_65%,#A9723B_100%)] shadow-[0_5px_12px_rgba(0,0,0,0.3)]" />
-            {/* arroz */}
-            <div className="absolute left-[48%] top-[52%] h-[22%] w-[28%] rounded-[50%] bg-[radial-gradient(circle_at_45%_35%,#F7F2E4_0%,#E6DCC2_70%,#D0C3A3_100%)] shadow-[0_4px_10px_rgba(0,0,0,0.25)]" />
-            {/* verduras */}
-            <div className="absolute left-[32%] top-[56%] h-[11%] w-[11%] rounded-full bg-[radial-gradient(circle_at_40%_35%,#AECB9E_0%,#7E9B6E_100%)]" />
-            <div className="absolute left-[42%] top-[62%] h-[8%] w-[8%] rounded-full bg-[radial-gradient(circle_at_40%_35%,#9BB98F_0%,#6E8A60_100%)]" />
-            <div className="absolute left-[26%] top-[48%] h-[7%] w-[7%] rounded-full bg-[radial-gradient(circle_at_40%_35%,#C3D6B4_0%,#8AA579_100%)]" />
-            {/* photo sheen */}
-            <div className="absolute inset-0 bg-[linear-gradient(115deg,transparent_35%,rgba(255,246,229,0.07)_48%,transparent_62%)]" />
+          {/* halo behind the frame */}
+          <div className="absolute -inset-10 rounded-full bg-[radial-gradient(circle,rgba(233,30,99,0.12)_0%,rgba(233,30,99,0.04)_55%,transparent_75%)]" />
+
+          {/* the plate */}
+          <div className="absolute inset-[6%] overflow-hidden rounded-full shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/art/meal-scan.jpg"
+              alt="Salmón con tomates cherry y crema"
+              className="h-full w-full object-cover"
+              draggable={false}
+            />
+            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,transparent_55%,rgba(10,6,8,0.35)_100%)]" />
           </div>
 
-          {/* hover: the IA already sees what's on the plate */}
+          {/* magenta scanning ring */}
+          <motion.div style={{ opacity: scanRing }} className="absolute inset-0">
+            <div className="absolute inset-0 rounded-full border-[3px] border-[#FF4886]/90 shadow-[0_0_28px_rgba(255,72,134,0.45),inset_0_0_22px_rgba(255,72,134,0.2)]" />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0"
+            >
+              <span className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FF4886] shadow-[0_0_12px_#FF4886]" />
+            </motion.div>
+          </motion.div>
+
+          {/* gold ring — the plate, understood */}
+          <motion.div
+            style={{ opacity: goldRing }}
+            className="absolute inset-0 rounded-full border-2 border-gold-soft/90 shadow-[0_0_32px_rgba(232,184,114,0.4),inset_0_0_20px_rgba(232,184,114,0.15)]"
+          />
+
+          {/* hover: the IA already sees the plate */}
           {TAGS.map((tag) => (
             <span
               key={tag.text}
@@ -233,87 +250,81 @@ export default function ScanIA() {
               {tag.text}
             </span>
           ))}
+          <span className="absolute bottom-[4%] right-[4%] flex items-center gap-1.5 rounded-full bg-deep/70 px-3 py-1.5 text-[11px] tracking-wide text-cream/85 opacity-0 backdrop-blur-md transition-all duration-700 group-hover:opacity-100">
+            ⟲ Reescanear
+          </span>
         </motion.div>
 
-        {/* the macros, named as the particles settle */}
-        {CLUSTERS.map((c) => (
+        {/* captions under the frame */}
+        <motion.p
+          style={{ opacity: scanCaption }}
+          className="pointer-events-none absolute inset-x-0 top-[68%] z-10 text-center text-base text-cream/75"
+        >
+          Escaneando tu plato…
+        </motion.p>
+        <motion.p
+          style={{ opacity: doneCaption }}
+          className="pointer-events-none absolute inset-x-0 top-[68%] z-10 text-center font-serif text-lg italic text-gold"
+        >
+          Lo dejaste anotado. Eso ya es algo.
+        </motion.p>
+
+        {/* powered by IA */}
+        <motion.p
+          style={{ opacity: poweredBy }}
+          className="pointer-events-none absolute inset-x-0 bottom-[6%] z-10 text-center text-[11px] uppercase tracking-[0.35em] text-cream/45"
+        >
+          <span className="text-pink">✦</span> Powered by IA
+        </motion.p>
+
+        {/* the detected ingredients, as the app names them */}
+        {INGREDIENTS.map((c) => (
           <motion.div
             key={c.label}
             style={{
-              opacity: clusterOpacity,
-              left: `calc(50% + (${c.x} - 0.5) * min(100%, 88rem))`,
+              opacity: chipsOpacity,
+              left: `calc(50% + (${c.x} - 0.5) * min(100%, 80rem))`,
               top: `${c.y * 100}%`,
             }}
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2 text-center"
+            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"
           >
-            <p
-              className="font-sans text-2xl font-black tracking-tight sm:text-3xl"
-              style={{ color: c.color, textShadow: `0 0 24px ${c.color}66` }}
+            <div
+              className={`rounded-2xl border px-4 py-2.5 backdrop-blur-sm ${
+                c.total
+                  ? "border-gold/40 bg-gold/[0.07]"
+                  : "border-cream/12 bg-deep/60"
+              }`}
+              style={{ boxShadow: `0 0 26px ${c.color}22` }}
             >
-              {c.value}
-            </p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-cream/55">
-              {c.label}
-            </p>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`text-sm font-semibold ${c.total ? "uppercase tracking-[0.2em] text-gold text-xs" : "text-cream/90"}`}
+                >
+                  {c.label}
+                </span>
+                <span
+                  className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs text-cream/80"
+                  style={{ color: c.color }}
+                >
+                  {c.value}
+                </span>
+              </div>
+              {c.detail && (
+                <p className="mt-1 text-[11px] text-cream/50">{c.detail}</p>
+              )}
+            </div>
           </motion.div>
         ))}
 
+        {/* the evidence enters the phone, ready to confirm */}
         <motion.div
-          style={{ opacity: midCopy }}
-          className="pointer-events-none absolute inset-x-0 bottom-[8%] z-10 mx-auto max-w-md px-6 text-center"
-        >
-          <p className="text-base leading-relaxed text-cream/65">
-            Toma una foto. Stelar detecta ingredientes, estima macros y{" "}
-            <span className="font-serif italic text-gold">
-              los convierte en evidencia para tu día.
-            </span>
-          </p>
-          <p className="mt-3 text-xs tracking-[0.2em] text-cream/40">
-            pollo · arroz · verduras
-          </p>
-        </motion.div>
-
-        {/* the evidence enters the phone */}
-        <motion.div
-          style={{ opacity: phoneOpacity, y: phoneY }}
-          className="absolute left-1/2 top-[16%] z-10 w-[200px] -translate-x-1/2"
+          initial={false}
+          animate={{ opacity: showPhone ? 1 : 0, y: showPhone ? 0 : 80 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute left-1/2 top-[13%] z-10 w-[210px] -translate-x-1/2"
         >
           <PhoneMockup>
-            <div className="flex h-full flex-col px-3 pb-3 pt-10 text-cream">
-              <p className="font-sans text-[13px] font-black tracking-tight">
-                <span className="text-pink-soft">Tu</span> registro
-              </p>
-              <div className="mt-2 rounded-xl border border-cream/10 bg-cream/[0.04] p-2.5">
-                <p className="font-serif text-[11px] italic">Pollo con arroz</p>
-                <p className="mt-0.5 text-[7px] uppercase tracking-[0.25em] text-gold">
-                  Detectado con una foto
-                </p>
-              </div>
-              <div className="mt-2 flex flex-col gap-1.5">
-                {CLUSTERS.map((c, i) => (
-                  <motion.div
-                    key={c.label}
-                    style={{ opacity: rows[i] }}
-                    className="flex items-center justify-between rounded-lg border border-cream/[0.07] px-2.5 py-1.5"
-                  >
-                    <span className="flex items-center gap-1.5 text-[8px] text-cream/60">
-                      <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ background: c.color, boxShadow: `0 0 6px ${c.color}` }}
-                      />
-                      {c.label}
-                    </span>
-                    <span className="text-[9px] font-bold text-cream/90">{c.value}</span>
-                  </motion.div>
-                ))}
-              </div>
-              <motion.p
-                style={{ opacity: rows[3] }}
-                className="mt-auto text-center font-serif text-[9px] italic text-cream/50"
-              >
-                Evidencia para tu día.
-              </motion.p>
-            </div>
+            <ScanResultScreen show={showPhone} />
           </PhoneMockup>
         </motion.div>
       </div>
