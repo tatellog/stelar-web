@@ -11,12 +11,12 @@ import { figureArt } from "@/lib/zodiac/helpers";
  * Not a layout of logos around a hole: a gravitational phenomenon.
  * Scattered apps float at different depths. A force is born at the
  * center — lensing, an accretion disk of fast particles, light bending.
- * Each astro falls with its own physics: some orbit once, some almost
- * escape, all stretch and break into brand-colored particles at the
- * horizon. Then silence. Then the hole gives back: rivers of gold that
- * settle into the visitor's real constellation, with the emblem
- * emerging faintly behind. apps dispersas → datos absorbidos →
- * energía transformada → constelación revelada.
+ * The hole itself is a vortex: a dense field of tiny stars whose light
+ * stretches into concentric trails spiraling around the void. Each
+ * astro falls with its own physics, breaks into brand-colored
+ * particles and is absorbed. Then silence — and rivers of gold settle
+ * into the visitor's real constellation. apps dispersas → datos
+ * absorbidos → energía transformada → constelación revelada.
  */
 
 type Source = {
@@ -52,8 +52,8 @@ const FALL0 = 0.42;
 const FALL_STEP = 0.028;
 const FALL_LEN = 0.055;
 
-const N_DISK = 84; // fast particles riding the accretion disk
-const N_DUST = 70;
+const N_TRAILS = 150; // star-trail rings of the vortex
+const N_STARS = 620; // the dense field of tiny stars
 const N_GOLD = 150; // the rivers of gold
 
 export default function Ecosystem() {
@@ -94,7 +94,7 @@ export default function Ecosystem() {
     resize();
     window.addEventListener("resize", resize);
 
-    // brand icons + the sign's emblem
+    // brand icons
     const icons = new Map<string, HTMLImageElement>();
     for (const s of SOURCES) {
       if (!icons.has(s.icon)) {
@@ -103,9 +103,6 @@ export default function Ecosystem() {
         icons.set(s.icon, img);
       }
     }
-    const emblem = new Image();
-    emblem.src = `/emblems/${sign}/f10.png`;
-
     const pointer = { x: 0, y: 0, tx: 0, ty: 0, sx: -1, sy: -1 };
     const manualFall = new Map<string, number>();
     const prevFall = new Map<string, number>();
@@ -169,33 +166,41 @@ export default function Ecosystem() {
       const silence = ramp(p, 0.78, 0.84);
       const emission = ramp(p, 0.83, 0.93); // rivers of gold
       const constel = ramp(p, 0.875, 0.965);
-      const emblemP = ramp(p, 0.93, 1);
 
       const bhR = R * (0.024 * grav1 + 0.078 * hole);
       const diskAlpha = hole * (1 - silence * 0.55) * (1 - emission * 0.45);
 
-      /* ── space dust: paths curve as gravity is born ───────────── */
-      for (let i = 0; i < N_DUST; i++) {
-        const bx = prand(i * 3.7) * W;
-        const by = prand(i * 8.3) * H;
-        // straight drift becomes a curved fall toward the center
-        const dxs = bx - cx;
-        const dys = by - cy;
-        const d = Math.hypot(dxs, dys) || 1;
-        const pull = grav1 * 26000 / (d * d + 9000);
-        const swirl = grav1 * 5200 / (d + 60);
-        const ang = Math.atan2(dys, dxs) + Math.PI / 2;
-        let x = bx - (dxs / d) * pull * 6 + Math.cos(ang) * swirl * 0.4 + Math.sin(t * 0.13 + i) * 6;
-        let y = by - (dys / d) * pull * 6 + Math.sin(ang) * swirl * 0.4 + Math.cos(t * 0.11 + i * 1.7) * 5;
-        if (pointer.sx >= 0) {
-          const pd = Math.hypot(pointer.sx - x, pointer.sy - y);
-          if (pd < 200) {
-            x += ((pointer.sx - x) / pd) * (1 - pd / 200) * 7;
-            y += ((pointer.sy - y) / pd) * (1 - pd / 200) * 7;
-          }
+      /* ── a dense field of tiny stars; the vortex gathers the near ones ── */
+      for (let i = 0; i < N_STARS; i++) {
+        const born = ramp(p, 0.01 + prand(i * 1.9) * 0.16, 0.09 + prand(i * 1.9) * 0.16);
+        if (born <= 0) continue;
+        const clustered = i % 3 === 0 && hole > 0.01; // a third crowds the funnel
+        let x: number;
+        let y: number;
+        if (clustered) {
+          const ang = prand(i * 4.1) * Math.PI * 2 + t * 0.02;
+          const rr = bhR * (1.12 + Math.pow(prand(i * 6.3), 0.65) * 2.8);
+          x = cx + Math.cos(ang) * rr;
+          y = cy - (rr - bhR) * 0.3 + Math.sin(ang) * rr * 0.55;
+        } else {
+          x = prand(i * 3.7) * W;
+          y = prand(i * 8.3) * H;
         }
-        const tw = 0.4 + 0.6 * Math.abs(Math.sin(t * 0.5 + i * 2.4));
-        softDot(ctx, x, y, 1.2 + prand(i * 13.7) * 1.7, "#F4ECDE", 0.2 * tw, 0.4);
+        // gravity curves every drift
+        const dxs = x - cx;
+        const dys = y - cy;
+        const d = Math.hypot(dxs, dys) || 1;
+        const ang2 = Math.atan2(dys, dxs) + Math.PI / 2;
+        const swirlK = grav1 * (3400 / (d + 60));
+        x += Math.cos(ang2) * swirlK * 0.25 + Math.sin(t * 0.13 + i) * 2.4;
+        y += Math.sin(ang2) * swirlK * 0.25 + Math.cos(t * 0.11 + i * 1.7) * 2;
+        if (d < bhR * 1.02 && hole > 0.01) continue; // already beyond the horizon
+        const tw = 0.35 + 0.65 * Math.abs(Math.sin(t * (0.3 + prand(i * 1.3) * 0.6) + i * 2.4));
+        const size = 0.4 + prand(i * 13.7) * 1.05;
+        ctx.fillStyle = colorA("#F4ECDE", (clustered ? 0.55 : 0.32) * tw * born * (clustered ? hole : 1));
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
       }
 
       /* ── the gravitational lens: space darkens toward the center ── */
@@ -208,74 +213,57 @@ export default function Ecosystem() {
         ctx.fillRect(0, 0, W, H);
       }
 
-      /* ── the black hole, alive ────────────────────────────────── */
+      /* ── the vortex: rings of star-trails spiraling around the void ── */
       if (hole > 0.01) {
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(-0.16 + pointer.x * 0.025);
+        ctx.rotate(pointer.x * 0.02);
+        const squash = 0.52;
 
-        // fast particles riding the disk — streaks, motion blur
-        for (let i = 0; i < N_DISK; i++) {
-          const rd = bhR * (1.18 + prand(i * 3.1) * 1.5);
-          const w = (1.1 + prand(i * 5.3) * 1.4) * (bhR * 42) / (rd + 1); // faster inside
-          const phi = prand(i * 7.7) * Math.PI * 2 + t * w * 0.11;
-          const x1 = Math.cos(phi) * rd;
-          const y1 = Math.sin(phi) * rd * 0.3;
-          const trail = 0.1 + prand(i * 9.1) * 0.14;
-          const x2 = Math.cos(phi - trail) * rd;
-          const y2 = Math.sin(phi - trail) * rd * 0.3;
-          const front = Math.sin(phi) > 0 ? 1.35 : 0.75; // light bends: brighter in front
-          const warm = prand(i * 11.3) > 0.32;
-          const col = warm ? "#FFE9C2" : "#FF7EA6";
-          const a = (0.1 + prand(i * 13.9) * 0.2) * diskAlpha * front;
-          ctx.strokeStyle = colorA(col, a);
-          ctx.lineWidth = 0.8 + prand(i * 17.3) * 1.1;
-          ctx.lineCap = "round";
+        for (let i = 0; i < N_TRAILS; i++) {
+          const u = prand(i * 3.9);
+          const r = bhR * (1.04 + u * u * 2.3); // denser toward the void
+          const lift = (r - bhR) * 0.32; // the funnel: outer rings sit higher
+          const w = (bhR * 22) / (r + 1); // inner rings spin faster
+          const a0 = prand(i * 7.1) * Math.PI * 2 + t * w * 0.06;
+          const len = 0.3 + prand(i * 9.3) * 1.1;
+          const front = Math.sin(a0 + len / 2) > 0 ? 1.2 : 0.75;
+          const alpha = (0.09 + prand(i * 11.7) * 0.28) * diskAlpha * front;
+          ctx.strokeStyle = colorA("#F4ECDE", alpha);
+          ctx.lineWidth = 0.5 + prand(i * 13.1) * 0.8;
           ctx.beginPath();
-          ctx.moveTo(x2, y2);
-          ctx.lineTo(x1, y1);
+          ctx.ellipse(0, -lift, r, r * squash, 0, a0, a0 + len);
           ctx.stroke();
         }
 
-        // pulses riding the disk after each absorption
+        // after each absorption, a ring of light runs down the funnel
         for (const pu of pulses) {
           const age = t - pu.t0;
-          if (age > 1.4) continue;
-          const sweep = age * 5;
-          ctx.strokeStyle = colorA("#FFE9C2", 0.45 * (1 - age / 1.4) * diskAlpha);
-          ctx.lineWidth = bhR * 0.14;
+          if (age > 1.2) continue;
+          const k = age / 1.2;
+          const r = bhR * (3.1 - k * 2);
+          ctx.strokeStyle = colorA("#FFF6E5", 0.32 * Math.sin(k * Math.PI) * diskAlpha);
+          ctx.lineWidth = 1.3;
           ctx.beginPath();
-          ctx.ellipse(0, 0, bhR * 1.7, bhR * 0.5, 0, sweep, sweep + 1);
+          ctx.ellipse(0, -(r - bhR) * 0.32, r, r * squash, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
 
-        // the lensed halo: light bending above and below
-        ctx.strokeStyle = colorA("#FFE9C2", 0.15 * diskAlpha);
-        ctx.lineWidth = bhR * 0.09;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, bhR * 1.42, bhR * 1.42, 0, Math.PI * 1.06, Math.PI * 1.94);
-        ctx.stroke();
-        ctx.strokeStyle = colorA("#FFE9C2", 0.07 * diskAlpha);
-        ctx.beginPath();
-        ctx.ellipse(0, 0, bhR * 1.42, bhR * 1.42, 0, Math.PI * 0.12, Math.PI * 0.88);
-        ctx.stroke();
-
-        // photon ring
-        ctx.strokeStyle = colorA("#FFF6E5", (0.3 * hole + 0.05) * (1 - emission * 0.3));
-        ctx.lineWidth = 1.1;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, bhR * 1.05, bhR * 1.05, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // event horizon
+        // the void
         const core = ctx.createRadialGradient(0, 0, 0, 0, 0, bhR);
         core.addColorStop(0, "rgba(1,0,1,1)");
-        core.addColorStop(0.85, "rgba(1,0,1,0.98)");
+        core.addColorStop(0.86, "rgba(1,0,1,0.99)");
         core.addColorStop(1, "rgba(1,0,1,0)");
         ctx.fillStyle = core;
         ctx.beginPath();
-        ctx.arc(0, 0, bhR, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, bhR, bhR * 0.74, 0, 0, Math.PI * 2);
         ctx.fill();
+        // the faintest rim where light grazes the horizon
+        ctx.strokeStyle = colorA("#F4ECDE", 0.13 * diskAlpha);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, bhR * 1.02, bhR * 0.75, 0, 0, Math.PI * 2);
+        ctx.stroke();
         ctx.restore();
       }
       for (let i = pulses.length - 1; i >= 0; i--) {
@@ -414,25 +402,6 @@ export default function Ecosystem() {
       /* ── the constellation, born from the energy ──────────────── */
       starHover = -1;
       if (constel > 0) {
-        // the emblem emerges behind — hidden, ancient, celestial
-        if (emblemP > 0 && emblem.complete && emblem.naturalWidth > 0) {
-          const es = R * 0.54;
-          const shimmer = 0.9 + 0.1 * Math.sin(t * 0.7);
-          ctx.save();
-          ctx.globalCompositeOperation = "screen";
-          ctx.globalAlpha = emblemP * 0.3 * shimmer;
-          ctx.drawImage(emblem, figCx - es / 2, figCy - es / 2, es, es);
-          ctx.restore();
-          // it emerges FROM particles: a dust of gold over its surface
-          for (let k = 0; k < 30; k++) {
-            const ex = figCx + (prand(k * 3.7) - 0.5) * es * 0.8;
-            const ey = figCy + (prand(k * 5.3) - 0.5) * es * 0.8;
-            const ea = Math.sin(t * 0.9 + k * 2.1);
-            if (ea <= 0.2) continue;
-            softDot(ctx, ex, ey, 1.6, "#FFE9C2", 0.3 * ea * emblemP * (1.2 - emblemP), 0.45);
-          }
-        }
-
         // star hover?
         if (pointer.sx >= 0) {
           let bd = 34;
