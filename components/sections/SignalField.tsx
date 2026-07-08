@@ -230,26 +230,31 @@ function buildEdges(nodes: Node[], clusterOf: number[]): Edge[] {
       });
     }
   }
-  // the pattern's own thread: the spiral path + a few spokes
-  for (let i = 0; i < N - 1; i++) {
-    edges.push({
-      a: i, b: i + 1,
-      birth: 0.78 + (i / N) * 0.13,
-      tone: i % 3 === 0 ? ROSA : WARM,
-      kind: "spiral",
-      seed: i * 3 + 1,
-      spark: i % 4 === 0,
-    });
-  }
-  for (let i = 0; i < N - 8; i += 8) {
-    edges.push({
-      a: i, b: i + 8,
-      birth: 0.86 + prand(i) * 0.05,
-      tone: ORO,
-      kind: "spiral",
-      seed: i * 7 + 2,
-      spark: false,
-    });
+  // the pattern's own mesh: each node ties only to its nearest
+  // neighbours on the pattern plane — a honeycomb-like lattice,
+  // short cells instead of long chords crossing the center
+  const pd = (i: number, j: number) =>
+    Math.hypot(nodes[i].px - nodes[j].px, nodes[i].py - nodes[j].py);
+  const seen = new Set<string>();
+  for (let i = 0; i < N; i++) {
+    const near = nodes
+      .map((_, j) => j)
+      .filter((j) => j !== i)
+      .sort((a, b) => pd(i, a) - pd(i, b))
+      .slice(0, 3);
+    for (const j of near) {
+      const key = i < j ? `${i}-${j}` : `${j}-${i}`;
+      if (seen.has(key) || pd(i, j) > 1.5) continue;
+      seen.add(key);
+      edges.push({
+        a: i, b: j,
+        birth: 0.78 + prand(i * 13 + j * 7) * 0.13,
+        tone: (i + j) % 3 === 0 ? ROSA : (i + j) % 3 === 1 ? ORO : WARM,
+        kind: "spiral",
+        seed: i * 3 + j,
+        spark: (i + j) % 5 === 0,
+      });
+    }
   }
   return edges;
 }
@@ -505,7 +510,8 @@ export default function SignalField() {
           const raw = smooth(e.birth, e.birth + 0.07, p);
           if (raw <= 0) continue;
           lt = 1 - Math.pow(1 - raw, 3); // born from a, lands softly on b
-          alpha = 0.15 * raw * (1 - morph * 0.6);
+          // the old chords step aside once the pattern settles
+          alpha = 0.15 * raw * (1 - morph * 0.92);
         } else if (e.kind === "flicker") {
           if (phase3 <= 0.01) continue;
           const env = Math.sin(t * 0.55 + e.seed * 2.7);
