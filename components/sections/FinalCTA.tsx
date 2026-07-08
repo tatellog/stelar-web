@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Reveal from "../Reveal";
 import { useSign } from "../SignContext";
 import { FIGURES } from "@/lib/zodiac/figures";
+import { joinBeta } from "@/lib/beta";
 
 /**
  * Capítulo XII — Final.
@@ -156,10 +157,84 @@ export default function FinalCTA() {
   );
 }
 
-/** The beta CTA: on hover, stray particles are drawn into the button —
- *  the same gesture as the whole journey: loose lights becoming one. */
+/** The beta CTA: a REAL waitlist. The button opens into an email field,
+ *  the email lands in Supabase, and the visitor gets an answer — the
+ *  same gesture as the whole journey: a loose light joining the rest. */
 function BetaButton() {
   const [hover, setHover] = useState(false);
+  const [state, setState] = useState<
+    "idle" | "open" | "sending" | "done" | "duplicate" | "error"
+  >("idle");
+  const [email, setEmail] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (state === "open") inputRef.current?.focus();
+  }, [state]);
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
+      inputRef.current?.focus();
+      return;
+    }
+    setState("sending");
+    const result = await joinBeta(email);
+    setState(result === "ok" ? "done" : result);
+  };
+
+  if (state === "done" || state === "duplicate") {
+    return (
+      <motion.p
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/[0.07] px-7 py-3.5 text-sm font-semibold tracking-wide text-gold"
+      >
+        <span aria-hidden>✦</span>
+        {state === "done"
+          ? "Estás dentro. Te escribimos pronto."
+          : "Ya estabas en la lista — te escribimos pronto."}
+      </motion.p>
+    );
+  }
+
+  if (state !== "idle") {
+    return (
+      <motion.form
+        onSubmit={submit}
+        initial={{ opacity: 0, scale: 0.94 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="inline-flex flex-col items-center gap-2"
+      >
+        <div className="flex items-center overflow-hidden rounded-full border border-pink-soft/50 bg-deep/70 shadow-[0_0_34px_rgba(233,30,99,0.18)] backdrop-blur-sm focus-within:border-pink-soft">
+          <input
+            ref={inputRef}
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="tu@email.com"
+            disabled={state === "sending"}
+            className="w-52 bg-transparent px-5 py-3.5 text-sm text-cream placeholder:text-cream/35 focus:outline-none sm:w-64"
+          />
+          <button
+            type="submit"
+            disabled={state === "sending"}
+            className="m-1 rounded-full bg-pink px-5 py-2.5 text-sm font-semibold tracking-wide text-cream transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,72,134,0.5)] disabled:opacity-60"
+          >
+            {state === "sending" ? "…" : "Unirme"}
+          </button>
+        </div>
+        {state === "error" && (
+          <p className="text-xs text-pink-soft/90">
+            Algo falló — inténtalo de nuevo.
+          </p>
+        )}
+      </motion.form>
+    );
+  }
 
   return (
     <span
@@ -196,13 +271,13 @@ function BetaButton() {
             );
           })}
       </AnimatePresence>
-      <a
-        href="mailto:hola@stelar.app?subject=Quiero%20unirme%20a%20la%20beta"
+      <button
+        onClick={() => setState("open")}
         className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-pink px-8 py-3.5 text-sm font-semibold tracking-wide text-cream transition-all duration-500 hover:shadow-[0_0_50px_rgba(255,72,134,0.5)]"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-pink to-pink-soft opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
         <span className="relative">Únete a la beta</span>
-      </a>
+      </button>
     </span>
   );
 }
