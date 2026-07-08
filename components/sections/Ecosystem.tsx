@@ -494,8 +494,9 @@ export default function Ecosystem() {
             </span>
           </h2>
           <p className="mt-5 text-base leading-relaxed text-cream/60 sm:text-lg">
-            Conecta Apple Health, Garmin, Oura y Samsung Health para que Stelar
-            entienda tu panorama completo.
+            No importa dónde viva tu información —{" "}
+            <span className="font-serif italic text-gold">Stelar la reúne toda.</span>{" "}
+            Apple Health, Garmin, Oura y Samsung Health.
           </p>
         </motion.div>
 

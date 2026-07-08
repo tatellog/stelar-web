@@ -314,6 +314,10 @@ export default function Understands() {
               entender de ti.
             </span>
           </h2>
+          <p className="mt-5 text-base leading-relaxed text-cream/60 sm:text-lg">
+            Stelar no solo cuenta calorías.{" "}
+            <span className="font-serif italic text-gold">Entiende tu día.</span>
+          </p>
         </motion.div>
 
         {/* interaction hint */}

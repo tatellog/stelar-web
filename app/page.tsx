@@ -14,6 +14,10 @@ import OrbitaAction from "@/components/sections/OrbitaAction";
 import PatternExamples from "@/components/sections/PatternExamples";
 import DataNoise from "@/components/sections/DataNoise";
 import Emblem from "@/components/sections/Emblem";
+import ProductOverview from "@/components/sections/ProductOverview";
+import Roadmap from "@/components/sections/Roadmap";
+import Plans from "@/components/sections/Plans";
+import FAQ from "@/components/sections/FAQ";
 import FinalCTA from "@/components/sections/FinalCTA";
 import Footer from "@/components/Footer";
 
@@ -48,6 +52,12 @@ export default function Home() {
         <PatternExamples />
         <DataNoise />
         <Emblem />
+        {/* después del clímax emocional, las secciones racionales de
+            conversión: producto, roadmap, planes y preguntas */}
+        <ProductOverview />
+        <Roadmap />
+        <Plans />
+        <FAQ />
         <FinalCTA />
         <Footer />
       </SignProvider>

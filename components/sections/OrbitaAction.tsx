@@ -28,7 +28,7 @@ const LEVELS = [
     question: "¿Cómo voy hoy?",
     reading:
       "El estado de tu día, leído de una vez: déficit, proteína, calorías, agua.",
-    points: ["Estado de déficit", "Proteína y calorías", "Las señales de hoy"],
+    points: ["Calorías y proteína", "Sueño y energía", "Actividad y déficit"],
     tint: "rgba(233,30,99,0.12)",
     accent: "#FF4886",
     node: <DiaScreen />,
@@ -39,7 +39,7 @@ const LEVELS = [
     question: "¿Qué empezó a repetirse?",
     reading:
       "La semana no es una lista de días: es la forma que tus hábitos empiezan a tomar.",
-    points: ["Comportamiento semanal", "Patrones emergentes", "Consistencia"],
+    points: ["Tendencias semanales", "Consistencia", "Patrones emergentes"],
     tint: "rgba(217,174,111,0.12)",
     accent: "#E8B872",
     node: <SemanaScreen />,

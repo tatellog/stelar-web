@@ -112,23 +112,32 @@ export default function FinalCTA() {
       <div className="relative z-10 mx-auto max-w-3xl px-6 pt-24 text-center">
         <Reveal>
           <h2 className="font-sans text-4xl font-black leading-[1.08] tracking-tight text-cream sm:text-6xl">
-            Tus datos nunca fueron el problema.{" "}
+            Tus datos ya cuentan una historia.{" "}
             <span className="font-serif italic font-medium text-pink text-glow-pink">
-              Solo no podías ver lo que intentaban decirte.
+              Stelar te ayuda a entenderla.
             </span>
           </h2>
         </Reveal>
 
         <Reveal delay={0.3}>
           <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-cream/60">
-            Stelar transforma tus registros de todos los días en evidencia
-            visual para que entiendas los hábitos que construyen tus
-            resultados.
+            Deja de acumular números.{" "}
+            <span className="font-serif italic text-gold">
+              Empieza a descubrir patrones.
+            </span>
           </p>
         </Reveal>
 
         <Reveal delay={0.5} className="mt-12">
-          <BetaButton />
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <BetaButton />
+            <a
+              href="#orbita"
+              className="inline-flex items-center gap-2 rounded-full border border-cream/20 px-7 py-3.5 text-sm font-semibold tracking-wide text-cream/80 transition-all duration-500 hover:border-gold/50 hover:text-cream"
+            >
+              Ver demo <span aria-hidden>↺</span>
+            </a>
+          </div>
         </Reveal>
 
         <Reveal delay={0.7} className="mt-8">

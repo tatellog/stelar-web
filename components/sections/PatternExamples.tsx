@@ -58,7 +58,7 @@ function FridayBars() {
           </g>
         );
       })}
-      {/* the weekly average, drawn as a chart hairline */}
+      {/* the weekly average, drawn as a chart hairline — with its number */}
       <motion.line
         x1={10}
         y1={44}
@@ -72,6 +72,32 @@ function FridayBars() {
         viewport={{ once: true }}
         transition={{ duration: 1, delay: 1.2 }}
       />
+      <motion.text
+        x={161}
+        y={41}
+        textAnchor="end"
+        fill="#D9AE6F"
+        style={{ font: "italic 7px 'Cormorant Garamond', serif" }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.85 }}
+        viewport={{ once: true }}
+        transition={{ delay: 1.5 }}
+      >
+        prom. 1900 kcal
+      </motion.text>
+      <motion.text
+        x={94}
+        y={28}
+        textAnchor="end"
+        fill="#FFE9C2"
+        style={{ font: "italic 7.5px 'Cormorant Garamond', serif" }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.95 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 1.9 }}
+      >
+        2450 kcal
+      </motion.text>
       {/* the discovery: friday glows and names itself */}
       <motion.g
         initial={{ opacity: 0, y: 6 }}
