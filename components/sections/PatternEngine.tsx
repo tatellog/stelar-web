@@ -21,15 +21,18 @@ type Node = {
   r: number;
 };
 
+/* laid out like a real constellation figure: a top arc, a left branch,
+   a central spine and a right cluster — short adjacent links, almost no
+   crossings, asymmetric but balanced */
 const NODES: Node[] = [
-  { id: "comida", label: "Comida", x: 0.3, y: 0.3, color: "#E8B872", r: 7 },
-  { id: "entreno", label: "Entreno", x: 0.68, y: 0.24, color: "#FF9E57", r: 7 },
-  { id: "sueno", label: "Sueño", x: 0.19, y: 0.6, color: "#C18FFF", r: 6.5 },
-  { id: "peso", label: "Peso", x: 0.5, y: 0.76, color: "#F4ECDE", r: 6 },
-  { id: "agua", label: "Agua", x: 0.44, y: 0.2, color: "#8FBEDB", r: 5.5 },
-  { id: "deficit", label: "Déficit", x: 0.63, y: 0.58, color: "#E91E63", r: 8 },
-  { id: "proteina", label: "Proteína", x: 0.8, y: 0.42, color: "#E0AEA0", r: 6.5 },
-  { id: "ciclo", label: "Ciclo", x: 0.33, y: 0.46, color: "#FBD7E3", r: 5.5 },
+  { id: "comida", label: "Comida", x: 0.34, y: 0.36, color: "#E8B872", r: 7 },
+  { id: "entreno", label: "Entreno", x: 0.7, y: 0.28, color: "#FF9E57", r: 7 },
+  { id: "sueno", label: "Sueño", x: 0.22, y: 0.62, color: "#C18FFF", r: 6.5 },
+  { id: "peso", label: "Peso", x: 0.58, y: 0.74, color: "#F4ECDE", r: 6 },
+  { id: "agua", label: "Agua", x: 0.47, y: 0.2, color: "#8FBEDB", r: 5.5 },
+  { id: "deficit", label: "Déficit", x: 0.57, y: 0.5, color: "#E91E63", r: 8 },
+  { id: "proteina", label: "Proteína", x: 0.79, y: 0.54, color: "#E0AEA0", r: 6.5 },
+  { id: "ciclo", label: "Ciclo", x: 0.37, y: 0.55, color: "#FBD7E3", r: 5.5 },
 ];
 
 // [a, b, strength 0..1] — the strongest relations glow and pulse
@@ -38,13 +41,13 @@ const EDGES: [number, number, number][] = [
   [2, 0, 0.9], // sueño — comida
   [6, 3, 0.85], // proteína — peso
   [0, 5, 0.8], // comida — déficit
-  [4, 0, 0.4],
-  [4, 1, 0.35],
-  [7, 2, 0.5],
-  [7, 3, 0.4],
-  [1, 6, 0.5],
-  [2, 1, 0.35],
-  [5, 3, 0.6],
+  [4, 0, 0.4], // agua — comida
+  [4, 1, 0.35], // agua — entreno: the top arc
+  [7, 2, 0.5], // ciclo — sueño
+  [7, 3, 0.4], // ciclo — peso
+  [1, 6, 0.5], // entreno — proteína
+  [5, 6, 0.45], // déficit — proteína
+  [5, 3, 0.6], // déficit — peso
 ];
 
 export default function PatternEngine() {
