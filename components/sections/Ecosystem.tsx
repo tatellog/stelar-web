@@ -178,9 +178,9 @@ export default function Ecosystem() {
           const ang = below
             ? Math.PI * (0.15 + prand(i * 4.1) * 0.7)
             : prand(i * 4.1) * Math.PI * 2;
-          const rr = bhR * (1.05 + Math.pow(prand(i * 6.3), 0.7) * 2.6);
+          const rr = bhR * (1.15 + Math.pow(prand(i * 6.3), 0.7) * 2.4);
           x = cx + Math.cos(ang) * rr;
-          y = cy - (rr - bhR) * 0.42 + Math.sin(ang) * rr * 0.52;
+          y = cy + Math.sin(ang) * rr * 0.3 + (prand(i * 7.9) - 0.5) * bhR * 0.5;
         } else {
           x = prand(i * 3.7) * W;
           y = prand(i * 8.3) * H;
@@ -212,59 +212,84 @@ export default function Ecosystem() {
         ctx.fillRect(0, 0, W, H);
       }
 
-      /* ── the vortex: rings of star-trails spiraling around the void ── */
+      /* ── the black hole: dark sphere, accretion disk, lensed ring ── */
       if (hole > 0.01) {
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(pointer.x * 0.02);
-        const squash = 0.42;
+        ctx.rotate(-0.09 + pointer.x * 0.02);
+        const squash = 0.2;
 
-        for (let i = 0; i < N_TRAILS; i++) {
+        const drawDiskTrail = (i: number) => {
           const u = prand(i * 3.9);
-          const r = bhR * (1.02 + Math.pow(u, 1.4) * 2.4); // packed toward the void
-          const lift = (r - bhR) * 0.5; // the dome of the funnel
-          const w = (bhR * 20) / (r + 1);
-          const a0 = prand(i * 7.1) * Math.PI * 2 + t * w * 0.05;
+          const r = bhR * (1.3 + Math.pow(u, 1.35) * 1.9);
+          const w = (bhR * 22) / (r + 1);
+          const a0 = prand(i * 7.1) * Math.PI * 2 + t * w * 0.06;
           const longRing = prand(i * 15.7) > 0.42;
-          const len = longRing ? 2.2 + prand(i * 9.3) * 3.6 : 0.3 + prand(i * 9.3) * 0.9;
+          const len = longRing ? 2 + prand(i * 9.3) * 3.4 : 0.3 + prand(i * 9.3) * 0.9;
           const alpha =
-            (longRing ? 0.05 + prand(i * 11.7) * 0.12 : 0.14 + prand(i * 11.7) * 0.22) *
+            (longRing ? 0.06 + prand(i * 11.7) * 0.13 : 0.16 + prand(i * 11.7) * 0.24) *
             diskAlpha;
           ctx.strokeStyle = colorA("#F4ECDE", alpha);
-          ctx.lineWidth = 0.4 + prand(i * 13.1) * 0.7;
+          ctx.lineWidth = 0.4 + prand(i * 13.1) * 0.75;
           ctx.beginPath();
-          ctx.ellipse(0, -lift, r, r * squash, 0, a0, a0 + len);
+          ctx.ellipse(0, 0, r, r * squash, 0, a0, a0 + len);
           ctx.stroke();
-        }
+        };
 
-        // after each absorption, a ring of light runs down the funnel
+        // the disk, behind the sphere
+        for (let i = 0; i < N_TRAILS; i++) drawDiskTrail(i);
+
+        // pulses ride the disk after each absorption
         for (const pu of pulses) {
           const age = t - pu.t0;
           if (age > 1.2) continue;
           const k = age / 1.2;
-          const r = bhR * (3.3 - k * 2.2);
-          ctx.strokeStyle = colorA("#FFF6E5", 0.32 * Math.sin(k * Math.PI) * diskAlpha);
+          const r = bhR * (3 - k * 1.8);
+          ctx.strokeStyle = colorA("#FFF6E5", 0.3 * Math.sin(k * Math.PI) * diskAlpha);
           ctx.lineWidth = 1.3;
           ctx.beginPath();
-          ctx.ellipse(0, -(r - bhR) * 0.5, r, r * squash, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, r, r * squash, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
 
-        // the void
+        // the event horizon: a true dark sphere
         const core = ctx.createRadialGradient(0, 0, 0, 0, 0, bhR);
         core.addColorStop(0, "rgba(1,0,1,1)");
-        core.addColorStop(0.86, "rgba(1,0,1,0.99)");
+        core.addColorStop(0.9, "rgba(1,0,1,1)");
         core.addColorStop(1, "rgba(1,0,1,0)");
         ctx.fillStyle = core;
         ctx.beginPath();
-        ctx.ellipse(0, 0, bhR, bhR * 0.74, 0, 0, Math.PI * 2);
+        ctx.arc(0, 0, bhR * 1.04, 0, Math.PI * 2);
         ctx.fill();
-        // the faintest rim where light grazes the horizon
-        ctx.strokeStyle = colorA("#F4ECDE", 0.13 * diskAlpha);
-        ctx.lineWidth = 1;
+
+        // the lensed image of the disk: light bent around the sphere
+        for (let i = 0; i < 70; i++) {
+          const rr = bhR * (1.05 + Math.pow(prand(i * 4.3), 1.6) * 0.4);
+          const w2 = (bhR * 26) / (rr + 1);
+          const a0 = prand(i * 6.7) * Math.PI * 2 + t * w2 * 0.05;
+          const len = 0.5 + prand(i * 8.9) * 1.6;
+          ctx.strokeStyle = colorA("#F4ECDE", (0.05 + prand(i * 10.3) * 0.14) * diskAlpha);
+          ctx.lineWidth = 0.4 + prand(i * 12.7) * 0.6;
+          ctx.beginPath();
+          ctx.arc(0, 0, rr, a0, a0 + len);
+          ctx.stroke();
+        }
+        // photon ring — the thin bright edge
+        ctx.strokeStyle = colorA("#FFF6E5", (0.28 * hole + 0.04) * (1 - emission * 0.3));
+        ctx.lineWidth = 1.1;
         ctx.beginPath();
-        ctx.ellipse(0, 0, bhR * 1.02, bhR * 0.75, 0, 0, Math.PI * 2);
+        ctx.arc(0, 0, bhR * 1.05, 0, Math.PI * 2);
         ctx.stroke();
+        softDot(ctx, 0, 0, bhR * 1.5, "#F4ECDE", 0.05 * diskAlpha, 0);
+
+        // the disk, in front of the sphere — the lower half crosses it
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(-bhR * 4, bhR * squash * 0.4, bhR * 8, bhR * 4);
+        ctx.clip();
+        for (let i = 0; i < N_TRAILS; i++) drawDiskTrail(i);
+        ctx.restore();
+
         ctx.restore();
       }
       for (let i = pulses.length - 1; i >= 0; i--) {
