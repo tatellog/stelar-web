@@ -5,7 +5,6 @@ import Hero from "@/components/sections/Hero";
 
 import SignalField from "@/components/sections/SignalField";
 import ConstellationBirth from "@/components/sections/ConstellationBirth";
-import Evidence from "@/components/sections/Evidence";
 import PatternEngine from "@/components/sections/PatternEngine";
 import ScanIA from "@/components/sections/ScanIA";
 import Ecosystem from "@/components/sections/Ecosystem";
@@ -18,10 +17,10 @@ import Footer from "@/components/Footer";
 /*
  * El viaje — capítulos del brief:
  * I Oscuridad · II Señales · III Conexiones · IV Tu constelación ·
- * V Tu Órbita (aparece el teléfono) · VI IA Pattern Engine ·
- * VII Scan IA · VIII Ecosistema · IX Órbita en acción ·
- * X No más datos sueltos · XI El emblema (clímax) · XII Final.
- * El producto no existe hasta el capítulo V: la protagonista es ella.
+ * V IA Pattern Engine · VI Scan IA (aparece el teléfono) ·
+ * VII Ecosistema · VIII Órbita en acción ·
+ * IX No más datos sueltos · X El emblema (clímax) · Final.
+ * El producto no existe hasta pasada la mitad: la protagonista es ella.
  */
 export default function Home() {
   return (
@@ -33,7 +32,6 @@ export default function Home() {
   
         <SignalField />
         <ConstellationBirth />
-        <Evidence />
         <PatternEngine />
         <ScanIA />
         <Ecosystem />

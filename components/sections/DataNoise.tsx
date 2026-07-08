@@ -197,7 +197,7 @@ export default function DataNoise() {
           className="pointer-events-none absolute inset-x-0 top-[10%] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
-            Capítulo X · No más datos sueltos
+            Capítulo IX · No más datos sueltos
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
             No necesitas{" "}

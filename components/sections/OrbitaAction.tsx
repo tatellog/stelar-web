@@ -85,7 +85,7 @@ export default function OrbitaAction() {
   const level = LEVELS[idx];
 
   return (
-    <section ref={ref} className="relative h-[320vh]">
+    <section id="orbita" ref={ref} className="relative h-[320vh]">
       <div className="sticky top-0 flex h-screen items-center overflow-hidden">
         {/* the sky changes with each reading */}
         {LEVELS.map((l, i) => (
@@ -106,7 +106,7 @@ export default function OrbitaAction() {
         >
           <div>
             <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
-              Capítulo IX · Órbita en acción
+              Capítulo VIII · Órbita en acción
             </p>
             <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl lg:text-5xl">
               Tu día, tu semana y tu mes tienen{" "}
