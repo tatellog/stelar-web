@@ -198,6 +198,33 @@ export default function Understands() {
         softDot(ctx, cx, cy, 3.2, "#FFFFFF", appear, 0.5);
       }
 
+      /* the IA thinking out loud: every few seconds two astros exchange a
+         hairline of light with a pulse traveling it — tiny relationships,
+         seen, not explained */
+      const think = ramp(p, 0.3, 0.4);
+      if (think > 0) {
+        for (let rel = 0; rel < 2; rel++) {
+          const cycle = Math.floor(t / 3.2) + rel * 7;
+          const ph = ((t / 3.2) % 1 + rel * 0.5) % 1;
+          const ai = Math.floor(prand(cycle * 13.7) * CATS.length);
+          const bi = (ai + 1 + Math.floor(prand(cycle * 29.3) * (CATS.length - 1))) % CATS.length;
+          const bornA = ramp(p, 0.1 + ai * 0.045, 0.16 + ai * 0.045);
+          const bornB = ramp(p, 0.1 + bi * 0.045, 0.16 + bi * 0.045);
+          if (bornA >= 1 && bornB >= 1) {
+            const A = catPos(CATS[ai], t, R, cx, cy, slow);
+            const B = catPos(CATS[bi], t, R, cx, cy, slow);
+            const env = Math.sin(ph * Math.PI) * think;
+            ctx.strokeStyle = colorA("#FFE9C2", 0.16 * env);
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(B.x, B.y);
+            ctx.stroke();
+            softDot(ctx, A.x + (B.x - A.x) * ph, A.y + (B.y - A.y) * ph, 3.4, "#FFE9C2", 0.6 * env, 0.45);
+          }
+        }
+      }
+
       /* the categories, born one by one */
       for (let i = 0; i < CATS.length; i++) {
         const c = CATS[i];

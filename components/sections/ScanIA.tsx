@@ -8,6 +8,7 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import PhoneMockup from "../PhoneMockup";
+import PhoneEmerge from "../PhoneEmerge";
 import ScanResultScreen from "../screens/ScanResultScreen";
 import { softDot, colorA, prand, ramp } from "@/lib/canvas";
 
@@ -34,7 +35,7 @@ const INGREDIENTS = [
   { label: "Crema", value: "", color: "#F4ECDE", x: 0.2, y: 0.6, editable: true },
   {
     label: "En total",
-    value: "548 kcal",
+    value: "", // recalculated live from the edit — the IA never has the last word
     detail: "39 g proteína · 2 g azúcar",
     color: "#E8B872",
     x: 0.8,
@@ -212,6 +213,9 @@ export default function ScanIA() {
     setShowOrbit(v >= 0.9);
   });
 
+  // edit → everything recalculates instantly, orbit included
+  const totalKcal = cremaG === 20 ? "503 kcal" : "548 kcal";
+
   const textBeat = useTransform(p, [0.73, 0.77, 0.86, 0.9], [0, 1, 1, 0]);
   const saveCaption = useTransform(p, [0.58, 0.62, 0.68, 0.72], [0, 1, 1, 0]);
   const orbitOpacity = useTransform(p, [0.895, 0.94], [0, 1]);
@@ -328,8 +332,8 @@ export default function ScanIA() {
           style={{ opacity: editCaption }}
           className="pointer-events-none absolute inset-x-0 top-[68%] z-10 text-center text-base text-cream/75"
         >
-          La IA estima.{" "}
-          <span className="font-serif italic text-gold">Tú tienes la última palabra.</span>
+          Tú ajustas —{" "}
+          <span className="font-serif italic text-gold">y todo se recalcula al instante.</span>
         </motion.p>
         <motion.p
           style={{ opacity: saveCaption }}
@@ -371,7 +375,17 @@ export default function ScanIA() {
                 >
                   {c.label}
                 </span>
-                {c.editable ? (
+                {c.total ? (
+                  <motion.span
+                    key={totalKcal}
+                    initial={{ scale: 1.25, color: "#FFE9C2" }}
+                    animate={{ scale: 1, color: "#E8B872" }}
+                    transition={{ duration: 0.5 }}
+                    className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs"
+                  >
+                    {totalKcal}
+                  </motion.span>
+                ) : c.editable ? (
                   <span className="flex items-center gap-1.5">
                     <motion.span style={{ opacity: editHint }} className="text-xs text-cream/45">
                       −
@@ -405,17 +419,14 @@ export default function ScanIA() {
           </motion.div>
         ))}
 
-        {/* the evidence enters the phone, ready to confirm */}
-        <motion.div
-          initial={false}
-          animate={{ opacity: showPhone ? 1 : 0, y: showPhone ? 0 : 80 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute left-1/2 top-[13%] z-10 w-[210px] -translate-x-1/2"
-        >
-          <PhoneMockup>
-            <ScanResultScreen show={showPhone} />
-          </PhoneMockup>
-        </motion.div>
+        {/* the evidence assembles the phone out of the universe */}
+        <div className="absolute left-1/2 top-[13%] z-10 w-[210px] -translate-x-1/2">
+          <PhoneEmerge show={showPhone}>
+            <PhoneMockup>
+              <ScanResultScreen show={showPhone} />
+            </PhoneMockup>
+          </PhoneEmerge>
+        </div>
 
         {/* the second path: no photo — just write it */}
         <motion.div
@@ -477,7 +488,7 @@ export default function ScanIA() {
               <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-soft shadow-[0_0_10px_#E8B872]" />
             </motion.div>
             <span className="absolute inset-0 flex items-center justify-center font-serif text-base italic text-gold">
-              +548 kcal
+              +{totalKcal}
             </span>
           </div>
           <p className="mt-6 text-base text-cream/75">

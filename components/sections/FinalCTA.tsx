@@ -20,10 +20,10 @@ export default function FinalCTA() {
       {/* the emblem and its constellation, aligned in the same art box —
           the figure was traced over the emblem, so they share coordinates */}
       <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
+        initial={{ opacity: 0, scale: 1.09 }}
+        whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ duration: 3, ease: "easeOut" }}
+        transition={{ duration: 3.4, ease: "easeOut" }}
         className="pointer-events-none absolute left-1/2 top-1/2 h-[21rem] w-[21rem] -translate-x-1/2 -translate-y-1/2 sm:h-[30rem] sm:w-[30rem]"
       >
         <motion.img
@@ -62,6 +62,27 @@ export default function FinalCTA() {
               transition={{ duration: 1.2, delay: 0.4 + i * 0.16, ease: "easeInOut" }}
             />
           ))}
+          {/* energy keeps traveling every finished connection — the
+              constellation is complete, and alive */}
+          {def.lines.map(([a, b], i) => (
+            <motion.circle
+              key={`e${i}`}
+              r={0.7}
+              fill="#FFE9C2"
+              animate={{
+                cx: [def.stars[a].x * 100, def.stars[b].x * 100],
+                cy: [def.stars[a].y * 100, def.stars[b].y * 100],
+                opacity: [0, 0.85, 0],
+              }}
+              transition={{
+                duration: 2.6,
+                delay: 2.2 + i * 0.9,
+                repeat: Infinity,
+                repeatDelay: def.lines.length * 0.35,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
           {def.stars.map((st, i) => {
             const hero = st.mag <= 2.3;
             const x = st.x * 100;
@@ -91,17 +112,18 @@ export default function FinalCTA() {
       <div className="relative z-10 mx-auto max-w-3xl px-6 pt-24 text-center">
         <Reveal>
           <h2 className="font-sans text-4xl font-black leading-[1.08] tracking-tight text-cream sm:text-6xl">
-            No necesitas más datos.{" "}
+            Tus datos nunca fueron el problema.{" "}
             <span className="font-serif italic font-medium text-pink text-glow-pink">
-              Necesitas entender lo que te están diciendo.
+              Solo no podías ver lo que intentaban decirte.
             </span>
           </h2>
         </Reveal>
 
         <Reveal delay={0.3}>
           <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-cream/60">
-            Stelar transforma tus registros diarios en evidencia visual para
-            que por fin entiendas los hábitos que construyen tus resultados.
+            Stelar transforma tus registros de todos los días en evidencia
+            visual para que entiendas los hábitos que construyen tus
+            resultados.
           </p>
         </Reveal>
 

@@ -388,6 +388,30 @@ export default function Ecosystem() {
         const pf = prevFall.get(s.id) ?? 0;
         if (pf < 0.96 && f >= 0.96) pulses.push({ t0: t });
         prevFall.set(s.id, f);
+
+        /* continuous life: while an astro still floats, it sends small
+           pulses of information toward the force — not a static logo */
+        if (grav1 > 0.15 && f < 0.6) {
+          const cyc = t / 2.8 + i * 0.41;
+          const k = cyc % 1;
+          if (k < 0.62) {
+            const kk = k / 0.62;
+            for (let d = 0; d < 5; d++) {
+              const kd = kk - d * 0.05;
+              if (kd <= 0 || kd >= 1) continue;
+              const bowA = Math.atan2(cy - pos.y, cx - pos.x) + Math.PI / 2;
+              const bow = Math.sin(kd * Math.PI) * 26 * (prand(i * 9.1 + Math.floor(cyc)) - 0.5) * 2;
+              const px2 = pos.x + (cx - pos.x) * kd + Math.cos(bowA) * bow;
+              const py2 = pos.y + (cy - pos.y) * kd + Math.sin(bowA) * bow;
+              const av = Math.sin(kd * Math.PI) * grav1 * (1 - f) * 0.7;
+              softDot(ctx, px2, py2, 1.5 + prand(i * 3.3 + d) * 1.6, s.tint, av, 0.4);
+            }
+          }
+          // arrival: the force answers with a small warm pulse
+          if (k > 0.56 && k < 0.62) {
+            softDot(ctx, cx, cy, bhR * 1.6 + 14, "#FFE9C2", 0.2 * grav1, 0.25);
+          }
+        }
       });
 
       /* ── the transformation: rivers of gold ───────────────────── */

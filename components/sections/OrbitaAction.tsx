@@ -9,6 +9,7 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import PhoneMockup from "../PhoneMockup";
+import PhoneEmerge from "../PhoneEmerge";
 import DiaScreen from "../screens/DiaScreen";
 import SemanaScreen from "../screens/SemanaScreen";
 import MesScreen from "../screens/MesScreen";
@@ -63,6 +64,7 @@ const LEVELS = [
 export default function OrbitaAction() {
   const ref = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
+  const [emerged, setEmerged] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -71,6 +73,7 @@ export default function OrbitaAction() {
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
     setIdx(Math.min(LEVELS.length - 1, Math.floor(v * LEVELS.length)));
+    setEmerged(v > 0.005 && v < 0.995);
   });
 
   const introOpacity = useTransform(scrollYProgress, [0, 0.04, 1], [0.6, 1, 1]);
@@ -187,20 +190,23 @@ export default function OrbitaAction() {
                   miniature UI keeps its proportions (its type sizes are fixed px) */}
               <div className="aspect-[9/19] w-full">
                 <div className="w-[240px] origin-top-left scale-[0.7] sm:w-full sm:scale-100">
-                  <PhoneMockup>
-                    <AnimatePresence mode="wait">
+                  <PhoneEmerge show={emerged}>
+                    <PhoneMockup>
+                      {/* the camera slides between the readings — moving
+                          through rooms inside the phone, never cutting */}
                       <motion.div
-                        key={level.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="h-full"
+                        animate={{ x: `${(-idx * 100) / 3}%` }}
+                        transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex h-full w-[300%]"
                       >
-                        {level.node}
+                        {LEVELS.map((l) => (
+                          <div key={l.id} className="h-full w-1/3">
+                            {l.node}
+                          </div>
+                        ))}
                       </motion.div>
-                    </AnimatePresence>
-                  </PhoneMockup>
+                    </PhoneMockup>
+                  </PhoneEmerge>
                 </div>
               </div>
             </div>

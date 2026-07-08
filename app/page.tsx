@@ -1,4 +1,5 @@
 import Starfield from "@/components/Starfield";
+import ConstellationThread from "@/components/ConstellationThread";
 import Nav from "@/components/Nav";
 import { SignProvider } from "@/components/SignContext";
 import Hero from "@/components/sections/Hero";
@@ -31,6 +32,9 @@ export default function Home() {
     <main className="cosmic-gradient relative">
       <Starfield />
       <SignProvider>
+        {/* el hilo: la constelación protagonista que nunca se resetea —
+            cada capítulo enciende una estrella más */}
+        <ConstellationThread />
         <Nav />
         <Hero />
   
