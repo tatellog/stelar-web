@@ -50,8 +50,8 @@ const FALL0 = 0.42;
 const FALL_STEP = 0.028;
 const FALL_LEN = 0.055;
 
-const N_TRAILS = 150; // star-trail rings of the vortex
-const N_STARS = 620; // the dense field of tiny stars
+const N_TRAILS = 430; // star-trail rings of the vortex
+const N_STARS = 900; // the dense field of tiny stars
 const N_GOLD = 150; // the rivers of gold
 
 export default function Ecosystem() {
@@ -162,21 +162,25 @@ export default function Ecosystem() {
       const silence = ramp(p, 0.78, 0.84);
       const emission = ramp(p, 0.83, 0.95); // rivers of gold
 
-      const bhR = R * (0.024 * grav1 + 0.078 * hole);
+      const bhR = R * (0.03 * grav1 + 0.105 * hole);
       const diskAlpha = hole * (1 - silence * 0.55) * (1 - emission * 0.45);
 
       /* ── a dense field of tiny stars; the vortex gathers the near ones ── */
       for (let i = 0; i < N_STARS; i++) {
         const born = ramp(p, 0.01 + prand(i * 1.9) * 0.16, 0.09 + prand(i * 1.9) * 0.16);
         if (born <= 0) continue;
-        const clustered = i % 3 === 0 && hole > 0.01; // a third crowds the funnel
+        const clustered = i % 2 === 0 && hole > 0.01; // half crowds the funnel
         let x: number;
         let y: number;
         if (clustered) {
-          const ang = prand(i * 4.1) * Math.PI * 2 + t * 0.02;
-          const rr = bhR * (1.12 + Math.pow(prand(i * 6.3), 0.65) * 2.8);
+          // biased toward the lower foreground, like the reference
+          const below = prand(i * 2.7) > 0.3;
+          const ang = below
+            ? Math.PI * (0.15 + prand(i * 4.1) * 0.7)
+            : prand(i * 4.1) * Math.PI * 2;
+          const rr = bhR * (1.05 + Math.pow(prand(i * 6.3), 0.7) * 2.6);
           x = cx + Math.cos(ang) * rr;
-          y = cy - (rr - bhR) * 0.3 + Math.sin(ang) * rr * 0.55;
+          y = cy - (rr - bhR) * 0.42 + Math.sin(ang) * rr * 0.52;
         } else {
           x = prand(i * 3.7) * W;
           y = prand(i * 8.3) * H;
@@ -213,19 +217,21 @@ export default function Ecosystem() {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(pointer.x * 0.02);
-        const squash = 0.52;
+        const squash = 0.42;
 
         for (let i = 0; i < N_TRAILS; i++) {
           const u = prand(i * 3.9);
-          const r = bhR * (1.04 + u * u * 2.3); // denser toward the void
-          const lift = (r - bhR) * 0.32; // the funnel: outer rings sit higher
-          const w = (bhR * 22) / (r + 1); // inner rings spin faster
-          const a0 = prand(i * 7.1) * Math.PI * 2 + t * w * 0.06;
-          const len = 0.3 + prand(i * 9.3) * 1.1;
-          const front = Math.sin(a0 + len / 2) > 0 ? 1.2 : 0.75;
-          const alpha = (0.09 + prand(i * 11.7) * 0.28) * diskAlpha * front;
+          const r = bhR * (1.02 + Math.pow(u, 1.4) * 2.4); // packed toward the void
+          const lift = (r - bhR) * 0.5; // the dome of the funnel
+          const w = (bhR * 20) / (r + 1);
+          const a0 = prand(i * 7.1) * Math.PI * 2 + t * w * 0.05;
+          const longRing = prand(i * 15.7) > 0.42;
+          const len = longRing ? 2.2 + prand(i * 9.3) * 3.6 : 0.3 + prand(i * 9.3) * 0.9;
+          const alpha =
+            (longRing ? 0.05 + prand(i * 11.7) * 0.12 : 0.14 + prand(i * 11.7) * 0.22) *
+            diskAlpha;
           ctx.strokeStyle = colorA("#F4ECDE", alpha);
-          ctx.lineWidth = 0.5 + prand(i * 13.1) * 0.8;
+          ctx.lineWidth = 0.4 + prand(i * 13.1) * 0.7;
           ctx.beginPath();
           ctx.ellipse(0, -lift, r, r * squash, 0, a0, a0 + len);
           ctx.stroke();
@@ -236,11 +242,11 @@ export default function Ecosystem() {
           const age = t - pu.t0;
           if (age > 1.2) continue;
           const k = age / 1.2;
-          const r = bhR * (3.1 - k * 2);
+          const r = bhR * (3.3 - k * 2.2);
           ctx.strokeStyle = colorA("#FFF6E5", 0.32 * Math.sin(k * Math.PI) * diskAlpha);
           ctx.lineWidth = 1.3;
           ctx.beginPath();
-          ctx.ellipse(0, -(r - bhR) * 0.32, r, r * squash, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, -(r - bhR) * 0.5, r, r * squash, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
 
