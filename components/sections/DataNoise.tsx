@@ -3,33 +3,65 @@
 import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useSign } from "../SignContext";
-import { figureInRect } from "@/lib/zodiac/helpers";
-import { softDot, sparkle, colorA, prand, ramp } from "@/lib/canvas";
+import { figureArt } from "@/lib/zodiac/helpers";
+import { softDot, colorA, prand, ramp } from "@/lib/canvas";
 
 /**
- * Capítulo X — No más datos sueltos.
- * The screen fills with loose numbers — calorías, pasos, macros, peso —
- * until they become noise. Then the noise disperses, and what remains is
- * pulled toward the center: a clean constellation. Evidence, not noise.
+ * Capítulo IX — el momento donde aparece la evidencia. The climax.
+ * The screen is full of registros — words and numbers floating in depth.
+ * They don't fade: each one breaks into golden particles. The dust is
+ * pulled into curved rivers, accumulates into a luminous cloud, and
+ * then — a cinematic flare — the first star ignites. Then another.
+ * Lines draw themselves like luminous ink. And thousands of particles
+ * travel those lines to build the animal: an illustration made entirely
+ * of light, never an image. A final golden flare runs the whole figure,
+ * the camera eases back, and everything stays alive, breathing.
+ * "Descubrir una constelación por primera vez."
  */
 
-const TOKENS = [
-  "1.847", "kcal", "62 g", "proteína", "10.234", "pasos", "72.4", "kg",
-  "7 h 12 m", "sueño", "2.1 L", "agua", "48%", "carbs", "1.560", "kcal",
-  "58 g", "grasas", "9.480", "pasos", "71.9", "kg", "6 h 40 m", "sueño",
-  "1.8 L", "agua", "132", "g carbs", "1.923", "kcal", "66 g", "proteína",
-  "11.802", "pasos", "72.1", "kg", "8 h 05 m", "sueño", "2.4 L", "agua",
-  "-320", "kcal", "44%", "déficit", "1.771", "kcal", "12.019", "pasos",
-  "70 g", "proteína", "73.0", "kg", "5 h 58 m", "sueño", "1.5 L", "agua",
-  "2.014", "kcal", "61 g", "proteína", "8.732", "pasos", "72.6", "kg",
+const WORDS = [
+  "proteína", "agua", "déficit", "sueño", "peso", "calorías", "entreno",
+  "pasos", "azúcar", "carbs",
+];
+const NUMBERS = [
+  "73.1", "132 g", "7 h 12 m", "1.8 L", "1.847 kcal", "62 g", "10.234",
+  "48%", "-320 kcal", "71.9", "2.1 L", "6 h 40 m", "309", "150 g", "39 g",
+  "548 kcal", "72.4", "8 h 05 m", "12.019", "44%",
 ];
 
-const BULLETS = [
-  ["Evidencia", "no ruido."],
-  ["Patrones", "no días aislados."],
-  ["Claridad", "no culpa."],
-  ["Progreso", "no perfección."],
-];
+type Token = {
+  text: string;
+  x: number; // fraction of W
+  y: number;
+  depth: number; // 0.4 far — 1 near
+  size: number;
+  isNumber: boolean;
+  stagger: number; // when it disintegrates
+  swirlDir: number;
+};
+
+function buildTokens(): Token[] {
+  const out: Token[] = [];
+  for (let i = 0; i < 54; i++) {
+    const isNumber = i % 2 === 0;
+    const pool = isNumber ? NUMBERS : WORDS;
+    out.push({
+      text: pool[Math.floor(prand(i * 7.3) * pool.length)],
+      x: 0.06 + prand(i * 3.1) * 0.88,
+      y: 0.1 + prand(i * 5.7) * 0.78,
+      depth: 0.4 + prand(i * 9.1) * 0.6,
+      size: 10 + prand(i * 11.3) * 9,
+      isNumber,
+      stagger: 0.14 + prand(i * 13.7) * 0.17,
+      swirlDir: prand(i * 17.1) > 0.5 ? 1 : -1,
+    });
+  }
+  return out;
+}
+
+const PPT = 18; // particles born from each token
+const N_EMBLEM = 1350; // the animal, made of light
+const N_RESIDUAL = 34;
 
 export default function DataNoise() {
   const ref = useRef<HTMLDivElement>(null);
@@ -54,10 +86,10 @@ export default function DataNoise() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const tokens = buildTokens();
+
     let W = 0;
     let H = 0;
-    let fig: ReturnType<typeof figureInRect> | null = null;
-
     const resize = () => {
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       W = canvas.parentElement?.clientWidth ?? 0;
@@ -67,176 +99,401 @@ export default function DataNoise() {
       canvas.style.width = `${W}px`;
       canvas.style.height = `${H}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const s = Math.min(W * 0.62, H * 0.52);
-      fig = figureInRect(sign, {
-        x: W / 2 - s / 2,
-        y: H * 0.44 - s / 2,
-        w: s,
-        h: s,
-      });
     };
     resize();
     window.addEventListener("resize", resize);
 
+    /* the animal, sampled from the emblem's real pixels — so the dust
+       builds the true figure, aligned with the constellation */
+    let emblemPts: { x: number; y: number; b: number }[] = [];
+    const emblem = new Image();
+    emblem.src = `/emblems/${sign}/f10.png`;
+    emblem.onload = () => {
+      const S = 130;
+      const off = document.createElement("canvas");
+      off.width = S;
+      off.height = S;
+      const octx = off.getContext("2d");
+      if (!octx) return;
+      octx.drawImage(emblem, 0, 0, S, S);
+      const data = octx.getImageData(0, 0, S, S).data;
+      const pts: { x: number; y: number; b: number }[] = [];
+      for (let y = 0; y < S; y += 1) {
+        for (let x = 0; x < S; x += 1) {
+          const a = data[(y * S + x) * 4 + 3];
+          if (a > 60) {
+            pts.push({ x: x / S - 0.5, y: y / S - 0.5, b: a / 255 });
+          }
+        }
+      }
+      emblemPts = pts
+        .map((pt, i) => ({ pt, k: prand(i * 3.7) }))
+        .sort((u, v) => u.k - v.k)
+        .slice(0, N_EMBLEM)
+        .map((u) => u.pt);
+    };
+
+    const pointer = { x: 0, y: 0, tx: 0, ty: 0, sx: -1, sy: -1 };
+    type Wave = { t0: number; dist: number[] };
+    const waves: Wave[] = [];
+
+    const onPointer = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.sx = e.clientX - rect.left;
+      pointer.sy = e.clientY - rect.top;
+      pointer.tx = (pointer.sx / W) * 2 - 1;
+      pointer.ty = (pointer.sy / H) * 2 - 1;
+    };
+
+    let starScreen: { x: number; y: number }[] = [];
+    let adjacency: number[][] = [];
+    let lineList: readonly (readonly [number, number])[] = [];
+
+    const onClick = (e: MouseEvent) => {
+      if (progress.current < 0.7) return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      let best = -1;
+      let bd = 40;
+      starScreen.forEach((st, k) => {
+        const d = Math.hypot(st.x - mx, st.y - my);
+        if (d < bd) {
+          bd = d;
+          best = k;
+        }
+      });
+      if (best < 0) return;
+      const dist = Array(starScreen.length).fill(Infinity);
+      dist[best] = 0;
+      const q = [best];
+      while (q.length) {
+        const u = q.shift()!;
+        lineList.forEach(([a, b]) => {
+          const v = a === u ? b : b === u ? a : -1;
+          if (v >= 0 && dist[v] > dist[u] + 1) {
+            dist[v] = dist[u] + 1;
+            q.push(v);
+          }
+        });
+      }
+      waves.push({ t0: performance.now() / 1000, dist });
+      if (waves.length > 3) waves.shift();
+    };
+
+    const bell = (v: number) => Math.exp(-v * v * 4);
+
     let raf = 0;
-    const draw = (t: number) => {
-      ctx.clearRect(0, 0, W, H);
+    const draw = (now: number) => {
+      const t = now / 1000;
       const p = progress.current;
-      if (!fig) {
-        raf = requestAnimationFrame(draw);
-        return;
+      pointer.x += (pointer.tx - pointer.x) * 0.045;
+      pointer.y += (pointer.ty - pointer.y) * 0.045;
+
+      ctx.clearRect(0, 0, W, H);
+      const R = Math.min(W, H);
+      const cx = W / 2;
+      const cy = H * 0.47;
+
+      // the camera: an almost imperceptible dolly in, then it steps back
+      const dolly =
+        1 + 0.06 * ramp(p, 0.3, 0.88) - 0.045 * ramp(p, 0.93, 1);
+      const rot = pointer.x * 0.045; // < 3 degrees
+      const proj = (x: number, y: number, par = 1) => {
+        let dx = (x - cx) * dolly;
+        let dy = (y - cy) * dolly;
+        const rx = dx * Math.cos(rot) - dy * Math.sin(rot);
+        const ry = dx * Math.sin(rot) + dy * Math.cos(rot);
+        return {
+          x: cx + rx + pointer.x * 8 * par,
+          y: cy + ry + pointer.y * 6 * par,
+        };
+      };
+
+      for (let i = waves.length - 1; i >= 0; i--) {
+        if (t - waves[i].t0 > 4) waves.splice(i, 1);
       }
 
-      const overwhelm = ramp(p, 0.3, 0.42); // too many numbers
-      const disperse = ramp(p, 0.42, 0.56); // the noise breaks apart
-      const gather = ramp(p, 0.56, 0.74); // pulled toward the center
-      const constel = ramp(p, 0.68, 0.88); // the constellation settles
+      const gather = ramp(p, 0.5, 0.62); // the luminous cloud
+      const cloudFade = ramp(p, 0.72, 0.84);
+      const flare1 = bell((p - 0.625) / 0.018);
+      const finalFlare = ramp(p, 0.915, 0.94);
+      const flarePulse = bell((p - 0.925) / 0.02);
 
-      const stars = fig.pts;
-
-      // the loose numbers
-      TOKENS.forEach((token, i) => {
-        const born = ramp(p, 0.03 + i * 0.004, 0.08 + i * 0.004);
+      /* ── the data field: words and numbers, floating in depth ──── */
+      tokens.forEach((tk, i) => {
+        const dis = ramp(p, tk.stagger, tk.stagger + 0.07);
+        const born = ramp(p, 0.01 + prand(i * 2.9) * 0.06, 0.06 + prand(i * 2.9) * 0.06);
         if (born <= 0) return;
 
-        const bx = (0.08 + prand(i * 3.3) * 0.84) * W;
-        const by = (0.12 + prand(i * 7.7) * 0.72) * H;
-        const driftX = Math.sin(t * 0.00022 + i * 1.9) * 16;
-        const driftY = Math.cos(t * 0.00018 + i * 2.3) * 13;
-        // noise shakes when it becomes too much
-        const shake = overwhelm * (1 - disperse) * 2.2;
-        const sx = Math.sin(t * 0.013 + i * 5.1) * shake;
-        const sy = Math.cos(t * 0.017 + i * 3.7) * shake;
+        const driftX = Math.sin(t * 0.14 + i * 2.1) * 10 * tk.depth;
+        const driftY = Math.cos(t * 0.11 + i * 1.7) * 8 * tk.depth;
+        const base = proj(tk.x * W + driftX, tk.y * H + driftY, tk.depth);
 
-        // dispersal pushes each token away from the center
-        const dx = bx - W / 2;
-        const dy = by - H * 0.44;
-        const dd = Math.hypot(dx, dy) || 1;
-        const away = disperse * (1 - gather) * 160;
-
-        // then what matters is attracted to its star
-        const star = stars[i % stars.length];
-        let x = bx + driftX + sx + (dx / dd) * away;
-        let y = by + driftY + sy + (dy / dd) * away;
-        x += (star.x - x) * gather;
-        y += (star.y - y) * gather;
-
-        const textAlpha =
-          born * (0.3 + overwhelm * 0.5) * (1 - disperse * 0.55) * (1 - gather);
-        if (textAlpha > 0.01) {
-          const isNumber = /\d/.test(token);
-          ctx.fillStyle = colorA(isNumber ? "#F4ECDE" : "#D9AE6F", textAlpha);
-          ctx.font = `${isNumber ? 700 : 400} ${11 + prand(i * 13.1) * 9}px 'Hanken Grotesk', sans-serif`;
+        // the token, until it breaks
+        const alpha = born * (0.24 + tk.depth * 0.42) * (1 - dis);
+        if (alpha > 0.01) {
+          ctx.fillStyle = colorA(tk.isNumber ? "#F4ECDE" : "#D9AE6F", alpha);
+          ctx.font = `${tk.isNumber ? 700 : 400} ${tk.size * tk.depth + 6}px 'Hanken Grotesk', sans-serif`;
           ctx.textAlign = "center";
-          ctx.fillText(token, x, y);
+          ctx.fillText(tk.text, base.x, base.y);
         }
 
-        // the token becomes light as it arrives
-        if (gather > 0) {
-          softDot(ctx, x, y, 5.5, "#FFE9C2", gather * (1 - constel) * 0.5, 0.4);
+        // …into golden dust
+        if (dis > 0) {
+          const tw2 = tk.text.length * tk.size * 0.32;
+          for (let j = 0; j < PPT; j++) {
+            const seed = i * 31 + j * 7;
+            // born inside the glyphs
+            const gx = base.x + (prand(seed) - 0.5) * tw2;
+            const gy = base.y + (prand(seed * 1.7) - 0.5) * tk.size * 1.1;
+            // scatter softly as the word breaks
+            const sx0 = gx + (prand(seed * 2.3) - 0.5) * 30 * dis;
+            const sy0 = gy + (prand(seed * 3.1) - 0.5) * 26 * dis - dis * 8;
+
+            // the invisible force: curved rivers toward the center
+            const pull = ramp(p, 0.3 + prand(seed * 4.7) * 0.17, 0.47 + prand(seed * 4.7) * 0.17);
+            const dxs = sx0 - cx;
+            const dys = sy0 - cy;
+            const r0 = Math.hypot(dxs, dys) || 1;
+            const th0 = Math.atan2(dys, dxs);
+            const rr = r0 * Math.pow(1 - pull, 1.4);
+            const th = th0 + tk.swirlDir * pull * (1.7 + prand(seed * 5.3) * 1.5);
+
+            // the cloud: swirling, crossing, brighter and brighter
+            const cloudR = R * (0.035 + prand(seed * 6.1) * 0.12) * (1 - gather * 0.25);
+            const thc = th0 + t * (0.4 + prand(seed * 7.7) * 0.7) * tk.swirlDir;
+            let x = cx + Math.cos(th) * rr;
+            let y = cy + Math.sin(th) * rr * 0.94;
+            if (gather > 0) {
+              const gx2 = cx + Math.cos(thc) * cloudR;
+              const gy2 = cy + Math.sin(thc) * cloudR * 0.82;
+              x += (gx2 - x) * gather;
+              y += (gy2 - y) * gather;
+            }
+
+            const residual = j % 16 === 0;
+            let a =
+              dis *
+              (0.22 + prand(seed * 8.3) * 0.4) *
+              (0.6 + 0.4 * Math.sin(t * (1 + prand(seed) * 1.4) + seed));
+            if (!residual) a *= 1 - cloudFade;
+            else if (cloudFade > 0) {
+              // a few grains keep floating forever — never fully static
+              x += Math.sin(t * 0.3 + seed) * 30 * cloudFade;
+              y += Math.cos(t * 0.24 + seed * 1.3) * 24 * cloudFade;
+              a *= 0.5;
+            }
+            if (a <= 0.01) continue;
+            const sz = 0.7 + prand(seed * 9.7) * 1.5 + gather * 0.4;
+            ctx.fillStyle = colorA(prand(seed * 10.1) > 0.85 ? "#FFF6E5" : "#E8B872", Math.min(0.85, a));
+            ctx.beginPath();
+            ctx.arc(x, y, sz, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       });
 
-      // the clean constellation
-      if (constel > 0) {
-        fig.lines.forEach(([a, b], li) => {
-          const grow = ramp(constel, li / fig!.lines.length, li / fig!.lines.length + 0.3);
-          if (grow <= 0) return;
-          const A = stars[a];
-          const B = stars[b];
-          ctx.strokeStyle = colorA("#D9AE6F", 0.5 * grow);
-          ctx.lineWidth = 0.9;
-          ctx.beginPath();
-          ctx.moveTo(A.x, A.y);
-          ctx.lineTo(A.x + (B.x - A.x) * grow, A.y + (B.y - A.y) * grow);
-          ctx.stroke();
-        });
-        stars.forEach((s, si) => {
-          const hero = s.mag <= 2.3;
-          const tw = 0.85 + 0.15 * Math.sin(t * 0.0016 + si * 2.8);
-          softDot(
-            ctx,
-            s.x,
-            s.y,
-            (hero ? 16 : 9) * tw,
-            hero ? "#FBD7E3" : "#F4ECDE",
-            constel * (hero ? 0.55 : 0.4),
-            0.3,
-          );
-          sparkle(ctx, s.x, s.y, hero ? 5 : 3, "#FFF6E5", constel * 0.95);
-        });
+      /* ── the luminous heart of the cloud ────────────────────────── */
+      if (gather > 0) {
+        const bloom = gather * (1 - cloudFade) * (0.35 + 0.08 * Math.sin(t * 1.1)) + flare1 * 0.4;
+        softDot(ctx, cx, cy, R * (0.1 + gather * 0.1), "#FFE9C2", Math.min(0.75, bloom), 0.25);
+        softDot(ctx, cx, cy, R * 0.045, "#FFF6E5", Math.min(0.9, bloom * 1.3), 0.4);
       }
 
+      /* ── the cinematic flare that reveals the first star ────────── */
+      if (flare1 > 0.02) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(7, 0.55); // anamorphic
+        softDot(ctx, 0, 0, R * 0.09, "#FFE9C2", 0.55 * flare1, 0.3);
+        ctx.restore();
+        softDot(ctx, cx, cy, R * 0.05, "#FFF6E5", 0.8 * flare1, 0.45);
+      }
+
+      /* ── the constellation ──────────────────────────────────────── */
+      const S = R * 0.6;
+      const fig = figureArt(sign, S);
+      lineList = fig.lines;
+      const stars = fig.pts.map((pt) => {
+        const pos = proj(cx + pt.x, cy + pt.y, 0.3);
+        return { ...pos, mag: pt.mag };
+      });
+      starScreen = stars;
+      if (!adjacency.length) adjacency = stars.map(() => []);
+
+      const wavePulse = (k: number) => {
+        let v = 0;
+        for (const w of waves) {
+          const front = (t - w.t0) * 3.6;
+          const d = w.dist[k];
+          if (isFinite(d)) v += Math.exp(-((d - front) * (d - front)) / 0.3);
+        }
+        return Math.min(1, v);
+      };
+
+      // lines: luminous ink, one after another
+      fig.lines.forEach(([a, b], li) => {
+        const lt = ramp(p, 0.72 + li * 0.009, 0.745 + li * 0.009);
+        if (lt <= 0) return;
+        const A = stars[a];
+        const B = stars[b];
+        const ink = 1 - Math.pow(1 - lt, 3);
+        const ex = A.x + (B.x - A.x) * ink;
+        const ey = A.y + (B.y - A.y) * ink;
+        const wv = Math.max(wavePulse(a), wavePulse(b));
+        // the final flare travels the figure, line by line
+        const sweep = finalFlare > 0 ? bell((finalFlare * fig.lines.length - li) / 1.4) : 0;
+        const alive = 0.3 + 0.06 * Math.sin(t * 0.9 + li * 1.7);
+        ctx.strokeStyle = colorA("#D9AE6F", (alive + wv * 0.4 + sweep * 0.45) * lt);
+        ctx.lineWidth = 0.8 + sweep * 0.7 + wv * 0.5;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(A.x, A.y);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        // the tip of the ink, while it travels
+        if (ink < 1) softDot(ctx, ex, ey, 4.5, "#FFE9C2", 0.6, 0.45);
+        if (sweep > 0.05) {
+          const k = Math.min(1, Math.max(0, finalFlare * fig.lines.length - li));
+          softDot(ctx, A.x + (B.x - A.x) * k, A.y + (B.y - A.y) * k, 6, "#FFE9C2", 0.7 * sweep, 0.4);
+        }
+      });
+
+      // stars: they don't appear — they ignite, one after another
+      stars.forEach((st, k) => {
+        const born = ramp(p, 0.64 + k * 0.012, 0.652 + k * 0.012);
+        if (born <= 0) return;
+        const hero = st.mag <= 2.3;
+        const wv = wavePulse(k);
+        const breath = 1 + 0.06 * Math.sin(t * 1.4 + k * 2.2);
+        const r =
+          (hero ? 3.6 : 2.3) * breath * (1 + wv * 0.35 + flarePulse * 0.3);
+        const ignite = 1 + (1 - born) * 2.2; // the flash of ignition
+        softDot(ctx, st.x, st.y, r * 5.5 * ignite, hero ? "#FBD7E3" : "#E8B872", born * (hero ? 0.5 : 0.36) + wv * 0.25, 0.3);
+        ctx.strokeStyle = colorA("#FFF6E5", (0.45 + wv * 0.3) * born);
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(st.x - r * 2.2, st.y);
+        ctx.lineTo(st.x + r * 2.2, st.y);
+        ctx.moveTo(st.x, st.y - r * 2.2);
+        ctx.lineTo(st.x, st.y + r * 2.2);
+        ctx.stroke();
+        softDot(ctx, st.x, st.y, r, "#FFF6E5", born * 0.95, 0.5);
+      });
+
+      /* ── the animal, built from particles that ride the lines ───── */
+      const build = ramp(p, 0.78, 0.93);
+      if (build > 0 && emblemPts.length && fig.lines.length) {
+        for (let j = 0; j < emblemPts.length; j++) {
+          const e = ramp(build, prand(j * 1.3) * 0.55, prand(j * 1.3) * 0.55 + 0.45);
+          if (e <= 0) continue;
+          const tg = emblemPts[j];
+          // it starts somewhere on the constellation's lines…
+          const li = j % fig.lines.length;
+          const A = stars[fig.lines[li][0]];
+          const B = stars[fig.lines[li][1]];
+          const u = prand(j * 2.9);
+          const lx = A.x + (B.x - A.x) * u;
+          const ly = A.y + (B.y - A.y) * u;
+          // …and finds its place in the figure
+          const target = proj(cx + tg.x * S, cy + tg.y * S, 0.3);
+          const k = 1 - Math.pow(1 - e, 2.4);
+          const x = lx + (target.x - lx) * k + Math.sin(t * 0.7 + j) * 0.7;
+          const y = ly + (target.y - ly) * k + Math.cos(t * 0.6 + j * 1.3) * 0.7;
+          const tw2 = 0.55 + 0.45 * Math.sin(t * (0.8 + prand(j * 4.1)) + j * 2.6);
+          const a = e * tg.b * (0.22 + tw2 * 0.3) * (1 + flarePulse * 0.5);
+          ctx.fillStyle = colorA(prand(j * 5.7) > 0.9 ? "#FFF6E5" : "#E8B872", Math.min(0.8, a));
+          ctx.beginPath();
+          ctx.arc(x, y, 0.9 + tg.b * 0.9, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      /* ── residual gold, so it never sits still ──────────────────── */
+      if (build > 0.5) {
+        for (let i = 0; i < N_RESIDUAL; i++) {
+          const ang = prand(i * 6.7) * Math.PI * 2 + t * 0.05 * (i % 2 ? 1 : -1);
+          const rr = R * (0.24 + prand(i * 8.9) * 0.26);
+          const x = cx + Math.cos(ang) * rr;
+          const y = cy + Math.sin(ang) * rr * 0.8;
+          const a = 0.16 * Math.abs(Math.sin(t * 0.4 + i * 2.1)) * (build - 0.5) * 2;
+          ctx.fillStyle = colorA("#E8B872", a);
+          ctx.beginPath();
+          ctx.arc(x, y, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      canvas.style.cursor = p > 0.7 ? "pointer" : "default";
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
 
+    canvas.addEventListener("pointermove", onPointer);
+    canvas.addEventListener("click", onClick);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("pointermove", onPointer);
+      canvas.removeEventListener("click", onClick);
     };
   }, [sign]);
 
   const p = scrollYProgress;
-  const introOpacity = useTransform(p, [0.02, 0.08, 0.2, 0.28], [0, 1, 1, 0]);
-  const midOpacity = useTransform(p, [0.44, 0.52, 0.62, 0.7], [0, 1, 1, 0]);
-  const bulletsOpacity = useTransform(p, [0.78, 0.86], [0, 1]);
-  const bulletsY = useTransform(p, [0.78, 0.88], [24, 0]);
+  const introOpacity = useTransform(p, [0.02, 0.07, 0.14, 0.2], [0, 1, 1, 0]);
+  const midOpacity = useTransform(p, [0.38, 0.46, 0.56, 0.64], [0, 1, 1, 0]);
+  const finalOpacity = useTransform(p, [0.94, 0.985], [0, 1]);
+  const finalY = useTransform(p, [0.94, 0.995], [18, 0]);
 
   return (
-    <section ref={ref} className="relative h-[340vh]">
+    <section ref={ref} className="relative h-[520vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 h-full w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_88%,transparent_100%)]"
+          className="absolute inset-0 h-full w-full [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)]"
         />
 
         {/* chapter opening */}
         <motion.div
           style={{ opacity: introOpacity }}
-          className="pointer-events-none absolute inset-x-0 top-[10%] z-10 mx-auto max-w-2xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[9%] z-10 mx-auto max-w-2xl px-6 text-center"
         >
           <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
-            Capítulo IX · No más datos sueltos
+            Capítulo IX · La evidencia
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
-            No necesitas{" "}
+            Otras apps muestran números.{" "}
             <span className="font-serif italic font-medium text-pink text-glow-pink">
-              más datos.
+              Stelar encuentra evidencia.
             </span>
           </h2>
-          <p className="mt-5 text-base leading-relaxed text-cream/60 sm:text-lg">
-            Necesitas entender los que ya tienes.
-          </p>
         </motion.div>
 
-        {/* the turn */}
+        {/* while the dust gathers */}
         <motion.div
           style={{ opacity: midOpacity }}
-          className="pointer-events-none absolute inset-x-0 bottom-[12%] z-10 mx-auto max-w-xl px-6 text-center"
+          className="pointer-events-none absolute inset-x-0 top-[10%] z-10 mx-auto max-w-xl px-6 text-center"
         >
-          <p className="text-lg leading-relaxed text-cream/70 sm:text-xl">
-            Otras apps te muestran números.{" "}
-            <span className="font-serif italic text-gold">
-              Stelar los convierte en evidencia.
+          <p className="font-sans text-2xl font-black leading-snug tracking-tight text-cream sm:text-3xl">
+            No puedes cambiar{" "}
+            <span className="font-serif italic font-medium text-gold text-glow-gold">
+              lo que no puedes ver.
             </span>
           </p>
         </motion.div>
 
-        {/* what remains, once the noise is gone */}
+        {/* after the revelation */}
         <motion.div
-          style={{ opacity: bulletsOpacity, y: bulletsY }}
-          className="pointer-events-none absolute inset-x-0 bottom-[8%] z-10 mx-auto max-w-3xl px-6"
+          style={{ opacity: finalOpacity, y: finalY }}
+          className="pointer-events-none absolute inset-x-0 bottom-[9%] z-10 mx-auto max-w-xl px-6 text-center"
         >
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-center sm:grid-cols-4">
-            {BULLETS.map(([strong, rest]) => (
-              <p key={strong} className="text-sm text-cream/70">
-                <span className="font-serif italic text-gold">{strong}</span>
-                {", "}
-                {rest}
-              </p>
-            ))}
-          </div>
+          <p className="font-serif text-2xl italic text-gold text-glow-gold sm:text-3xl">
+            Ahora puedes verlo.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-cream/60 sm:text-base">
+            Y una constelación ya no vuelve a parecer un grupo de estrellas.
+          </p>
         </motion.div>
       </div>
     </section>
