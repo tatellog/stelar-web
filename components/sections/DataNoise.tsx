@@ -60,7 +60,7 @@ function buildTokens(): Token[] {
 }
 
 const PPT = 18; // particles born from each token
-const N_EMBLEM = 1350; // the animal, made of light
+const N_EMBLEM = 2400; // the animal, made of light
 const N_RESIDUAL = 34;
 
 export default function DataNoise() {
@@ -106,10 +106,11 @@ export default function DataNoise() {
     /* the animal, sampled from the emblem's real pixels — so the dust
        builds the true figure, aligned with the constellation */
     let emblemPts: { x: number; y: number; b: number }[] = [];
+    const emblemOff = { x: 0, y: 0 }; // art-space offset that centers the animal
     const emblem = new Image();
     emblem.src = `/emblems/${sign}/f10.png`;
     emblem.onload = () => {
-      const S = 130;
+      const S = 150;
       const off = document.createElement("canvas");
       off.width = S;
       off.height = S;
@@ -126,11 +127,16 @@ export default function DataNoise() {
           }
         }
       }
+      // center the figure perfectly: shift by its bounding-box center
+      const xs = pts.map((pt) => pt.x);
+      const ys = pts.map((pt) => pt.y);
+      emblemOff.x = (Math.min(...xs) + Math.max(...xs)) / 2;
+      emblemOff.y = (Math.min(...ys) + Math.max(...ys)) / 2;
       emblemPts = pts
         .map((pt, i) => ({ pt, k: prand(i * 3.7) }))
         .sort((u, v) => u.k - v.k)
         .slice(0, N_EMBLEM)
-        .map((u) => u.pt);
+        .map((u) => ({ x: u.pt.x - emblemOff.x, y: u.pt.y - emblemOff.y, b: u.pt.b }));
     };
 
     const pointer = { x: 0, y: 0, tx: 0, ty: 0, sx: -1, sy: -1 };
@@ -335,7 +341,7 @@ export default function DataNoise() {
       const fig = figureArt(sign, S);
       lineList = fig.lines;
       const stars = fig.pts.map((pt) => {
-        const pos = proj(cx + pt.x, cy + pt.y, 0.3);
+        const pos = proj(cx + pt.x - emblemOff.x * S, cy + pt.y - emblemOff.y * S, 0.3);
         return { ...pos, mag: pt.mag };
       });
       starScreen = stars;
