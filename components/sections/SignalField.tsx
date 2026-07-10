@@ -84,6 +84,7 @@ type Node = {
   size: number; dim: number;
   tw: number; pulseS: number;
   px: number; py: number; pz: number; // pattern slot
+  inPat: boolean; // joins the final pattern, or recedes as bokeh
 };
 
 type Edge = {
@@ -136,20 +137,34 @@ function buildNodes(): { nodes: Node[]; clusterOf: number[] } {
         tw: prand(c * 101 + i * 19) * Math.PI * 2,
         pulseS: 0.5 + prand(c * 103 + i * 23) * 0.7,
         px: 0, py: 0, pz: 0,
+        inPat: true,
       });
       clusterOf.push(c);
     }
   }
   // the abstract pattern the net settles into: a golden-angle spiral —
   // recognizable, elegant, and deliberately NOT a zodiac figure (that
-  // revelation belongs to chapter IV)
-  const N = nodes.length;
+  // revelation belongs to chapter IV). Only two thirds of the lights
+  // join it (fewer, clearer points); the rest recede into far bokeh.
+  // Depth is real: a shallow dome, center near, rim receding.
   nodes.forEach((nd, i) => {
-    const r = 2.4 * Math.sqrt((i + 0.5) / N);
-    const th = i * 2.39996 + 0.7;
+    nd.inPat = i % 3 !== 2;
+  });
+  const members = nodes.filter((nd) => nd.inPat);
+  const NP = members.length;
+  members.forEach((nd, k) => {
+    const r = 2.4 * Math.sqrt((k + 0.5) / NP);
+    const th = k * 2.39996 + 0.7;
     nd.px = Math.cos(th) * r;
     nd.py = Math.sin(th) * r * 0.86;
-    nd.pz = PATTERN_Z + (prand(i + 77) - 0.5) * 0.5;
+    nd.pz = PATTERN_Z - 0.9 + r * 1.1 + (prand(k + 77) - 0.5) * 1.3;
+  });
+  nodes.forEach((nd, i) => {
+    if (nd.inPat) return;
+    // the lights that don't make the pattern drift wide and deep
+    nd.px = nd.x * 1.8;
+    nd.py = nd.y * 1.8;
+    nd.pz = PATTERN_Z + 3.5 + prand(i + 311) * 3;
   });
   return { nodes, clusterOf };
 }
@@ -231,9 +246,10 @@ function buildEdges(nodes: Node[], clusterOf: number[]): Edge[] {
     Math.hypot(nodes[i].px - nodes[j].px, nodes[i].py - nodes[j].py);
   const seen = new Set<string>();
   for (let i = 0; i < N; i++) {
+    if (!nodes[i].inPat) continue; // the receding lights stay unthreaded
     const near = nodes
       .map((_, j) => j)
-      .filter((j) => j !== i)
+      .filter((j) => j !== i && nodes[j].inPat)
       .sort((a, b) => pd(i, a) - pd(i, b))
       .slice(0, 3);
     for (const j of near) {
@@ -323,10 +339,20 @@ export default function SignalField() {
       const morph = smooth(0.74, 0.92, p);
       const fx = reduced ? 0 : Math.sin(t * 0.24 + i * 2.1) * 0.07 * (1 - morph);
       const fy = reduced ? 0 : Math.cos(t * 0.2 + i * 1.7) * 0.05 * (1 - morph);
+      // the settled pattern turns very slowly on its axis — the depth
+      // only reads as volume when it moves
+      let px = nd.px;
+      let pz = nd.pz;
+      if (nd.inPat && morph > 0 && !reduced) {
+        const ang = t * 0.07 * morph;
+        const dz = nd.pz - PATTERN_Z;
+        px = nd.px * Math.cos(ang) - dz * Math.sin(ang);
+        pz = PATTERN_Z + nd.px * Math.sin(ang) + dz * Math.cos(ang);
+      }
       return {
-        x: nd.x + fx + (nd.px - nd.x) * morph,
+        x: nd.x + fx + (px - nd.x) * morph,
         y: nd.y + fy + (nd.py - nd.y) * morph,
-        z: nd.z + (nd.pz - nd.z) * morph,
+        z: nd.z + (pz - nd.z) * morph,
       };
     };
 
@@ -573,7 +599,8 @@ export default function SignalField() {
           (1 + wave * 0.3);
         const a =
           (0.3 + lit * 0.3 + morph * 0.15 + wave * 0.35 + (isHover ? 0.25 : 0)) *
-          (reduced ? 1 : 0.85 + 0.15 * Math.sin(nd.tw + t * 0.7));
+          (reduced ? 1 : 0.85 + 0.15 * Math.sin(nd.tw + t * 0.7)) *
+          (nd.inPat ? 1 : 1 - morph * 0.72);
 
         // tinted halo + warm core — diffuse, subtle
         softDot(ctx, pr.sx, pr.sy, r * (3 + lit * 1.4 + wave), dim.color, Math.min(0.7, a), 0.3);
