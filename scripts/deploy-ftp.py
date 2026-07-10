@@ -21,6 +21,28 @@ REMOTE_ROOT = "public_html"
 LOCAL = os.path.join(os.path.dirname(__file__), "..", "out")
 MARKER = b"# -- Stelar landing (cache/compresion) --"
 
+# next build regenerates ./out from scratch, so our .htaccess block lives
+# here, not in the build output
+HTACCESS_BLOCK = b"""AddDefaultCharset utf-8
+AddType image/webp .webp
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType text/html "access plus 10 minutes"
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml
+</IfModule>
+"""
+
 USER = os.environ.get("FTP_USER")
 PASS = os.environ.get("FTP_PASS")
 if not USER or not PASS:
@@ -44,8 +66,7 @@ def merge_htaccess(ftp: FTP_TLS) -> None:
     except error_perm:
         pass
     host_part = existing.getvalue().split(MARKER)[0].rstrip()
-    ours = open(os.path.join(LOCAL, ".htaccess"), "rb").read()
-    merged = host_part + b"\n\n" + MARKER + b"\n" + ours
+    merged = host_part + b"\n\n" + MARKER + b"\n" + HTACCESS_BLOCK
     ftp.storbinary("STOR .htaccess", io.BytesIO(merged))
     print(".htaccess fusionado")
 
