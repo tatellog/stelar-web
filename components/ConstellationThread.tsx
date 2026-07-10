@@ -60,6 +60,9 @@ export default function ConstellationThread() {
     // the fitted figure is recomputed only when sign or viewport change
     let figCache: ReturnType<typeof figureFit> | null = null;
     let figCacheKey = "";
+    // ignition is TIME-based once scroll crosses each threshold — a
+    // scroll-mapped pop freezes mid-ring if the user stops scrolling
+    let litA: number[] = [];
 
     const draw = (now: number) => {
       ctx.clearRect(0, 0, W, H);
@@ -84,15 +87,21 @@ export default function ConstellationThread() {
       if (figCacheKey !== figKey) {
         figCache = figureFit(signRef.current, rect, 0.1);
         figCacheKey = figKey;
+        litA = figCache.pts.map(() => 0);
       }
       const fig = figCache!;
       const n = fig.pts.length;
 
+      // scroll decides WHICH stars are on; time carries them there
+      for (let i = 0; i < n; i++) {
+        const target = p >= IGNITE0 + (i / n) * (IGNITE1 - IGNITE0) ? 1 : 0;
+        litA[i] += (target - litA[i]) * 0.09;
+        if (Math.abs(target - litA[i]) < 0.004) litA[i] = target;
+      }
+
       /* lines shimmer once both ends are lit */
       fig.lines.forEach(([a, b], li) => {
-        const litA = ramp(p, IGNITE0 + (a / n) * (IGNITE1 - IGNITE0), IGNITE0 + (a / n) * (IGNITE1 - IGNITE0) + 0.02);
-        const litB = ramp(p, IGNITE0 + (b / n) * (IGNITE1 - IGNITE0), IGNITE0 + (b / n) * (IGNITE1 - IGNITE0) + 0.02);
-        const on = Math.min(litA, litB);
+        const on = Math.min(litA[a], litA[b]);
         if (on <= 0) return;
         const A = fig.pts[a];
         const B = fig.pts[b];
@@ -116,21 +125,20 @@ export default function ConstellationThread() {
 
       /* the stars: dim seeds first, then each chapter ignites one more */
       fig.pts.forEach((pt, i) => {
-        const i0 = IGNITE0 + (i / n) * (IGNITE1 - IGNITE0);
-        const lit = ramp(p, i0, i0 + 0.02);
+        const lit = litA[i];
         const hero = pt.mag <= 2.3;
         const breath = 0.85 + 0.15 * Math.sin(t * 0.8 + i * 2.1);
 
         // the unlit future, barely there — the promise of what's coming
         softDot(ctx, pt.x, pt.y, 2.2, "#F4ECDE", 0.1 * (1 - lit) * alive, 0.4);
 
-        if (lit <= 0) return;
-        // ignition pop
-        if (lit < 1) {
-          ctx.strokeStyle = colorA("#FFE9C2", (1 - lit) * 0.6 * alive);
+        if (lit <= 0.01) return;
+        // ignition pop — brief, always completes (time-driven)
+        if (lit < 0.98) {
+          ctx.strokeStyle = colorA("#FFE9C2", (1 - lit) * lit * 1.4 * alive);
           ctx.lineWidth = 0.8;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 3 + lit * 10, 0, Math.PI * 2);
+          ctx.arc(pt.x, pt.y, 3 + lit * 9, 0, Math.PI * 2);
           ctx.stroke();
         }
         const r = (hero ? 2.6 : 1.8) * (0.5 + 0.5 * lit);
