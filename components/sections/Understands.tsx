@@ -38,7 +38,7 @@ const CATS: Cat[] = [
   { id: "wearables", label: "Wearables", desc: "Apple Health, Garmin, Oura y Samsung Health.", color: "#D9AE6F", r: 0.86, size: 6, speed: 0.052, phase: 4.7, tilt: -0.12 },
 ];
 
-const SQUASH = 0.42;
+const SQUASH = 0.52;
 const N_DUST = 130;
 
 export default function Understands() {
@@ -103,7 +103,7 @@ export default function Understands() {
     };
 
     const frame = (t: number) => {
-      const R = H > W ? Math.min(W * 0.44, H * 0.3) : Math.min(W * 0.46, H * 0.4);
+      const R = H > W ? Math.min(W * 0.44, H * 0.3) : Math.min(W * 0.46, H * 0.44);
       const cx = W / 2;
       const cy = H * 0.52;
       // orbits slow to near-still while the camera visits a category
@@ -190,16 +190,16 @@ export default function Understands() {
       const pulse = 1 + 0.05 * Math.sin(t * 1.4);
       const heart = appear * pulse;
       if (heart > 0) {
-        softDot(ctx, cx, cy, R * 0.2, "#E91E63", 0.12 * appear, 0.25);
-        softDot(ctx, cx, cy, R * 0.1, "#FBD7E3", 0.3 * appear, 0.3);
+        softDot(ctx, cx, cy, R * 0.24, "#E91E63", 0.14 * appear, 0.25);
+        softDot(ctx, cx, cy, R * 0.12, "#FBD7E3", 0.32 * appear, 0.3);
         // anamorphic glint
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.scale(7, 0.32);
-        softDot(ctx, 0, 0, R * 0.035, "#FFE9C2", 0.35 * appear, 0.3);
+        ctx.scale(9, 0.34);
+        softDot(ctx, 0, 0, R * 0.04, "#FFE9C2", 0.38 * appear, 0.3);
         ctx.restore();
-        sparkle(ctx, cx, cy, 7 * pulse, "#FFF6E5", 0.95 * appear);
-        softDot(ctx, cx, cy, 3.2, "#FFFFFF", appear, 0.5);
+        sparkle(ctx, cx, cy, 9 * pulse, "#FFF6E5", 0.95 * appear);
+        softDot(ctx, cx, cy, 3.6, "#FFFFFF", appear, 0.5);
       }
 
       /* the IA thinking out loud: every few seconds two astros exchange a
@@ -230,12 +230,13 @@ export default function Understands() {
       }
 
       /* the categories, born one by one */
+      const positions = CATS.map((c) => catPos(c, t, R, cx, cy, slow));
       for (let i = 0; i < CATS.length; i++) {
         const c = CATS[i];
         const b0 = 0.1 + i * 0.045;
         const born = ramp(p, b0, b0 + 0.06);
         if (born <= 0) continue;
-        const pos = catPos(c, t, R, cx, cy, slow);
+        const pos = positions[i];
         const isHot = hovered === i || focus === i;
         const s = c.size * pos.depth * (0.5 + 0.5 * born) * (isHot ? 1.25 : 1);
         const al = pos.depth * born;
@@ -261,13 +262,23 @@ export default function Understands() {
            make the breadth of the product legible. On very tight systems
            (landscape phones) only the hovered/focused astro is named. */
         const tight = R < 175;
+        let flipUp = false;
+        for (let j = 0; j < CATS.length; j++) {
+          if (j >= i) break; // the elder keeps the floor below
+          const o = positions[j];
+          if (Math.abs(o.x - pos.x) < 76 && Math.abs(o.y - pos.y) < 46) {
+            flipUp = true;
+            break;
+          }
+        }
+        const ly = flipUp ? pos.y - s * 2.2 - 10 : pos.y + s * 2.2 + 12;
         const la = (tight && !isHot ? 0 : born) * (0.55 + (isHot ? 0.4 : 0)) * (0.6 + 0.4 * pos.depth);
         ctx.fillStyle = colorA("#F4ECDE", Math.min(0.95, la));
         ctx.font = "600 10px 'Hanken Grotesk', sans-serif";
         ctx.textAlign = "center";
         const half = ctx.measureText(c.label.toUpperCase()).width / 2;
         const lx = Math.min(W - 10 - half, Math.max(10 + half, pos.x));
-        ctx.fillText(c.label.toUpperCase(), lx, pos.y + s * 2.2 + 12);
+        ctx.fillText(c.label.toUpperCase(), lx, ly);
 
         // hover / focus: the one-line description, serif and floating
         if (isHot && (hovered === i ? 1 : zoom) > 0.2) {
@@ -275,7 +286,7 @@ export default function Understands() {
           ctx.font = "italic 13px 'Cormorant Garamond', serif";
           const dHalf = ctx.measureText(c.desc).width / 2;
           const dx = Math.min(W - 12 - dHalf, Math.max(12 + dHalf, pos.x));
-          ctx.fillText(c.desc, dx, pos.y + s * 2.2 + 30);
+          ctx.fillText(c.desc, dx, flipUp ? ly - 17 : ly + 18);
         }
       }
 

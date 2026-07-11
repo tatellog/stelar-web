@@ -78,10 +78,10 @@ export default function Hero() {
         {/* or let the journey drive */}
         <button
           onClick={() => window.dispatchEvent(new Event("stelar:autopilot"))}
-          className="hero-rise mt-6 font-serif text-sm italic text-cream/45 transition-colors duration-500 hover:text-gold"
+          className="hero-rise mt-8 rounded-full border border-gold/30 px-6 py-2.5 font-serif text-base italic text-cream/75 transition-all duration-500 hover:border-gold/60 hover:text-gold hover:shadow-[0_0_24px_rgba(232,184,114,0.18)]"
           style={{ animationDelay: "1.15s" }}
         >
-          o deja que el viaje te lleve ▸
+          Deja que el viaje te lleve ▸
         </button>
       </motion.div>
     </section>

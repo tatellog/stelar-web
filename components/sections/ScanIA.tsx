@@ -110,7 +110,8 @@ export default function ScanIA() {
       const cx = PHOTO.x * W;
       const cy = PHOTO.y * H;
       const photoR = Math.min(H * 0.21, W * 0.3, 175);
-      const kx = W < 640 ? 0.62 : 1;
+      // particles gather where the chips actually live (see the CSS lane)
+      const laneW = Math.min(W - 176, 832);
 
       // the understanding, leaving the plate as light
       const burst = ramp(p, 0.28, 0.38);
@@ -131,7 +132,7 @@ export default function ScanIA() {
           const c = INGREDIENTS[i % INGREDIENTS.length];
           const jx = (prand(i * 11.9) - 0.5) * 110;
           const jy = (prand(i * 13.7) - 0.5) * 54;
-          const gx = (0.5 + (c.x - 0.5) * kx) * W + jx;
+          const gx = W / 2 + (c.x - 0.5) * laneW + jx;
           const gy = c.y * H + jy;
 
           const x = ex + (gx - ex) * gather + Math.sin(t * 0.0004 + i) * 2.5;
@@ -361,7 +362,7 @@ export default function ScanIA() {
             key={c.label}
             style={{
               opacity: chipsOpacity,
-              left: `calc(50% + (${c.x} - 0.5) * min(100% - 11rem, 80rem))`,
+              left: `calc(50% + (${c.x} - 0.5) * min(100% - 11rem, 52rem))`,
               top: `${c.y * 100}%`,
             }}
             className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2"

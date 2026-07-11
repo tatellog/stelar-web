@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
  * back instantly. Manual is always one flick away.
  */
 
-const SPEED_VH = 0.24; // viewport-heights per second — cinematic pace
+const SPEED_VH = 0.45; // viewport-heights per second — cinematic, not sleepy
 
 export default function AutoPilot() {
   const [playing, setPlaying] = useState(false);

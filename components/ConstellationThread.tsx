@@ -17,7 +17,6 @@ import { runWhenVisible } from "@/lib/visibleLoop";
  * The subconscious read: everything I've seen was building this.
  */
 
-const IGNITE0 = 0.03; // first star, on the hero
 const IGNITE1 = 0.58; // last star, entering the patterns chapter
 const FADE0 = 0.64; // hand-off before the evidence/emblem climax
 const FADE1 = 0.71;
@@ -69,7 +68,7 @@ export default function ConstellationThread() {
       const p = progress.current;
       const t = now / 1000;
 
-      const alive = ramp(p, IGNITE0, IGNITE0 + 0.02) * (1 - ramp(p, FADE0, FADE1));
+      const alive = 1 - ramp(p, FADE0, FADE1);
       if (alive <= 0.01) {
         return;
       }
@@ -94,7 +93,8 @@ export default function ConstellationThread() {
 
       // scroll decides WHICH stars are on; time carries them there
       for (let i = 0; i < n; i++) {
-        const target = p >= IGNITE0 + (i / n) * (IGNITE1 - IGNITE0) ? 1 : 0;
+        // the first star seeds itself on load — the signature starts at zero
+        const target = p >= (i / n) * IGNITE1 ? 1 : 0;
         litA[i] += (target - litA[i]) * 0.09;
         if (Math.abs(target - litA[i]) < 0.004) litA[i] = target;
       }

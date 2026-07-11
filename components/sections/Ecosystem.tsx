@@ -222,7 +222,10 @@ export default function Ecosystem() {
           const alpha =
             (longRing ? 0.06 + prand(i * 11.7) * 0.13 : 0.16 + prand(i * 11.7) * 0.24) *
             diskAlpha;
-          ctx.strokeStyle = colorA("#F4ECDE", alpha);
+          // the inner disk runs hot: ~15% of the close trails glow old
+          // gold, tying the phenomenon to the brand sky
+          const warm = u < 0.34 && prand(i * 21.3) > 0.55;
+          ctx.strokeStyle = colorA(warm ? (prand(i * 27.7) > 0.7 ? "#FFE9C2" : "#D9AE6F") : "#F4ECDE", warm ? alpha * 1.25 : alpha);
           ctx.lineWidth = 0.4 + prand(i * 13.1) * 0.75;
           ctx.beginPath();
           ctx.ellipse(0, 0, r, r * squash, 0, a0, a0 + len);
