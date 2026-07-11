@@ -18,6 +18,7 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://stelar-app.com"),
   title: "Stelar — Haz visible lo invisible",
   description:
     "Stelar convierte tus registros diarios en evidencia visual para revelar los patrones que están construyendo tus resultados.",
@@ -25,6 +26,25 @@ export const metadata: Metadata = {
     title: "Stelar — Haz visible lo invisible",
     description:
       "No puedes cambiar lo que no puedes ver. Stelar convierte tus registros en evidencia.",
+    url: "https://stelar-app.com",
+    siteName: "Stelar",
+    locale: "es_MX",
+    type: "website",
+    images: [
+      {
+        url: "/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Stelar — Haz visible lo invisible",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stelar — Haz visible lo invisible",
+    description:
+      "No puedes cambiar lo que no puedes ver. Stelar convierte tus registros en evidencia.",
+    images: ["/og.jpg"],
   },
 };
 

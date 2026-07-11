@@ -26,7 +26,7 @@ function FridayBars() {
   const days = ["L", "M", "X", "J", "V", "S", "D"];
   const h = [26, 22, 19, 24, 46, 28, 23];
   return (
-    <svg viewBox="0 0 170 90" className="w-44 shrink-0" aria-hidden>
+    <svg viewBox="0 0 170 90" className="w-52 shrink-0 sm:w-64" aria-hidden>
       {days.map((d, i) => {
         const friday = i === 4;
         return (
@@ -40,7 +40,7 @@ function FridayBars() {
               whileInView={{
                 height: h[i],
                 y: 68 - h[i],
-                opacity: friday ? 0.95 : 0.28,
+                opacity: friday ? 0.95 : 0.42,
               }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2 + i * 0.12, ease: EASE }}
@@ -51,7 +51,7 @@ function FridayBars() {
               textAnchor="middle"
               fill={friday ? "#E8B872" : "#F4ECDE"}
               opacity={friday ? 0.9 : 0.35}
-              style={{ font: "600 6.5px 'Hanken Grotesk', sans-serif" }}
+              style={{ font: "600 7.5px 'Hanken Grotesk', sans-serif" }}
             >
               {d}
             </text>
@@ -77,7 +77,7 @@ function FridayBars() {
         y={41}
         textAnchor="end"
         fill="#D9AE6F"
-        style={{ font: "italic 7px 'Cormorant Garamond', serif" }}
+        style={{ font: "italic 8px 'Cormorant Garamond', serif" }}
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 0.85 }}
         viewport={{ once: true }}
@@ -90,7 +90,7 @@ function FridayBars() {
         y={28}
         textAnchor="end"
         fill="#FFE9C2"
-        style={{ font: "italic 7.5px 'Cormorant Garamond', serif" }}
+        style={{ font: "italic 8.5px 'Cormorant Garamond', serif" }}
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 0.95 }}
         viewport={{ once: true }}
@@ -105,8 +105,8 @@ function FridayBars() {
         viewport={{ once: true }}
         transition={{ duration: 0.7, delay: 1.7 }}
       >
-        <rect x={83} y={4} width={31} height={12} rx={6} fill="rgba(232,184,114,0.12)" stroke="#E8B872" strokeOpacity={0.5} strokeWidth={0.5} />
-        <text x={98.5} y={12.5} textAnchor="middle" fill="#FFE9C2" style={{ font: "700 7px 'Hanken Grotesk', sans-serif" }}>
+        <rect x={81} y={2} width={36} height={14} rx={7} fill="rgba(232,184,114,0.14)" stroke="#E8B872" strokeOpacity={0.6} strokeWidth={0.6} />
+        <text x={99} y={12} textAnchor="middle" fill="#FFE9C2" style={{ font: "700 8.5px 'Hanken Grotesk', sans-serif" }}>
           +28%
         </text>
       </motion.g>
@@ -129,7 +129,7 @@ function FridayBars() {
 
 function SleepSnacks() {
   return (
-    <svg viewBox="0 0 170 90" className="w-44 shrink-0" aria-hidden>
+    <svg viewBox="0 0 170 90" className="w-52 shrink-0 sm:w-64" aria-hidden>
       {[0, 1, 2].map((i) => (
         <g key={i}>
           {/* the night, shorter than it should be */}
@@ -190,7 +190,7 @@ function SleepSnacks() {
 
 function TrainProtein() {
   return (
-    <svg viewBox="0 0 170 90" className="w-44 shrink-0" aria-hidden>
+    <svg viewBox="0 0 170 90" className="w-52 shrink-0 sm:w-64" aria-hidden>
       {/* entreno pulses… */}
       <motion.circle
         cx={30}
@@ -212,7 +212,7 @@ function TrainProtein() {
         viewport={{ margin: "-10%" }}
         transition={{ duration: 1.8, repeat: Infinity, delay: 0.6, ease: "easeOut" }}
       />
-      <text x={30} y={62} textAnchor="middle" fill="#FF9E57" opacity={0.85} style={{ font: "600 6.5px 'Hanken Grotesk', sans-serif" }}>
+      <text x={30} y={62} textAnchor="middle" fill="#FF9E57" opacity={0.85} style={{ font: "600 7.5px 'Hanken Grotesk', sans-serif" }}>
         ENTRENO
       </text>
       {/* …the signal travels… */}
@@ -262,7 +262,7 @@ function TrainProtein() {
         transition={{ duration: 1.2, delay: 1.4, ease: EASE }}
         opacity={0.85}
       />
-      <text x={124} y={80} textAnchor="middle" fill="#E0AEA0" opacity={0.85} style={{ font: "600 6.5px 'Hanken Grotesk', sans-serif" }}>
+      <text x={124} y={80} textAnchor="middle" fill="#E0AEA0" opacity={0.85} style={{ font: "600 7.5px 'Hanken Grotesk', sans-serif" }}>
         PROTEÍNA
       </text>
       {/* the goal, reached */}
@@ -285,7 +285,7 @@ function TrainProtein() {
 
 function WaterDeficit() {
   return (
-    <svg viewBox="0 0 170 90" className="w-44 shrink-0" aria-hidden>
+    <svg viewBox="0 0 170 90" className="w-52 shrink-0 sm:w-64" aria-hidden>
       {[0, 1, 2, 3, 4].map((i) => (
         <motion.circle
           key={i}
@@ -300,7 +300,7 @@ function WaterDeficit() {
           style={{ transformOrigin: `${22 + i * 16}px 45px` }}
         />
       ))}
-      <text x={54} y={64} textAnchor="middle" fill="#8FBEDB" opacity={0.85} style={{ font: "600 6.5px 'Hanken Grotesk', sans-serif" }}>
+      <text x={54} y={64} textAnchor="middle" fill="#8FBEDB" opacity={0.85} style={{ font: "600 7.5px 'Hanken Grotesk', sans-serif" }}>
         AGUA
       </text>
       {/* the deficit ring closes — and holds */}

@@ -239,9 +239,13 @@ function BetaButton() {
             {state === "sending" ? "…" : "Unirme"}
           </button>
         </div>
-        {state === "error" && (
+        {state === "error" ? (
           <p className="text-xs text-pink-soft/90">
             Algo falló — inténtalo de nuevo.
+          </p>
+        ) : (
+          <p className="text-xs text-cream/45">
+            Solo usaremos tu correo para invitarte a la beta.
           </p>
         )}
       </motion.form>
