@@ -543,9 +543,14 @@ export default function ConstellationBirth() {
               sparklePath(ctx, sx, sy, sr * 1.4);
             }
           }
-          /* the name is always there — a chart label, brighter on hover */
+          /* the name is always there — a chart label, brighter on hover;
+             clamped so it never bleeds off the edge of the sky */
+          const label = FIGURES[o.sign].label;
+          const half = ctx.measureText(label).width / 2;
+          const lx = Math.min(W - half - 12, Math.max(half + 12, pr.sx));
+          const ly = Math.min(H - 10, pr.sy + scale * 0.62 + 18);
           ctx.fillStyle = `rgba(244,236,222,${obsAlpha * (hovered ? 0.9 : 0.4) * Math.min(1, 4.6 / dist)})`;
-          ctx.fillText(FIGURES[o.sign].label, pr.sx, pr.sy + scale * 0.62 + 18);
+          ctx.fillText(label, lx, ly);
         }
         ctx.letterSpacing = "0px";
       }

@@ -79,7 +79,7 @@ function FeatureItem({
           />
         )}
       </p>
-      <p className="mt-1 font-serif text-sm italic text-cream/50">{f.line}</p>
+      <p className="mt-1 font-serif text-sm italic text-cream/60">{f.line}</p>
     </motion.div>
   );
 }

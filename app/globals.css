@@ -49,6 +49,13 @@ body {
   color: var(--cream);
 }
 
+/* Navegación por teclado: el mismo oro que guía todo el viaje */
+:focus-visible {
+  outline: 2px solid rgba(232, 184, 114, 0.85);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 /* Soft radial vignettes layered over the page background */
 .cosmic-gradient {
   background:

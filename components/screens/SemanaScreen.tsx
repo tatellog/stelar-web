@@ -28,17 +28,17 @@ export default function SemanaScreen() {
           transition={{ duration: 0.9, delay: 0.2 }}
         >
           <p className="font-serif text-[13px] italic">Tu semana apenas empieza.</p>
-          <p className="mt-0.5 text-[9px] text-cream/55">
+          <p className="mt-1 text-[9px] text-cream/55">
             <span className="font-sans text-base font-black text-cream">5</span>{" "}
             días por delante
           </p>
         </motion.div>
 
-        <p className="mt-4 text-[7.5px] uppercase tracking-[0.28em] text-gold">
+        <p className="mt-5 text-[7.5px] uppercase tracking-[0.28em] text-gold">
           La forma de tu semana
         </p>
 
-        <div className="mt-2 flex items-end justify-between px-1" style={{ height: 64 }}>
+        <div className="mt-2.5 flex items-end justify-between px-1" style={{ height: 64 }}>
           {DAYS.map((day, i) => (
             <div key={day.d} className="flex w-5 flex-col items-center justify-end gap-1.5 self-stretch">
               {day.h > 0 ? (
@@ -69,7 +69,7 @@ export default function SemanaScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.9, delay: 1.6 }}
-          className="mt-2 text-[8px] text-cream/50"
+          className="mt-2.5 text-[8px] text-cream/50"
         >
           El oro son tus días en déficit.
         </motion.p>
@@ -78,12 +78,12 @@ export default function SemanaScreen() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 2 }}
-          className="mt-3 rounded-xl border border-cream/10 bg-cream/[0.04] p-2"
+          className="mt-5 rounded-xl border border-cream/10 bg-cream/[0.04] p-2.5"
         >
           <p className="text-[7px] uppercase tracking-[0.25em] text-gold/80">
             Constante
           </p>
-          <p className="mt-0.5 text-[8.5px] leading-snug text-cream/70">
+          <p className="mt-1 text-[8.5px] leading-snug text-cream/70">
             Tu ritmo se mantiene esta semana.
           </p>
         </motion.div>

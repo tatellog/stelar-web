@@ -68,10 +68,16 @@ export default function ConstellationThread() {
       const p = progress.current;
       const t = now / 1000;
 
-      const alive = 1 - ramp(p, FADE0, FADE1);
+      const fade = ramp(p, FADE0, FADE1);
+      const alive = 1 - fade;
       if (alive <= 0.01) {
         return;
       }
+      // the farewell: the threads let go first, then each star sails
+      // toward the center stage where the full figure is about to appear
+      const lineAlive = Math.max(0, 1 - fade * 2.2);
+      const scx = W / 2;
+      const scy = H / 2;
 
       // a small sky chart, top-right, out of the chapters' stage
       const mobile = W < 640;
@@ -100,28 +106,29 @@ export default function ConstellationThread() {
       }
 
       /* lines shimmer once both ends are lit */
-      fig.lines.forEach(([a, b], li) => {
-        const on = Math.min(litA[a], litA[b]);
-        if (on <= 0) return;
-        const A = fig.pts[a];
-        const B = fig.pts[b];
-        const shimmer = 0.75 + 0.25 * Math.sin(t * 0.9 + li * 2.2);
-        ctx.strokeStyle = colorA("#D9AE6F", 0.2 * on * shimmer * alive);
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(A.x, A.y);
-        // the thread draws itself from A toward B as it turns on
-        ctx.lineTo(A.x + (B.x - A.x) * on, A.y + (B.y - A.y) * on);
-        ctx.stroke();
+      if (lineAlive > 0.01)
+        fig.lines.forEach(([a, b], li) => {
+          const on = Math.min(litA[a], litA[b]);
+          if (on <= 0) return;
+          const A = fig.pts[a];
+          const B = fig.pts[b];
+          const shimmer = 0.75 + 0.25 * Math.sin(t * 0.9 + li * 2.2);
+          ctx.strokeStyle = colorA("#D9AE6F", 0.2 * on * shimmer * lineAlive);
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(A.x, A.y);
+          // the thread draws itself from A toward B as it turns on
+          ctx.lineTo(A.x + (B.x - A.x) * on, A.y + (B.y - A.y) * on);
+          ctx.stroke();
 
-        // a pulse of energy travels the finished threads, one at a time
-        if (on >= 1) {
-          const k = (t * 0.16 + li * 0.47) % 1;
-          const px = A.x + (B.x - A.x) * k;
-          const py = A.y + (B.y - A.y) * k;
-          softDot(ctx, px, py, 3.2, "#FFE9C2", 0.4 * Math.sin(k * Math.PI) * alive, 0.45);
-        }
-      });
+          // a pulse of energy travels the finished threads, one at a time
+          if (on >= 1) {
+            const k = (t * 0.16 + li * 0.47) % 1;
+            const px = A.x + (B.x - A.x) * k;
+            const py = A.y + (B.y - A.y) * k;
+            softDot(ctx, px, py, 3.2, "#FFE9C2", 0.4 * Math.sin(k * Math.PI) * lineAlive, 0.45);
+          }
+        });
 
       /* the stars: dim seeds first, then each chapter ignites one more */
       fig.pts.forEach((pt, i) => {
@@ -129,21 +136,41 @@ export default function ConstellationThread() {
         const hero = pt.mag <= 2.3;
         const breath = 0.85 + 0.15 * Math.sin(t * 0.8 + i * 2.1);
 
+        // staggered departure: a flash, then the star sails to the stage
+        const dp = fade <= 0 ? 0 : Math.min(1, Math.max(0, (fade - (i / n) * 0.3) / 0.7));
+        const dep = dp * dp * (3 - 2 * dp);
+        const x = pt.x + (scx - pt.x) * dep;
+        const y = pt.y + (scy - pt.y) * dep;
+        const starA = 1 - dep;
+        const surge = 1 + Math.sin(dep * Math.PI) * 0.7;
+
         // the unlit future, barely there — the promise of what's coming
-        softDot(ctx, pt.x, pt.y, 2.2, "#F4ECDE", 0.1 * (1 - lit) * alive, 0.4);
+        softDot(ctx, x, y, 2.2, "#F4ECDE", 0.1 * (1 - lit) * starA, 0.4);
 
         if (lit <= 0.01) return;
         // ignition pop — brief, always completes (time-driven)
         if (lit < 0.98) {
-          ctx.strokeStyle = colorA("#FFE9C2", (1 - lit) * lit * 1.4 * alive);
+          ctx.strokeStyle = colorA("#FFE9C2", (1 - lit) * lit * 1.4 * starA);
           ctx.lineWidth = 0.8;
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 3 + lit * 9, 0, Math.PI * 2);
+          ctx.arc(x, y, 3 + lit * 9, 0, Math.PI * 2);
           ctx.stroke();
         }
         const r = (hero ? 2.6 : 1.8) * (0.5 + 0.5 * lit);
-        softDot(ctx, pt.x, pt.y, r * 3.6, hero ? "#FBD7E3" : "#E8B872", 0.3 * lit * breath * alive, 0.3);
-        sparkle(ctx, pt.x, pt.y, r, "#FFF6E5", Math.min(1, 0.9 * lit * breath) * alive);
+        softDot(ctx, x, y, r * 3.6, hero ? "#FBD7E3" : "#E8B872", Math.min(0.6, 0.3 * lit * breath * surge) * starA, 0.3);
+        sparkle(ctx, x, y, r, "#FFF6E5", Math.min(1, 0.9 * lit * breath * surge) * starA);
+        // a faint golden wake while it departs
+        if (dep > 0.02 && dep < 0.98) {
+          softDot(
+            ctx,
+            pt.x + (scx - pt.x) * dep * 0.82,
+            pt.y + (scy - pt.y) * dep * 0.82,
+            2,
+            "#FFE9C2",
+            0.25 * Math.sin(dep * Math.PI) * starA,
+            0.4,
+          );
+        }
       });
 
       /* stray dust drifting toward the chart — the universe feeding it */
@@ -152,7 +179,7 @@ export default function ConstellationThread() {
         const a0 = prand(k * 3.1) * Math.PI * 2;
         const sx = rect.x + rect.w / 2 + Math.cos(a0) * S * (1.4 - kt * 0.9);
         const sy = rect.y + rect.h / 2 + Math.sin(a0) * S * (1.4 - kt * 0.9);
-        softDot(ctx, sx, sy, 1.2, "#E8B872", 0.22 * Math.sin(kt * Math.PI) * alive, 0.4);
+        softDot(ctx, sx, sy, 1.2, "#E8B872", 0.22 * Math.sin(kt * Math.PI) * lineAlive, 0.4);
       }
 
     };

@@ -62,6 +62,12 @@ export default function Plans() {
                 </li>
               ))}
             </ul>
+            <a
+              href="#beta"
+              className="mt-7 inline-flex items-center gap-1.5 rounded-full border border-cream/25 px-5 py-2.5 text-sm font-semibold tracking-wide text-cream/90 transition-all duration-500 hover:border-gold/60 hover:text-gold"
+            >
+              Empieza gratis <span aria-hidden>→</span>
+            </a>
           </motion.div>
 
           {/* pro — the full sky */}
@@ -89,6 +95,9 @@ export default function Plans() {
                 </li>
               ))}
             </ul>
+            <p className="mt-7 inline-flex items-center rounded-full border border-gold/25 bg-gold/[0.04] px-5 py-2.5 font-serif text-sm italic text-gold/80">
+              Precio por anunciar
+            </p>
           </motion.div>
         </div>
 
