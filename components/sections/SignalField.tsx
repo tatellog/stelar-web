@@ -609,7 +609,7 @@ export default function SignalField() {
         // its name, only when you reach for it
         if (isHover) {
           ctx.fillStyle = `rgba(244,236,222,0.9)`;
-          ctx.font = "600 11px 'Hanken Grotesk', sans-serif";
+          ctx.font = "600 13px 'Hanken Grotesk', sans-serif";
           ctx.textAlign = "center";
           ctx.fillText(dim.label, pr.sx, pr.sy - r * 3.2 - 8);
         }
@@ -698,7 +698,7 @@ function Overlay({
 
 function Chapter({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold/80">
+    <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold/80">
       {children}
     </p>
   );
@@ -738,7 +738,7 @@ function Sub({ children }: { children: React.ReactNode }) {
 
 function Hint({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mx-auto mt-4 text-xs uppercase tracking-[0.3em] text-cream/35">
+    <p className="mx-auto mt-4 text-[13px] uppercase tracking-[0.3em] text-cream/35">
       {children}
     </p>
   );

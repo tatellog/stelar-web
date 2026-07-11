@@ -274,7 +274,7 @@ export default function Understands() {
         const ly = flipUp ? pos.y - s * 2.2 - 10 : pos.y + s * 2.2 + 12;
         const la = (tight && !isHot ? 0 : born) * (0.55 + (isHot ? 0.4 : 0)) * (0.6 + 0.4 * pos.depth);
         ctx.fillStyle = colorA("#F4ECDE", Math.min(0.95, la));
-        ctx.font = "600 10px 'Hanken Grotesk', sans-serif";
+        ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
         ctx.textAlign = "center";
         const half = ctx.measureText(c.label.toUpperCase()).width / 2;
         const lx = Math.min(W - 10 - half, Math.max(10 + half, pos.x));
@@ -283,7 +283,7 @@ export default function Understands() {
         // hover / focus: the one-line description, serif and floating
         if (isHot && (hovered === i ? 1 : zoom) > 0.2) {
           ctx.fillStyle = colorA("#D9AE6F", 0.9);
-          ctx.font = "italic 13px 'Cormorant Garamond', serif";
+          ctx.font = "italic 15px 'Cormorant Garamond', serif";
           const dHalf = ctx.measureText(c.desc).width / 2;
           const dx = Math.min(W - 12 - dHalf, Math.max(12 + dHalf, pos.x));
           ctx.fillText(c.desc, dx, flipUp ? ly - 17 : ly + 18);
@@ -321,7 +321,7 @@ export default function Understands() {
           style={{ opacity: introOpacity }}
           className="pointer-events-none absolute inset-x-0 top-[max(8%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo VI · Tu universo
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
@@ -339,7 +339,7 @@ export default function Understands() {
         {/* interaction hint */}
         <motion.p
           style={{ opacity: hintOpacity }}
-          className="pointer-events-none absolute inset-x-0 bottom-[9%] z-10 text-center text-[10px] uppercase tracking-[0.3em] text-cream/35"
+          className="pointer-events-none absolute inset-x-0 bottom-[9%] z-10 text-center text-[11.5px] uppercase tracking-[0.3em] text-cream/35"
         >
           Toca un astro para acercarte
         </motion.p>

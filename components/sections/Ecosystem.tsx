@@ -361,7 +361,7 @@ export default function Ecosystem() {
           const la = (labels * (0.3 + s.depth * 0.35) + (isHover ? 0.55 : 0)) * iconFade * born;
           if (la > 0.02) {
             ctx.fillStyle = colorA("#F4ECDE", Math.min(0.92, la));
-            ctx.font = "600 10px 'Hanken Grotesk', sans-serif";
+            ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
             ctx.textAlign = "center";
             // keep the label inside the viewport on narrow screens
             const half = ctx.measureText(s.name.toUpperCase()).width / 2;
@@ -486,7 +486,7 @@ export default function Ecosystem() {
           style={{ opacity: introOpacity }}
           className="pointer-events-none absolute inset-x-0 top-[max(9%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo VIII · Wearables
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
@@ -526,13 +526,13 @@ export default function Ecosystem() {
             {["Entrenos", "Sueño", "Pasos", "Ritmo cardiaco", "Actividad"].map((k) => (
               <span
                 key={k}
-                className="rounded-full border border-cream/12 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.2em] text-cream/55"
+                className="rounded-full border border-cream/12 px-3.5 py-1.5 text-[11.5px] uppercase tracking-[0.2em] text-cream/55"
               >
                 {k}
               </span>
             ))}
           </div>
-          <p className="pointer-events-none mt-4 text-[10px] uppercase tracking-[0.3em] text-cream/35">
+          <p className="pointer-events-none mt-4 text-[11.5px] uppercase tracking-[0.3em] text-cream/35">
             Sincronización automática
           </p>
           <a

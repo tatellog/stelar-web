@@ -30,7 +30,7 @@ export default function Plans() {
     <section className="relative overflow-hidden py-24 sm:py-32">
       <div className="mx-auto max-w-3xl px-6">
         <Reveal className="text-center">
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Planes
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
@@ -50,7 +50,7 @@ export default function Plans() {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="rounded-3xl border border-cream/12 bg-deep/40 p-7 backdrop-blur-sm"
           >
-            <p className="text-xs uppercase tracking-[0.3em] text-cream/60">Free</p>
+            <p className="text-[13px] uppercase tracking-[0.3em] text-cream/60">Free</p>
             <p className="mt-2 font-serif text-lg italic text-cream/70">
               Empieza a ver.
             </p>
@@ -78,17 +78,17 @@ export default function Plans() {
             transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="relative rounded-3xl border border-gold/40 bg-gold/[0.05] p-7 shadow-[0_0_50px_rgba(232,184,114,0.08)] backdrop-blur-sm"
           >
-            <span className="absolute -top-3 right-6 rounded-full border border-gold/50 bg-deep px-3 py-1 text-[9px] uppercase tracking-[0.22em] text-gold">
+            <span className="absolute -top-3 right-6 rounded-full border border-gold/50 bg-deep px-3 py-1 text-[10.5px] uppercase tracking-[0.22em] text-gold">
               Próximamente
             </span>
-            <p className="text-xs uppercase tracking-[0.3em] text-gold">Pro</p>
+            <p className="text-[13px] uppercase tracking-[0.3em] text-gold">Pro</p>
             <p className="mt-2 font-serif text-lg italic text-gold/90">
               El cielo completo.
             </p>
             <ul className="mt-6 flex flex-col gap-2.5">
               {PRO.map((f) => (
                 <li key={f} className="flex items-center gap-2.5 text-sm text-cream/85">
-                  <span className="text-[10px] text-gold" aria-hidden>
+                  <span className="text-[11.5px] text-gold" aria-hidden>
                     ✦
                   </span>
                   {f}

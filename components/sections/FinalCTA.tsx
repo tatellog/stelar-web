@@ -240,11 +240,11 @@ function BetaButton() {
           </button>
         </div>
         {state === "error" ? (
-          <p className="text-xs text-pink-soft/90">
+          <p className="text-[13px] text-pink-soft/90">
             Algo falló — inténtalo de nuevo.
           </p>
         ) : (
-          <p className="text-xs text-cream/45">
+          <p className="text-[13px] text-cream/45">
             Solo usaremos tu correo para invitarte a la beta.
           </p>
         )}

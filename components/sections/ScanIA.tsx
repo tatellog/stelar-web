@@ -229,7 +229,7 @@ export default function ScanIA() {
           style={{ opacity: introOpacity }}
           className="pointer-events-none absolute inset-x-0 top-[max(10%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo VII · Scan IA
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
@@ -246,7 +246,7 @@ export default function ScanIA() {
             {["Escaneo ≈ 5 seg", "Quick log < 10 seg", "Foto o texto"].map((chip) => (
               <span
                 key={chip}
-                className="rounded-full border border-cream/12 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.2em] text-cream/55"
+                className="rounded-full border border-cream/12 px-3.5 py-1.5 text-[11.5px] uppercase tracking-[0.2em] text-cream/55"
               >
                 {chip}
               </span>
@@ -310,12 +310,12 @@ export default function ScanIA() {
             <motion.span
               key={tag.text}
               style={{ left: tag.x, top: tag.y, opacity: tagGlow }}
-              className="absolute hidden whitespace-nowrap rounded-full border border-gold/40 bg-deep/80 px-3 py-1 font-serif text-xs italic text-gold backdrop-blur-sm sm:block"
+              className="absolute hidden whitespace-nowrap rounded-full border border-gold/40 bg-deep/80 px-3 py-1 font-serif text-[13px] italic text-gold backdrop-blur-sm sm:block"
             >
               {tag.text}
             </motion.span>
           ))}
-          <span className="absolute bottom-[4%] right-[4%] flex items-center gap-1.5 rounded-full bg-deep/70 px-3 py-1.5 text-[11px] tracking-wide text-cream/85 opacity-0 backdrop-blur-md transition-all duration-700 group-hover:opacity-100">
+          <span className="absolute bottom-[4%] right-[4%] flex items-center gap-1.5 rounded-full bg-deep/70 px-3 py-1.5 text-[12.5px] tracking-wide text-cream/85 opacity-0 backdrop-blur-md transition-all duration-700 group-hover:opacity-100">
             ⟲ Reescanear
           </span>
         </motion.div>
@@ -351,7 +351,7 @@ export default function ScanIA() {
         {/* powered by IA */}
         <motion.p
           style={{ opacity: poweredBy }}
-          className="pointer-events-none absolute inset-x-0 bottom-[6%] z-10 text-center text-[11px] uppercase tracking-[0.35em] text-cream/45"
+          className="pointer-events-none absolute inset-x-0 bottom-[6%] z-10 text-center text-[12.5px] uppercase tracking-[0.35em] text-cream/45"
         >
           <span className="text-pink">✦</span> Powered by IA · tú siempre tienes el control
         </motion.p>
@@ -377,7 +377,7 @@ export default function ScanIA() {
             >
               <div className="flex items-center gap-3">
                 <span
-                  className={`text-sm font-semibold ${c.total ? "uppercase tracking-[0.2em] text-gold text-xs" : "text-cream/90"}`}
+                  className={`text-sm font-semibold ${c.total ? "uppercase tracking-[0.2em] text-gold text-[13px]" : "text-cream/90"}`}
                 >
                   {c.label}
                 </span>
@@ -387,13 +387,13 @@ export default function ScanIA() {
                     initial={{ scale: 1.25, color: "#FFE9C2" }}
                     animate={{ scale: 1, color: "#E8B872" }}
                     transition={{ duration: 0.5 }}
-                    className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs"
+                    className="rounded-md border border-cream/15 px-1.5 py-0.5 text-[13px]"
                   >
                     {totalKcal}
                   </motion.span>
                 ) : c.editable ? (
                   <span className="flex items-center gap-1.5">
-                    <motion.span style={{ opacity: editHint }} className="text-xs text-cream/45">
+                    <motion.span style={{ opacity: editHint }} className="text-[13px] text-cream/45">
                       −
                     </motion.span>
                     <motion.span
@@ -401,17 +401,17 @@ export default function ScanIA() {
                       initial={{ scale: 1.25, color: "#FFE9C2" }}
                       animate={{ scale: 1, color: "#F4ECDE" }}
                       transition={{ duration: 0.5 }}
-                      className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs"
+                      className="rounded-md border border-cream/15 px-1.5 py-0.5 text-[13px]"
                     >
                       {cremaG} g
                     </motion.span>
-                    <motion.span style={{ opacity: editHint }} className="text-xs text-cream/45">
+                    <motion.span style={{ opacity: editHint }} className="text-[13px] text-cream/45">
                       +
                     </motion.span>
                   </span>
                 ) : (
                   <span
-                    className="rounded-md border border-cream/15 px-1.5 py-0.5 text-xs"
+                    className="rounded-md border border-cream/15 px-1.5 py-0.5 text-[13px]"
                     style={{ color: c.color }}
                   >
                     {c.value}
@@ -419,7 +419,7 @@ export default function ScanIA() {
                 )}
               </div>
               {c.detail && (
-                <p className="mt-1 text-[11px] text-cream/50">{c.detail}</p>
+                <p className="mt-1 text-[12.5px] text-cream/50">{c.detail}</p>
               )}
             </div>
           </motion.div>
@@ -491,7 +491,7 @@ function TextLog({ p, inView }: { p: MotionValue<number>; inView: boolean }) {
       style={{ opacity: textBeat }}
       className="pointer-events-none absolute inset-x-0 top-[30%] z-10 mx-auto max-w-md px-6 text-center"
     >
-      <p className="text-xs uppercase tracking-[0.3em] text-cream/45">
+      <p className="text-[13px] uppercase tracking-[0.3em] text-cream/45">
         ¿Sin foto?{" "}
         <span className="normal-case tracking-normal font-serif italic text-gold">Escríbelo.</span>
       </p>
@@ -520,7 +520,7 @@ function TextLog({ p, inView }: { p: MotionValue<number>; inView: boolean }) {
             style={{ boxShadow: `0 0 22px ${r.color}22` }}
           >
             {r.label}{" "}
-            <span className="text-xs" style={{ color: r.color }}>
+            <span className="text-[13px]" style={{ color: r.color }}>
               {r.value}
             </span>
           </motion.span>

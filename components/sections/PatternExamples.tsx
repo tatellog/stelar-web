@@ -390,7 +390,7 @@ export default function PatternExamples() {
     <section className="relative overflow-hidden py-32 sm:py-44">
       <div className="mx-auto max-w-3xl px-6">
         <Reveal className="text-center">
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo X · Patrones reales
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
@@ -426,7 +426,7 @@ export default function PatternExamples() {
               Todo sale de tus propios registros.
             </span>
           </p>
-          <p className="mt-5 text-[10px] uppercase tracking-[0.3em] text-cream/35">
+          <p className="mt-5 text-[11.5px] uppercase tracking-[0.3em] text-cream/35">
             Detección de patrones · Automática
           </p>
         </Reveal>

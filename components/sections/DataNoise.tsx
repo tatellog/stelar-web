@@ -248,7 +248,7 @@ export default function DataNoise() {
         const alpha = born * (0.24 + tk.depth * 0.42) * (1 - dis);
         if (alpha > 0.01) {
           ctx.fillStyle = colorA(tk.isNumber ? "#F4ECDE" : "#D9AE6F", alpha);
-          ctx.font = `${tk.isNumber ? 700 : 400} ${tk.size * tk.depth + 6}px 'Hanken Grotesk', sans-serif`;
+          ctx.font = `${tk.isNumber ? 700 : 400} ${tk.size * tk.depth + 8}px 'Hanken Grotesk', sans-serif`;
           ctx.textAlign = "center";
           ctx.fillText(tk.text, base.x, base.y);
         }
@@ -491,7 +491,7 @@ export default function DataNoise() {
           style={{ opacity: introOpacity }}
           className="pointer-events-none absolute inset-x-0 top-[max(9%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo XI · La evidencia
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">

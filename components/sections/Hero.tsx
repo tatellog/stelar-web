@@ -32,7 +32,7 @@ export default function Hero() {
         {/* CSS-only entrance: the headline is the LCP — it must paint
             before hydration, not 1.6s after it */}
         <p
-          className="hero-rise mb-6 text-xs uppercase tracking-[0.4em] text-gold/90"
+          className="hero-rise mb-6 text-[13px] uppercase tracking-[0.4em] text-gold/90"
           style={{ animationDelay: "0.1s" }}
         >
           Haz visible lo invisible
@@ -62,7 +62,7 @@ export default function Hero() {
           className="hero-rise group mt-14 flex flex-col items-center gap-4"
           style={{ animationDelay: "0.9s" }}
         >
-          <span className="text-[11px] uppercase tracking-[0.35em] text-cream/50 transition-colors duration-500 group-hover:text-cream/80">
+          <span className="text-[12.5px] uppercase tracking-[0.35em] text-cream/50 transition-colors duration-500 group-hover:text-cream/80">
             Desliza para comenzar el viaje
           </span>
           <span className="relative flex h-14 w-px overflow-hidden">

@@ -112,7 +112,7 @@ export default function OrbitaAction() {
           className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-6 px-6 sm:gap-10 md:grid-cols-2 md:gap-12 lg:gap-16"
         >
           <div>
-            <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+            <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
               Capítulo IX · Órbita en acción
             </p>
             <h2 className="font-sans text-2xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl lg:text-5xl [@media(max-height:560px)]:text-2xl">
@@ -172,7 +172,7 @@ export default function OrbitaAction() {
                 <button
                   key={l.id}
                   onClick={() => jumpTo(i)}
-                  className={`rounded-full border px-4 py-2.5 text-xs tracking-[0.2em] transition-all duration-500 ${
+                  className={`rounded-full border px-4 py-2.5 text-[13px] tracking-[0.2em] transition-all duration-500 ${
                     i === idx
                       ? "border-pink-soft/60 text-cream shadow-[0_0_18px_rgba(233,30,99,0.2)]"
                       : "hairline border text-cream/40 hover:text-cream/70"

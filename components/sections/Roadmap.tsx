@@ -22,7 +22,7 @@ export default function Roadmap() {
     <section className="relative overflow-hidden py-24 sm:py-32">
       <div className="mx-auto max-w-4xl px-6">
         <Reveal className="text-center">
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Roadmap
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
@@ -47,7 +47,7 @@ export default function Roadmap() {
                 ✦
               </span>
               <p className="mt-2 text-sm font-semibold text-cream/90">{item}</p>
-              <p className="mt-1.5 text-[9px] uppercase tracking-[0.22em] text-gold/80">
+              <p className="mt-1.5 text-[10.5px] uppercase tracking-[0.22em] text-gold/80">
                 En beta
               </p>
             </motion.div>
@@ -68,7 +68,7 @@ export default function Roadmap() {
                 transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.5 }}
               />
               <p className="mt-2 text-sm font-semibold text-cream/60">{item}</p>
-              <p className="mt-1.5 text-[9px] uppercase tracking-[0.22em] text-cream/35">
+              <p className="mt-1.5 text-[10.5px] uppercase tracking-[0.22em] text-cream/35">
                 En camino
               </p>
             </motion.div>

@@ -121,7 +121,7 @@ export default function AutoPilot() {
             <path d="M2.4 1.2 L10.8 6 L2.4 10.8 Z" fill="#F4ECDE" opacity="0.9" />
           </svg>
         )}
-        <span className="text-[10px] uppercase tracking-[0.22em] text-cream/70 transition-colors duration-500 group-hover:text-cream">
+        <span className="text-[11.5px] uppercase tracking-[0.22em] text-cream/70 transition-colors duration-500 group-hover:text-cream">
           {playing ? "Pausar" : ended ? "Volver a viajar" : "Viaje automático"}
         </span>
       </motion.button>

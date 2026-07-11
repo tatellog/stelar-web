@@ -60,14 +60,14 @@ export default function DiaScreen() {
           transition={{ duration: 0.9, delay: 1.2 }}
           className="mt-1 text-center"
         >
-          <p className="text-[7.5px] uppercase tracking-[0.28em] text-gold">
+          <p className="text-[9px] uppercase tracking-[0.28em] text-gold">
             Hoy estás en
           </p>
           <p className="font-serif text-xl italic leading-tight">Déficit</p>
           <p className="font-sans text-lg font-black leading-tight text-pink-soft">
-            260 <span className="text-[9px] font-semibold text-cream/70">kcal</span>
+            260 <span className="text-[10.5px] font-semibold text-cream/70">kcal</span>
           </p>
-          <p className="mt-0.5 font-serif text-[9px] italic text-cream/55">
+          <p className="mt-0.5 font-serif text-[10.5px] italic text-cream/55">
             Aún tienes margen para cerrar el día.
           </p>
         </motion.div>
@@ -76,7 +76,7 @@ export default function DiaScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.9, delay: 1.6 }}
-          className="mt-2 flex items-center gap-2.5 text-[7.5px] text-cream/60"
+          className="mt-2 flex items-center gap-2.5 text-[9px] text-cream/60"
         >
           {[
             { c: "#E91E63", l: "Calorías", v: "1203 kcal" },

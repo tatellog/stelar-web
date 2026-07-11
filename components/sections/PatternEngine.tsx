@@ -176,7 +176,7 @@ export default function PatternEngine() {
             ctx.lineTo(x, y + 5);
             ctx.stroke();
             ctx.fillStyle = colorA("#F4ECDE", 0.3 * born);
-            ctx.font = "400 8px 'Hanken Grotesk', sans-serif";
+            ctx.font = "400 10px 'Hanken Grotesk', sans-serif";
             ctx.textAlign = "left";
             ctx.fillText(GREEK[i % GREEK.length], x + 7, y - 4);
           }
@@ -287,7 +287,7 @@ export default function PatternEngine() {
         // label
         const la = born * (isHover ? 0.95 : 0.55);
         ctx.fillStyle = colorA("#F4ECDE", la);
-        ctx.font = "600 10px 'Hanken Grotesk', sans-serif";
+        ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(n.label.toUpperCase(), x, y + R * 0.62 + 14);
       });
@@ -329,7 +329,7 @@ export default function PatternEngine() {
           style={{ opacity: introOpacity }}
           className="pointer-events-none absolute inset-x-0 top-[max(12%,5.5rem)] z-10 mx-auto max-w-2xl px-6 text-center"
         >
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo V · IA Pattern Engine
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">
@@ -348,7 +348,7 @@ export default function PatternEngine() {
           style={{ opacity: outroOpacity, y: outroY }}
           className="pointer-events-none absolute inset-x-0 bottom-[10%] z-10 mx-auto max-w-xl px-6 text-center"
         >
-          <p className="text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="text-[13px] uppercase tracking-[0.35em] text-gold">
             IA Pattern Engine
           </p>
           <p className="mt-4 text-lg leading-relaxed text-cream/70">

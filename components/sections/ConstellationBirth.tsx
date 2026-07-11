@@ -506,7 +506,7 @@ export default function ConstellationBirth() {
       const obsAlpha = smooth(0.24, 0.36, p) * (1 - rit * 0.6);
       if (obsAlpha > 0.01) {
         ctx.letterSpacing = "2px";
-        ctx.font = "600 10px 'Hanken Grotesk', system-ui, sans-serif";
+        ctx.font = "600 12px 'Hanken Grotesk', system-ui, sans-serif";
         ctx.textAlign = "center";
         for (let k = 0; k < ORBITS.length; k++) {
           const o = ORBITS[k];
@@ -733,7 +733,7 @@ export default function ConstellationBirth() {
 
         {/* the chapter opens */}
         <Overlay progress={scrollYProgress} range={[0.02, 0.06, 0.14, 0.19]}>
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold/80">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold/80">
             Capítulo IV · El observatorio
           </p>
           <h2 className="font-sans text-4xl font-black leading-[1.08] tracking-tight text-cream sm:text-6xl">
@@ -751,7 +751,7 @@ export default function ConstellationBirth() {
         {/* observatory hint */}
         <motion.p
           style={{ opacity: hintOpacity }}
-          className="pointer-events-none absolute inset-x-0 bottom-10 z-10 text-center text-[10px] uppercase tracking-[0.3em] text-cream/35"
+          className="pointer-events-none absolute inset-x-0 bottom-10 z-10 text-center text-[11.5px] uppercase tracking-[0.3em] text-cream/35"
         >
           Explora el cielo — viaja a otra constelación
         </motion.p>
@@ -763,7 +763,7 @@ export default function ConstellationBirth() {
         >
           <div className="flex items-center justify-center gap-3">
             <span className="h-px w-8 bg-gold/30" />
-            <p className="text-xs uppercase tracking-[0.35em] text-gold">
+            <p className="text-[13px] uppercase tracking-[0.35em] text-gold">
               {def.label}
             </p>
             <span className="h-px w-8 bg-gold/30" />

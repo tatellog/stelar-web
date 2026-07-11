@@ -30,7 +30,7 @@ export default function FAQ() {
     <section className="relative overflow-hidden py-24 sm:py-32">
       <div className="mx-auto max-w-2xl px-6">
         <Reveal className="text-center">
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Preguntas
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-4xl">

@@ -57,16 +57,16 @@ export default function MesScreen() {
           transition={{ duration: 0.9, delay: 1 }}
         >
           <p className="font-serif text-xl italic leading-tight">{name}</p>
-          <p className="mt-0.5 text-[8px] uppercase tracking-[0.28em] text-gold">
+          <p className="mt-0.5 text-[9.5px] uppercase tracking-[0.28em] text-gold">
             87% revelado
           </p>
-          <p className="mt-1.5 text-[8.5px] leading-snug text-cream/55">
+          <p className="mt-1.5 text-[10px] leading-snug text-cream/55">
             Tu {name} se dibuja con tu constancia, no con tu peso.
           </p>
-          <p className="mt-1 text-[9px] font-semibold text-pink">
+          <p className="mt-1 text-[10.5px] font-semibold text-pink">
             Algo se reveló este mes.
           </p>
-          <p className="mt-0.5 font-serif text-[9px] italic text-cream/60">
+          <p className="mt-0.5 font-serif text-[10.5px] italic text-cream/60">
             Tu {name} ya puede verse.
           </p>
         </motion.div>

@@ -89,7 +89,7 @@ export default function ProductOverview() {
     <section className="relative overflow-hidden py-32 sm:py-44">
       <div className="mx-auto max-w-5xl px-6">
         <Reveal className="text-center">
-          <p className="mb-4 text-xs uppercase tracking-[0.35em] text-gold">
+          <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             El producto
           </p>
           <h2 className="font-sans text-3xl font-black leading-[1.08] tracking-tight text-cream sm:text-5xl">

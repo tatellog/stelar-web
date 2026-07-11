@@ -28,7 +28,7 @@ export default function OrbitaChrome({
         <span className="text-pink-soft">Tu</span> Órbita
       </h3>
 
-      <div className="mt-2 flex rounded-full border border-cream/10 p-0.5 text-[8.5px] tracking-[0.15em]">
+      <div className="mt-2 flex rounded-full border border-cream/10 p-0.5 text-[10px] tracking-[0.15em]">
         {tabs.map(([id, label]) => (
           <span
             key={id}
@@ -47,7 +47,7 @@ export default function OrbitaChrome({
         {title}
       </p>
       {subtitle && (
-        <p className="mt-0.5 text-[8.5px] leading-snug text-cream/50">{subtitle}</p>
+        <p className="mt-0.5 text-[10px] leading-snug text-cream/50">{subtitle}</p>
       )}
 
       <div className="min-h-0 flex-1">{children}</div>

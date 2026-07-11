@@ -41,7 +41,7 @@ export default function Nav() {
         </div>
         <a
           href="#beta"
-          className="shrink-0 whitespace-nowrap rounded-full border border-pink-soft/60 px-5 py-3 text-xs font-medium tracking-wide text-cream transition-all duration-300 hover:bg-pink-soft/10 hover:shadow-[0_0_24px_rgba(233,30,99,0.35)] sm:px-6 sm:py-2.5 sm:text-sm"
+          className="shrink-0 whitespace-nowrap rounded-full border border-pink-soft/60 px-5 py-3 text-[13px] font-medium tracking-wide text-cream transition-all duration-300 hover:bg-pink-soft/10 hover:shadow-[0_0_24px_rgba(233,30,99,0.35)] sm:px-6 sm:py-2.5 sm:text-sm"
         >
           Únete a la beta
         </a>
