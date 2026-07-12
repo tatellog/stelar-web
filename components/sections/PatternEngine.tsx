@@ -1,37 +1,16 @@
-"use client";
-
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import Reveal from "../Reveal";
 
 /**
  * Capítulo V — IA Pattern Engine.
  * Palabras solas sobre el cielo abierto (la red de nodos se retiró a
- * pedido de la usuaria): dos beats de copy que se ceden el escenario,
- * con el starfield global como única escena.
+ * pedido de la usuaria). Dos beats de copy en flujo normal — nada de
+ * pin ni capas absolutas: no pueden encimarse jamás.
  */
 export default function PatternEngine() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end end"],
-  });
-
-  const introOpacity = useTransform(scrollYProgress, [0.06, 0.2, 0.44, 0.56], [0, 1, 1, 0]);
-  const introY = useTransform(scrollYProgress, [0.06, 0.2], [24, 0]);
-  const outroOpacity = useTransform(scrollYProgress, [0.56, 0.7, 0.92, 1], [0, 1, 1, 0.9]);
-  const outroY = useTransform(scrollYProgress, [0.56, 0.7], [28, 0]);
-
   return (
-    <section ref={ref} className="relative h-[220vh]">
-      <div className="sticky top-0 flex h-dvh items-center justify-center overflow-hidden">
-        {/* the chapter opens — outer div owns the centering transform;
-            framer's inline y would clobber a Tailwind translate here */}
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-        <motion.div
-          style={{ opacity: introOpacity, y: introY }}
-          className="mx-auto max-w-2xl px-6 text-center"
-        >
+    <section className="relative">
+      <div className="flex min-h-screen items-center justify-center px-6">
+        <Reveal className="max-w-2xl text-center">
           <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo V · IA Pattern Engine
           </p>
@@ -44,15 +23,11 @@ export default function PatternEngine() {
           <p className="mt-5 text-base leading-relaxed text-cream/60 sm:text-lg">
             Cada dato parece pequeño. Juntos cuentan una historia.
           </p>
-        </motion.div>
-        </div>
+        </Reveal>
+      </div>
 
-        {/* the engine, named */}
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2">
-        <motion.div
-          style={{ opacity: outroOpacity, y: outroY }}
-          className="mx-auto max-w-xl px-6 text-center"
-        >
+      <div className="flex min-h-[70vh] items-center justify-center px-6 pb-28">
+        <Reveal className="max-w-xl text-center">
           <p className="text-[13px] uppercase tracking-[0.35em] text-gold">
             IA Pattern Engine
           </p>
@@ -62,8 +37,7 @@ export default function PatternEngine() {
               patrones que normalmente no verías.
             </span>
           </p>
-        </motion.div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
