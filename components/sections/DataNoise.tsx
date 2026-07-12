@@ -104,7 +104,7 @@ export default function DataNoise() {
       return {
         born0,
         born1: born0 + 0.05,
-        font: `${tk.isNumber ? 700 : 400} ${tk.size * tk.depth + 8}px 'Hanken Grotesk', sans-serif`,
+        font: `${tk.isNumber ? 600 : 400} ${tk.size * tk.depth + 8}px 'Hanken Grotesk', sans-serif`,
         color: tk.isNumber ? "#F4ECDE" : "#D9AE6F",
         grains: Array.from({ length: PPT }, (_, j) => {
           const seed = i * 31 + j * 7;

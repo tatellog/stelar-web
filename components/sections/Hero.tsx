@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useTransform, useScroll } from "framer-motion";
+import { motion, useTransform, useScroll, useInView } from "framer-motion";
 
 /**
  * Capítulo I — Oscuridad.
@@ -10,6 +10,8 @@ import { motion, useTransform, useScroll } from "framer-motion";
  */
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
+  // the descending beam must not keep animating ten chapters below
+  const inView = useInView(ref);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -68,8 +70,12 @@ export default function Hero() {
           <span className="relative flex h-14 w-px overflow-hidden">
             <span className="absolute inset-0 bg-gradient-to-b from-transparent via-gold/25 to-transparent" />
             <motion.span
-              animate={{ y: ["-100%", "160%"] }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+              animate={inView ? { y: ["-100%", "160%"] } : { y: "-100%" }}
+              transition={
+                inView
+                  ? { duration: 2.6, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0 }
+              }
               className="absolute inset-x-0 h-8 bg-gradient-to-b from-transparent via-gold/80 to-transparent"
             />
           </span>

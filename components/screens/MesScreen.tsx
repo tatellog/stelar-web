@@ -32,6 +32,8 @@ export default function MesScreen() {
           <img
             src={`/emblems/${sign}/f10.webp`}
             alt={`Emblema de ${name}`}
+            loading="lazy"
+            decoding="async"
             className="absolute inset-[15%] h-[70%] w-[70%] object-contain"
             draggable={false}
           />

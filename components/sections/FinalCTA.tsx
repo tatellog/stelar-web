@@ -83,6 +83,11 @@ export default function FinalCTA() {
             <motion.circle
               key={`e${i}`}
               r={0.7}
+              initial={{
+                cx: def.stars[a].x * 100,
+                cy: def.stars[a].y * 100,
+                opacity: 0,
+              }}
               fill="#FFE9C2"
               animate={{
                 cx: [def.stars[a].x * 100, def.stars[b].x * 100],

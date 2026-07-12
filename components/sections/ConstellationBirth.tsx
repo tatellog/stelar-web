@@ -427,6 +427,9 @@ export default function ConstellationBirth() {
       press.flashed = false;
     };
 
+    // observatory label half-widths, measured once per sign
+    const labelHalfCache = new Map<ZodiacSign, number>();
+
     const draw = (now: number) => {
       if (!running) return;
       const t = now / 1000;
@@ -522,16 +525,17 @@ export default function ConstellationBirth() {
           /* orbit halo — always faintly present, alive on hover */
           softDot(ctx, pr.sx, pr.sy, scale * 0.9, ORO, hovered ? 0.14 : 0.05, 0.5);
 
+          // style is constant across a mini's lines — set once, one path
+          ctx.strokeStyle = `rgba(217,174,111,${a * 0.65})`;
+          ctx.lineWidth = hovered ? 0.9 : 0.7;
+          ctx.beginPath();
           for (const [la, lb] of mini.lines) {
             const A = mini.pts[la];
             const B = mini.pts[lb];
-            ctx.strokeStyle = `rgba(217,174,111,${a * 0.65})`;
-            ctx.lineWidth = hovered ? 0.9 : 0.7;
-            ctx.beginPath();
             ctx.moveTo(pr.sx + A.x * scale, pr.sy + A.y * scale);
             ctx.lineTo(pr.sx + B.x * scale, pr.sy + B.y * scale);
-            ctx.stroke();
           }
+          ctx.stroke();
           for (const st of mini.pts) {
             const anchorStar = st.mag <= 2.3;
             const sr = anchorStar ? 2.6 : 1.7;
@@ -544,9 +548,14 @@ export default function ConstellationBirth() {
             }
           }
           /* the name is always there — a chart label, brighter on hover;
-             clamped so it never bleeds off the edge of the sky */
+             clamped so it never bleeds off the edge of the sky. Width is
+             measured once per sign (letter-spaced shaping is slow). */
           const label = FIGURES[o.sign].label;
-          const half = ctx.measureText(label).width / 2;
+          let half = labelHalfCache.get(o.sign);
+          if (half === undefined) {
+            half = ctx.measureText(label).width / 2;
+            if (document.fonts.status === "loaded") labelHalfCache.set(o.sign, half);
+          }
           const lx = Math.min(W - half - 12, Math.max(half + 12, pr.sx));
           const ly = Math.min(H - 10, pr.sy + scale * 0.62 + 18);
           ctx.fillStyle = `rgba(244,236,222,${obsAlpha * (hovered ? 0.9 : 0.4) * Math.min(1, 4.6 / dist)})`;

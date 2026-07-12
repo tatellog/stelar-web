@@ -43,7 +43,7 @@ export default function OrbitaChrome({
         ))}
       </div>
 
-      <p className="mt-2.5 font-sans text-[14px] font-bold leading-tight">
+      <p className="mt-2.5 font-sans text-[14px] font-semibold leading-tight">
         {title}
       </p>
       {subtitle && (

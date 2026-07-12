@@ -40,6 +40,9 @@ const CATS: Cat[] = [
 
 const SQUASH = 0.52;
 const N_DUST = 130;
+const LABEL_FONT = "600 12px 'Hanken Grotesk', sans-serif";
+const DESC_FONT = "italic 15px 'Cormorant Garamond', serif";
+const labelUC = CATS.map((c) => c.label.toUpperCase());
 
 export default function Understands() {
   const ref = useRef<HTMLDivElement>(null);
@@ -141,6 +144,10 @@ export default function Understands() {
     window.addEventListener("pointermove", onPointer, { passive: true });
     canvas.addEventListener("click", onClick);
 
+    // text metrics measured once on the first frame (fonts already loaded)
+    const labelHalf: number[] = [];
+    const descHalf: number[] = [];
+
     const draw = (now: number) => {
       ctx.clearRect(0, 0, W, H);
       const p = progress.current;
@@ -231,6 +238,14 @@ export default function Understands() {
 
       /* the categories, born one by one */
       const positions = CATS.map((c) => catPos(c, t, R, cx, cy, slow));
+      // label metrics are constant — measure once (after webfonts load,
+      // so the cached widths are the real ones), not 600×/s
+      ctx.font = LABEL_FONT;
+      ctx.textAlign = "center";
+      if (labelHalf.length === 0 && document.fonts.status === "loaded") {
+        for (const lu of labelUC) labelHalf.push(ctx.measureText(lu).width / 2);
+      }
+      let hotDesc: { text: string; x: number; y: number; idx: number } | null = null;
       for (let i = 0; i < CATS.length; i++) {
         const c = CATS[i];
         const b0 = 0.1 + i * 0.045;
@@ -274,20 +289,25 @@ export default function Understands() {
         const ly = flipUp ? pos.y - s * 2.2 - 10 : pos.y + s * 2.2 + 12;
         const la = (tight && !isHot ? 0 : born) * (0.55 + (isHot ? 0.4 : 0)) * (0.6 + 0.4 * pos.depth);
         ctx.fillStyle = colorA("#F4ECDE", Math.min(0.95, la));
-        ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
-        ctx.textAlign = "center";
-        const half = ctx.measureText(c.label.toUpperCase()).width / 2;
+        const half = labelHalf[i] ?? ctx.measureText(labelUC[i]).width / 2;
         const lx = Math.min(W - 10 - half, Math.max(10 + half, pos.x));
-        ctx.fillText(c.label.toUpperCase(), lx, ly);
+        ctx.fillText(labelUC[i], lx, ly);
 
-        // hover / focus: the one-line description, serif and floating
+        // hover / focus: description queued — drawn after the loop so the
+        // label font is set once per frame, not per category
         if (isHot && (hovered === i ? 1 : zoom) > 0.2) {
-          ctx.fillStyle = colorA("#D9AE6F", 0.9);
-          ctx.font = "italic 15px 'Cormorant Garamond', serif";
-          const dHalf = ctx.measureText(c.desc).width / 2;
-          const dx = Math.min(W - 12 - dHalf, Math.max(12 + dHalf, pos.x));
-          ctx.fillText(c.desc, dx, flipUp ? ly - 17 : ly + 18);
+          hotDesc = { text: c.desc, x: pos.x, y: flipUp ? ly - 17 : ly + 18, idx: i };
         }
+      }
+      if (hotDesc) {
+        ctx.fillStyle = colorA("#D9AE6F", 0.9);
+        ctx.font = DESC_FONT;
+        if (descHalf[hotDesc.idx] === undefined) {
+          descHalf[hotDesc.idx] = ctx.measureText(hotDesc.text).width / 2;
+        }
+        const dHalf = descHalf[hotDesc.idx];
+        const dx = Math.min(W - 12 - dHalf, Math.max(12 + dHalf, hotDesc.x));
+        ctx.fillText(hotDesc.text, dx, hotDesc.y);
       }
 
       ctx.restore();

@@ -114,6 +114,7 @@ function FridayBars() {
         cx={102.5}
         cy={68 - 46}
         r={7}
+        initial={{ opacity: 0 }}
         fill="none"
         stroke="#FFE9C2"
         strokeWidth={0.6}
@@ -205,6 +206,7 @@ function TrainProtein() {
       <motion.circle
         cx={30}
         cy={45}
+        initial={{ r: 6, opacity: 0 }}
         fill="none"
         stroke="#FF9E57"
         strokeWidth={0.7}
@@ -232,6 +234,7 @@ function TrainProtein() {
       <motion.circle
         r={2}
         cy={45}
+        initial={{ cx: 40, opacity: 0 }}
         fill="#FFE9C2"
         whileInView={{ cx: [40, 104], opacity: [0, 0.9, 0] }}
         viewport={{ margin: "-10%" }}
@@ -325,6 +328,7 @@ function WaterDeficit() {
         fill="none"
         stroke="#FF4886"
         strokeWidth={0.5}
+        initial={{ opacity: 0 }}
         whileInView={{ opacity: [0, 0.35, 0] }}
         viewport={{ margin: "-10%" }}
         transition={{ duration: 2.6, repeat: Infinity, delay: 3 }}

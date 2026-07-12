@@ -272,7 +272,7 @@ export default function ScanIA() {
           <div className="absolute inset-[6%] overflow-hidden rounded-full shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/art/meal-scan.jpg"
+              src="/art/meal-scan.webp"
               alt="Salmón con tomates cherry y crema"
               className="h-full w-full object-cover"
               loading="lazy"

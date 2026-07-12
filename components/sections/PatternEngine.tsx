@@ -51,6 +51,37 @@ const EDGES: [number, number, number][] = [
   [5, 3, 0.6], // déficit — peso
 ];
 
+/* one gradient per edge per frame was 660 gradient objects/s — at
+   0.7-1.1px width a solid midpoint blend is visually identical */
+const hexRGB = (h: string): [number, number, number] => [
+  parseInt(h.slice(1, 3), 16),
+  parseInt(h.slice(3, 5), 16),
+  parseInt(h.slice(5, 7), 16),
+];
+const EDGE_COLOR = EDGES.map(([a, b]) => {
+  const pa = hexRGB(NODES[a].color);
+  const pb = hexRGB(NODES[b].color);
+  return `rgb(${(pa[0] + pb[0]) >> 1},${(pa[1] + pb[1]) >> 1},${(pa[2] + pb[2]) >> 1})`;
+});
+
+/* chart-star + cluster statics, baked once (were ~1.2k prand/frame) */
+const CHART_STARS = Array.from({ length: 240 }, (_, i) => ({
+  born0: prand(i * 1.7) * 0.6,
+  fx: prand(i * 3.3),
+  fy: prand(i * 7.1),
+  mag: prand(i * 9.7),
+}));
+const CLUSTERS = Array.from({ length: 11 }, (_, c) => ({
+  born0: 0.2 + prand(c * 13.1) * 0.5,
+  ang: prand(c * 5.9) * Math.PI * 2,
+  radF: 0.22 + prand(c * 8.3) * 0.42,
+  pts: Array.from({ length: 4 + Math.floor(prand(c * 11.3) * 3) }, (_, k) => ({
+    dx: prand(c * 17 + k * 7) - 0.5,
+    dy: prand(c * 23 + k * 11) - 0.5,
+    r: 0.9 + prand(c * 29 + k) * 0.8,
+  })),
+}));
+
 export default function PatternEngine() {
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -152,57 +183,64 @@ export default function PatternEngine() {
           ctx.stroke();
         }
 
-        // hundreds of chart stars, born in waves
+        // hundreds of chart stars, born in waves; the bright ones queue
+        // their atlas labels for a second pass (font set once, not 17×)
+        type Bright = { x: number; y: number; a: number; born: number; i: number };
+        const bright: Bright[] = [];
+        ctx.fillStyle = "#F4ECDE";
         for (let i = 0; i < 240; i++) {
-          const born = ramp(chart, prand(i * 1.7) * 0.6, prand(i * 1.7) * 0.6 + 0.3);
+          const st = CHART_STARS[i];
+          const born = ramp(chart, st.born0, st.born0 + 0.3);
           if (born <= 0) continue;
-          const x = prand(i * 3.3) * W + Math.sin(t * 0.0002 + i) * 3;
-          const y = prand(i * 7.1) * H + Math.cos(t * 0.00017 + i * 1.3) * 2.5;
-          const mag = prand(i * 9.7);
+          const x = st.fx * W + Math.sin(t * 0.0002 + i) * 3;
+          const y = st.fy * H + Math.cos(t * 0.00017 + i * 1.3) * 2.5;
           const tw = 0.5 + 0.5 * Math.abs(Math.sin(t * 0.0006 + i * 2.1));
-          const a = (0.14 + mag * 0.4) * born * tw;
-          ctx.fillStyle = colorA("#F4ECDE", a);
+          const a = (0.14 + st.mag * 0.4) * born * tw;
+          ctx.globalAlpha = a;
           ctx.beginPath();
-          ctx.arc(x, y, 0.4 + mag * 1.2, 0, Math.PI * 2);
+          ctx.arc(x, y, 0.4 + st.mag * 1.2, 0, Math.PI * 2);
           ctx.fill();
-          // the brightest get a tiny cross flare and an atlas label
-          if (mag > 0.93) {
-            ctx.strokeStyle = colorA("#FFF6E5", a * 0.8);
-            ctx.lineWidth = 0.5;
+          if (st.mag > 0.93) bright.push({ x, y, a, born, i });
+        }
+        ctx.globalAlpha = 1;
+        if (bright.length) {
+          // cross flares + atlas labels
+          ctx.font = "400 10px 'Hanken Grotesk', sans-serif";
+          ctx.textAlign = "left";
+          ctx.lineWidth = 0.5;
+          for (const b of bright) {
+            ctx.strokeStyle = colorA("#FFF6E5", b.a * 0.8);
             ctx.beginPath();
-            ctx.moveTo(x - 5, y);
-            ctx.lineTo(x + 5, y);
-            ctx.moveTo(x, y - 5);
-            ctx.lineTo(x, y + 5);
+            ctx.moveTo(b.x - 5, b.y);
+            ctx.lineTo(b.x + 5, b.y);
+            ctx.moveTo(b.x, b.y - 5);
+            ctx.lineTo(b.x, b.y + 5);
             ctx.stroke();
-            ctx.fillStyle = colorA("#F4ECDE", 0.3 * born);
-            ctx.font = "400 10px 'Hanken Grotesk', sans-serif";
-            ctx.textAlign = "left";
-            ctx.fillText(GREEK[i % GREEK.length], x + 7, y - 4);
+            ctx.fillStyle = colorA("#F4ECDE", 0.3 * b.born);
+            ctx.fillText(GREEK[b.i % GREEK.length], b.x + 7, b.y - 4);
           }
         }
 
         // small chart figures: clusters joined by hairline strokes
         for (let c = 0; c < 11; c++) {
-          const born = ramp(chart, 0.2 + prand(c * 13.1) * 0.5, 0.45 + prand(c * 13.1) * 0.5);
+          const cl = CLUSTERS[c];
+          const born = ramp(chart, cl.born0, cl.born0 + 0.25);
           if (born <= 0) continue;
-          const ang = prand(c * 5.9) * Math.PI * 2;
-          const rad = R * (0.22 + prand(c * 8.3) * 0.42);
-          const fx = ccx + Math.cos(ang) * rad;
-          const fy = ccy + Math.sin(ang) * rad * 0.9;
-          const n = 4 + Math.floor(prand(c * 11.3) * 3);
+          const fx = ccx + Math.cos(cl.ang) * R * cl.radF;
+          const fy = ccy + Math.sin(cl.ang) * R * cl.radF * 0.9;
           let px2 = 0;
           let py2 = 0;
-          for (let k = 0; k < n; k++) {
-            const sx = fx + (prand(c * 17 + k * 7) - 0.5) * R * 0.13;
-            const sy = fy + (prand(c * 23 + k * 11) - 0.5) * R * 0.1;
-            ctx.fillStyle = colorA("#F4ECDE", 0.5 * born);
+          ctx.fillStyle = colorA("#F4ECDE", 0.5 * born);
+          ctx.strokeStyle = colorA("#F4ECDE", 0.13 * born);
+          ctx.lineWidth = 0.5;
+          for (let k = 0; k < cl.pts.length; k++) {
+            const pt = cl.pts[k];
+            const sx = fx + pt.dx * R * 0.13;
+            const sy = fy + pt.dy * R * 0.1;
             ctx.beginPath();
-            ctx.arc(sx, sy, 0.9 + prand(c * 29 + k) * 0.8, 0, Math.PI * 2);
+            ctx.arc(sx, sy, pt.r, 0, Math.PI * 2);
             ctx.fill();
             if (k > 0) {
-              ctx.strokeStyle = colorA("#F4ECDE", 0.13 * born);
-              ctx.lineWidth = 0.5;
               ctx.beginPath();
               ctx.moveTo(px2, py2);
               ctx.lineTo(sx, sy);
@@ -251,15 +289,14 @@ export default function PatternEngine() {
         const base = strength >= 0.8 ? 0.34 : 0.16;
         const alpha = (base + (isHover ? 0.4 : 0)) * ramp(p, 0.24, 0.34);
 
-        const grad = ctx.createLinearGradient(A.x, A.y, B.x, B.y);
-        grad.addColorStop(0, colorA(NODES[a].color, alpha));
-        grad.addColorStop(1, colorA(NODES[b].color, alpha));
-        ctx.strokeStyle = grad;
+        ctx.globalAlpha = alpha;
+        ctx.strokeStyle = EDGE_COLOR[ei];
         ctx.lineWidth = strength >= 0.8 ? 1.1 : 0.7;
         ctx.beginPath();
         ctx.moveTo(A.x, A.y);
         ctx.lineTo(ex, ey);
         ctx.stroke();
+        ctx.globalAlpha = 1;
 
         // the strongest relations send pulses of light once connected
         if (strength >= 0.8 && grow >= 1) {

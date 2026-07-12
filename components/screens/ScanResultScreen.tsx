@@ -85,7 +85,7 @@ export default function ScanResultScreen({ show }: { show: boolean }) {
             <b>39 g</b> proteína · <b>548</b> kcal · <b>2 g</b> azúcar
           </span>
         </div>
-        <div className="mt-1.5 rounded-full bg-pink-soft py-1.5 text-center text-[9.5px] font-bold tracking-[0.2em] text-white shadow-[0_0_16px_rgba(233,30,99,0.45)]">
+        <div className="mt-1.5 rounded-full bg-pink-soft py-1.5 text-center text-[9.5px] font-semibold tracking-[0.2em] text-white shadow-[0_0_16px_rgba(233,30,99,0.45)]">
           CONFIRMAR
         </div>
       </motion.div>
