@@ -203,7 +203,11 @@ export async function saveEmblemCard(sign: ZodiacSign): Promise<boolean> {
     const touch = matchMedia("(pointer: coarse)").matches;
     if (touch && nav.canShare?.({ files: [file] })) {
       try {
-        await navigator.share({ files: [file], title: "Stelar" });
+        await navigator.share({
+          files: [file],
+          title: "Stelar",
+          text: "Haz visible lo invisible ✦ stelar-app.com",
+        });
         return true;
       } catch {
         // user closed the sheet — fall through to download

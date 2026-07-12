@@ -181,6 +181,15 @@ function BetaButton({ sign }: { sign: ZodiacSign }) {
   >("idle");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
+  // on touch the emblem goes straight to the native share sheet
+  // (Instagram Stories one tap away); on desktop it downloads
+  const [canShare, setCanShare] = useState(false);
+  useEffect(() => {
+    setCanShare(
+      matchMedia("(pointer: coarse)").matches &&
+        typeof navigator.canShare === "function",
+    );
+  }, []);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -222,9 +231,18 @@ function BetaButton({ sign }: { sign: ZodiacSign }) {
           disabled={saving}
           className="inline-flex items-center gap-2 rounded-full bg-pink px-7 py-3.5 text-sm font-semibold tracking-wide text-cream transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,72,134,0.5)] disabled:opacity-60"
         >
-          {saving ? "Dibujando tu cielo…" : "Guardar mi emblema"}
+          {saving
+            ? "Dibujando tu cielo…"
+            : canShare
+              ? "Compartir mi emblema"
+              : "Guardar mi emblema"}
           {!saving && <span aria-hidden>✦</span>}
         </button>
+        <p className="text-[13px] text-cream/45">
+          {canShare
+            ? "Súbelo a tus stories — elige Instagram al compartir."
+            : "Tu constelación en una imagen, lista para compartir."}
+        </p>
       </motion.div>
     );
   }
