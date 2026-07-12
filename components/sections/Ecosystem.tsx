@@ -83,6 +83,9 @@ const TRAILS = Array.from({ length: N_TRAILS }, (_, i) => {
   };
 });
 
+const SOURCE_NAME_UC: string[] = [];
+const SOURCE_HALF: number[] = [];
+
 const LENSED = Array.from({ length: 70 }, (_, i) => ({
   rrF: 1.05 + Math.pow(prand(i * 4.3), 1.6) * 0.4,
   a00: prand(i * 6.7) * Math.PI * 2,
@@ -401,9 +404,15 @@ export default function Ecosystem() {
             ctx.font = "600 12px 'Hanken Grotesk', sans-serif";
             ctx.textAlign = "center";
             // keep the label inside the viewport on narrow screens
-            const half = ctx.measureText(s.name.toUpperCase()).width / 2;
+            // (name + width cached — measureText is not per-frame work)
+            if (SOURCE_NAME_UC[i] === undefined) SOURCE_NAME_UC[i] = s.name.toUpperCase();
+            let half = SOURCE_HALF[i];
+            if (half === undefined) {
+              half = ctx.measureText(SOURCE_NAME_UC[i]).width / 2;
+              if (document.fonts.status === "loaded") SOURCE_HALF[i] = half;
+            }
             const lx = Math.min(W - 10 - half, Math.max(10 + half, pos.x));
-            ctx.fillText(s.name.toUpperCase(), lx, pos.y + size * 1.9 + 10);
+            ctx.fillText(SOURCE_NAME_UC[i], lx, pos.y + size * 1.9 + 10);
           }
         }
 

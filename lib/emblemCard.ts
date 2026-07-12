@@ -43,7 +43,7 @@ function sparkle(ctx: CanvasRenderingContext2D, x: number, y: number, r: number)
   ctx.fill();
 }
 
-async function render(sign: ZodiacSign): Promise<Blob> {
+async function render(sign: ZodiacSign): Promise<string> {
   const def = FIGURES[sign];
   await document.fonts.ready;
   const { sans, serif } = fontFamilies();
@@ -183,42 +183,41 @@ async function render(sign: ZodiacSign): Promise<Blob> {
 
   // toBlob's callback can starve inside a React event handler in some
   // browsers — the synchronous path is dependable and just as good here
-  const dataUrl = canvas.toDataURL("image/png");
-  const bin = atob(dataUrl.split(",")[1]);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return new Blob([bytes], { type: "image/png" });
+  return canvas.toDataURL("image/png");
 }
 
 /** Render + hand off: native share sheet on mobile, download elsewhere. */
 export async function saveEmblemCard(sign: ZodiacSign): Promise<boolean> {
   try {
-    const blob = await render(sign);
-    const file = new File([blob], `stelar-${sign}.png`, { type: "image/png" });
-    const nav = navigator as Navigator & {
-      canShare?: (d: { files: File[] }) => boolean;
-    };
+    const dataUrl = await render(sign);
     // the native sheet only on touch devices — on desktop Chrome canShare
     // says yes but the flow is clumsy (and hangs in headless); download there
     const touch = matchMedia("(pointer: coarse)").matches;
-    if (touch && nav.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: "Stelar",
-          text: "Haz visible lo invisible ✦ stelar-app.com",
-        });
-        return true;
-      } catch {
-        // user closed the sheet — fall through to download
+    const nav = navigator as Navigator & {
+      canShare?: (d: { files: File[] }) => boolean;
+    };
+    if (touch && typeof nav.canShare === "function") {
+      // only the share path needs a File — decode via the fetch data-URL
+      // shortcut instead of a hand-rolled atob loop
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `stelar-${sign}.png`, { type: "image/png" });
+      if (nav.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "Stelar",
+            text: "Haz visible lo invisible ✦ stelar-app.com",
+          });
+          return true;
+        } catch {
+          // user closed the sheet — fall through to download
+        }
       }
     }
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
+    a.href = dataUrl;
     a.download = `stelar-${sign}.png`;
     a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
     return true;
   } catch {
     return false;

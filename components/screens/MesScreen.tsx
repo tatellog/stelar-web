@@ -21,7 +21,8 @@ export default function MesScreen() {
       <div className="flex h-full flex-col items-center justify-center text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.94 }}
-          animate={{ opacity: 1, scale: 1 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
           transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="relative h-36 w-36"
         >
@@ -55,7 +56,8 @@ export default function MesScreen() {
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.9, delay: 1 }}
         >
           <p className="font-serif text-xl italic leading-tight">{name}</p>

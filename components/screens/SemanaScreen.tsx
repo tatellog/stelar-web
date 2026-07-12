@@ -24,7 +24,8 @@ export default function SemanaScreen() {
       <div className="flex h-full flex-col justify-center">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.9, delay: 0.2 }}
         >
           <p className="font-serif text-[13px] italic">Tu semana apenas empieza.</p>
@@ -49,14 +50,16 @@ export default function SemanaScreen() {
                     boxShadow: "0 0 10px rgba(232,184,114,0.7)",
                   }}
                   initial={{ height: 0 }}
-                  animate={{ height: day.h }}
+                  whileInView={{ height: day.h }}
+                  viewport={{ once: true }}
                   transition={{ duration: 1.1, delay: 0.5 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
                 />
               ) : (
                 <motion.span
                   className="h-1 w-1 rounded-full bg-cream/25"
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
                   transition={{ delay: 0.7 + i * 0.1 }}
                 />
               )}
@@ -67,7 +70,8 @@ export default function SemanaScreen() {
 
         <motion.p
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.9, delay: 1.6 }}
           className="mt-2.5 text-[9.5px] text-cream/50"
         >
@@ -76,7 +80,8 @@ export default function SemanaScreen() {
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.9, delay: 2 }}
           className="mt-5 rounded-xl border border-cream/10 bg-cream/[0.04] p-2.5"
         >

@@ -77,32 +77,40 @@ export default function FinalCTA() {
               transition={{ duration: 1.2, delay: 0.4 + i * 0.16, ease: "easeInOut" }}
             />
           ))}
-          {/* energy keeps traveling every finished connection — the
-              constellation is complete, and alive */}
-          {artInView && def.lines.map(([a, b], i) => (
-            <motion.circle
-              key={`e${i}`}
-              r={0.7}
-              initial={{
-                cx: def.stars[a].x * 100,
-                cy: def.stars[a].y * 100,
-                opacity: 0,
-              }}
-              fill="#FFE9C2"
-              animate={{
-                cx: [def.stars[a].x * 100, def.stars[b].x * 100],
-                cy: [def.stars[a].y * 100, def.stars[b].y * 100],
-                opacity: [0, 0.85, 0],
-              }}
-              transition={{
-                duration: 2.6,
-                delay: 2.2 + i * 0.9,
-                repeat: Infinity,
-                repeatDelay: def.lines.length * 0.35,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
+          {/* energy keeps traveling every finished connection — a pool of
+              three travelers cycles the lines instead of one infinite
+              animator per line (SVG attrs animate on the main thread) */}
+          {artInView &&
+            [0, 1, 2].map((d) => {
+              const seq = def.lines.filter((_, i) => i % 3 === d);
+              if (!seq.length) return null;
+              const cxs: number[] = [];
+              const cys: number[] = [];
+              const ops: number[] = [];
+              for (const [a, b] of seq) {
+                const A = def.stars[a];
+                const B = def.stars[b];
+                cxs.push(A.x * 100, (A.x + B.x) * 50, B.x * 100);
+                cys.push(A.y * 100, (A.y + B.y) * 50, B.y * 100);
+                ops.push(0, 0.85, 0);
+              }
+              return (
+                <motion.circle
+                  key={`e${d}`}
+                  r={0.7}
+                  fill="#FFE9C2"
+                  initial={{ cx: cxs[0], cy: cys[0], opacity: 0 }}
+                  animate={{ cx: cxs, cy: cys, opacity: ops }}
+                  transition={{
+                    duration: 2.4 * seq.length,
+                    delay: 2.2 + d * 0.9,
+                    repeat: Infinity,
+                    repeatDelay: 1.1,
+                    ease: "easeInOut",
+                  }}
+                />
+              );
+            })}
           {def.stars.map((st, i) => {
             const hero = st.mag <= 2.3;
             const x = st.x * 100;

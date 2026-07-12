@@ -41,7 +41,8 @@ export default function DiaScreen() {
                     strokeDasharray={C}
                     transform="rotate(-90 60 60)"
                     initial={{ strokeDashoffset: C }}
-                    animate={{ strokeDashoffset: C * (1 - ring.pct) }}
+                    whileInView={{ strokeDashoffset: C * (1 - ring.pct) }}
+                    viewport={{ once: true }}
                     transition={{ duration: 1.8, delay: ring.delay, ease: [0.22, 1, 0.36, 1] }}
                     style={{ filter: `drop-shadow(0 0 5px ${ring.color}99)` }}
                   />
@@ -56,7 +57,8 @@ export default function DiaScreen() {
 
         <motion.div
           initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.9, delay: 1.2 }}
           className="mt-1 text-center"
         >
@@ -74,7 +76,8 @@ export default function DiaScreen() {
 
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.9, delay: 1.6 }}
           className="mt-2 flex items-center gap-2.5 text-[9px] text-cream/60"
         >
