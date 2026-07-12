@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic";
 import Starfield from "@/components/Starfield";
-import ConstellationThread from "@/components/ConstellationThread";
 import AutoPilot from "@/components/AutoPilot";
 import Nav from "@/components/Nav";
 import { SignProvider } from "@/components/SignContext";
@@ -40,9 +39,6 @@ export default function Home() {
     <main className="cosmic-gradient relative">
       <Starfield />
       <SignProvider>
-        {/* el hilo: la constelación protagonista que nunca se resetea —
-            cada capítulo enciende una estrella más */}
-        <ConstellationThread />
         {/* el viaje puede llevarte solo; cualquier gesto devuelve el control */}
         <AutoPilot />
         <Nav />
