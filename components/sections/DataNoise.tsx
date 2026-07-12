@@ -97,6 +97,44 @@ export default function DataNoise() {
 
     const tokens = buildTokens();
 
+    /* seeded statics baked once — the dust loop re-derived ~12 prand
+       per grain per frame (~11.6k sin/frame) for values that never change */
+    const DUST = tokens.map((tk, i) => {
+      const born0 = 0.01 + prand(i * 2.9) * 0.06;
+      return {
+        born0,
+        born1: born0 + 0.05,
+        font: `${tk.isNumber ? 700 : 400} ${tk.size * tk.depth + 8}px 'Hanken Grotesk', sans-serif`,
+        color: tk.isNumber ? "#F4ECDE" : "#D9AE6F",
+        grains: Array.from({ length: PPT }, (_, j) => {
+          const seed = i * 31 + j * 7;
+          const roll = prand(seed * 10.1);
+          const nRaw = prand(seed * 7.7) * 2 - 1;
+          const pull0 = 0.3 + prand(seed * 4.7) * 0.17;
+          return {
+            seed,
+            g0: prand(seed) - 0.5,
+            g1: prand(seed * 1.7) - 0.5,
+            s0: (prand(seed * 2.3) - 0.5) * 30,
+            s1: (prand(seed * 3.1) - 0.5) * 26,
+            pull0,
+            pull1: pull0 + 0.17,
+            swirlAmp: 1.7 + prand(seed * 5.3) * 1.5,
+            sPos0: prand(seed * 6.1) * 2 - 1,
+            nOff: Math.pow(Math.abs(nRaw), 1.7) * Math.sign(nRaw),
+            aB: 0.22 + prand(seed * 8.3) * 0.4,
+            twS: 1 + prand(seed) * 1.4,
+            roll,
+            color:
+              roll > 0.93 ? "#FFF6E5" : roll > 0.74 ? "#FF9E57" : roll > 0.48 ? "#FFC56B" : "#E8B872",
+            sz: 0.6 + prand(seed * 9.7) * (roll > 0.8 ? 2 : 1.2),
+            bokehR: 3.6 + prand(seed * 11.9) * 2.6,
+            residual: j % 16 === 0,
+          };
+        }),
+      };
+    });
+
     let W = 0;
     let H = 0;
     const resize = () => {
@@ -114,7 +152,15 @@ export default function DataNoise() {
 
     /* the animal, sampled from the emblem's real pixels — so the dust
        builds the true figure, aligned with the constellation */
-    let emblemPts: { x: number; y: number; b: number }[] = [];
+    let emblemPts: {
+      x: number;
+      y: number;
+      b: number;
+      e0: number;
+      u: number;
+      twS: number;
+      white: boolean;
+    }[] = [];
     const emblemOff = { x: 0, y: 0 }; // art-space offset that centers the animal
     const emblem = new Image();
     emblem.src = `/emblems/${sign}/f10.webp`;
@@ -145,7 +191,16 @@ export default function DataNoise() {
         .map((pt, i) => ({ pt, k: prand(i * 3.7) }))
         .sort((u, v) => u.k - v.k)
         .slice(0, N_EMBLEM)
-        .map((u) => ({ x: u.pt.x - emblemOff.x, y: u.pt.y - emblemOff.y, b: u.pt.b }));
+        .map((u, j) => ({
+          x: u.pt.x - emblemOff.x,
+          y: u.pt.y - emblemOff.y,
+          b: u.pt.b,
+          // build-phase statics, baked here so the climax loop is pure math
+          e0: prand(j * 1.3) * 0.55,
+          u: prand(j * 2.9),
+          twS: 0.8 + prand(j * 4.1),
+          white: prand(j * 5.7) > 0.9,
+        }));
     };
 
     const pointer = { x: 0, y: 0, tx: 0, ty: 0, sx: -1, sy: -1 };
@@ -235,9 +290,11 @@ export default function DataNoise() {
       const flarePulse = bell((p - 0.925) / 0.02);
 
       /* ── the data field: words and numbers, floating in depth ──── */
+      ctx.textAlign = "center";
       tokens.forEach((tk, i) => {
+        const d = DUST[i];
         const dis = ramp(p, tk.stagger, tk.stagger + 0.07);
-        const born = ramp(p, 0.01 + prand(i * 2.9) * 0.06, 0.06 + prand(i * 2.9) * 0.06);
+        const born = ramp(p, d.born0, d.born1);
         if (born <= 0) return;
 
         const driftX = Math.sin(t * 0.14 + i * 2.1) * 10 * tk.depth;
@@ -247,79 +304,74 @@ export default function DataNoise() {
         // the token, until it breaks
         const alpha = born * (0.24 + tk.depth * 0.42) * (1 - dis);
         if (alpha > 0.01) {
-          ctx.fillStyle = colorA(tk.isNumber ? "#F4ECDE" : "#D9AE6F", alpha);
-          ctx.font = `${tk.isNumber ? 700 : 400} ${tk.size * tk.depth + 8}px 'Hanken Grotesk', sans-serif`;
-          ctx.textAlign = "center";
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = d.color;
+          ctx.font = d.font;
           ctx.fillText(tk.text, base.x, base.y);
+          ctx.globalAlpha = 1;
         }
 
         // …into golden dust
         if (dis > 0) {
           const tw2 = tk.text.length * tk.size * 0.32;
           for (let j = 0; j < PPT; j++) {
-            const seed = i * 31 + j * 7;
+            const g = d.grains[j];
             // born inside the glyphs
-            const gx = base.x + (prand(seed) - 0.5) * tw2;
-            const gy = base.y + (prand(seed * 1.7) - 0.5) * tk.size * 1.1;
+            const gx = base.x + g.g0 * tw2;
+            const gy = base.y + g.g1 * tk.size * 1.1;
             // scatter softly as the word breaks
-            const sx0 = gx + (prand(seed * 2.3) - 0.5) * 30 * dis;
-            const sy0 = gy + (prand(seed * 3.1) - 0.5) * 26 * dis - dis * 8;
+            const sx0 = gx + g.s0 * dis;
+            const sy0 = gy + g.s1 * dis - dis * 8;
 
             // the invisible force: curved rivers toward the center
-            const pull = ramp(p, 0.3 + prand(seed * 4.7) * 0.17, 0.47 + prand(seed * 4.7) * 0.17);
+            const pull = ramp(p, g.pull0, g.pull1);
             const dxs = sx0 - cx;
             const dys = sy0 - cy;
             const r0 = Math.hypot(dxs, dys) || 1;
             const th0 = Math.atan2(dys, dxs);
             const rr = r0 * Math.pow(1 - pull, 1.4);
-            const th = th0 + tk.swirlDir * pull * (1.7 + prand(seed * 5.3) * 1.5);
+            const th = th0 + tk.swirlDir * pull * g.swirlAmp;
 
             // the accumulation: a tilted river of golden glitter that
             // keeps flowing — dense at its core, loose at the edges
             const dirA = -0.52;
-            let sPos = (prand(seed * 6.1) * 2 - 1) + t * 0.045 * tk.swirlDir;
+            let sPos = g.sPos0 + t * 0.045 * tk.swirlDir;
             sPos = ((sPos % 2) + 2) % 2 - 1;
-            const nRaw = prand(seed * 7.7) * 2 - 1;
-            const nOff = Math.pow(Math.abs(nRaw), 1.7) * Math.sign(nRaw);
             const bandLen = R * 0.27;
             const bandW = R * 0.052 * (1 + Math.abs(sPos) * 0.8);
             let x = cx + Math.cos(th) * rr;
             let y = cy + Math.sin(th) * rr * 0.94;
             if (gather > 0) {
-              const gx2 = cx + Math.cos(dirA) * sPos * bandLen - Math.sin(dirA) * nOff * bandW;
-              const gy2 = cy + Math.sin(dirA) * sPos * bandLen + Math.cos(dirA) * nOff * bandW;
+              const gx2 = cx + Math.cos(dirA) * sPos * bandLen - Math.sin(dirA) * g.nOff * bandW;
+              const gy2 = cy + Math.sin(dirA) * sPos * bandLen + Math.cos(dirA) * g.nOff * bandW;
               x += (gx2 - x) * gather;
               y += (gy2 - y) * gather;
             }
 
-            const residual = j % 16 === 0;
-            let a =
-              dis *
-              (0.22 + prand(seed * 8.3) * 0.4) *
-              (0.6 + 0.4 * Math.sin(t * (1 + prand(seed) * 1.4) + seed));
-            if (!residual) a *= 1 - cloudFade;
+            let a = dis * g.aB * (0.6 + 0.4 * Math.sin(t * g.twS + g.seed));
+            if (!g.residual) a *= 1 - cloudFade;
             else if (cloudFade > 0) {
               // a few grains keep floating forever — never fully static
-              x += Math.sin(t * 0.3 + seed) * 30 * cloudFade;
-              y += Math.cos(t * 0.24 + seed * 1.3) * 24 * cloudFade;
+              x += Math.sin(t * 0.3 + g.seed) * 30 * cloudFade;
+              y += Math.cos(t * 0.24 + g.seed * 1.3) * 24 * cloudFade;
               a *= 0.5;
             }
             if (gather > 0) a *= 1 - Math.abs(sPos) * 0.45; // the river fades at its ends
             if (a <= 0.01) continue;
-            const roll = prand(seed * 10.1);
-            const color =
-              roll > 0.93 ? "#FFF6E5" : roll > 0.74 ? "#FF9E57" : roll > 0.48 ? "#FFC56B" : "#E8B872";
-            if (roll < 0.09 && gather > 0.25) {
+            if (g.roll < 0.09 && gather > 0.25) {
               // out-of-focus grains — bokeh, like the reference
-              softDot(ctx, x, y, 3.6 + prand(seed * 11.9) * 2.6, color, Math.min(0.5, a * 0.6), 0.3);
+              // (softDot multiplies by the current globalAlpha)
+              ctx.globalAlpha = 1;
+              softDot(ctx, x, y, g.bokehR, g.color, Math.min(0.5, a * 0.6), 0.3);
             } else {
-              const sz = 0.6 + prand(seed * 9.7) * (roll > 0.8 ? 2 : 1.2) + gather * 0.3;
-              ctx.fillStyle = colorA(color, Math.min(0.9, a));
+              ctx.globalAlpha = Math.min(0.9, a);
+              ctx.fillStyle = g.color;
               ctx.beginPath();
-              ctx.arc(x, y, sz, 0, Math.PI * 2);
+              ctx.arc(x, y, g.sz + gather * 0.3, 0, Math.PI * 2);
               ctx.fill();
             }
           }
+          ctx.globalAlpha = 1;
         }
       });
 
@@ -419,28 +471,29 @@ export default function DataNoise() {
       const build = ramp(p, 0.78, 0.93);
       if (build > 0 && emblemPts.length && fig.lines.length) {
         for (let j = 0; j < emblemPts.length; j++) {
-          const e = ramp(build, prand(j * 1.3) * 0.55, prand(j * 1.3) * 0.55 + 0.45);
-          if (e <= 0) continue;
           const tg = emblemPts[j];
+          const e = ramp(build, tg.e0, tg.e0 + 0.45);
+          if (e <= 0) continue;
           // it starts somewhere on the constellation's lines…
           const li = j % fig.lines.length;
           const A = stars[fig.lines[li][0]];
           const B = stars[fig.lines[li][1]];
-          const u = prand(j * 2.9);
-          const lx = A.x + (B.x - A.x) * u;
-          const ly = A.y + (B.y - A.y) * u;
+          const lx = A.x + (B.x - A.x) * tg.u;
+          const ly = A.y + (B.y - A.y) * tg.u;
           // …and finds its place in the figure
           const target = proj(cx + tg.x * S, cy + tg.y * S, 0.3);
           const k = 1 - Math.pow(1 - e, 2.4);
           const x = lx + (target.x - lx) * k + Math.sin(t * 0.7 + j) * 0.7;
           const y = ly + (target.y - ly) * k + Math.cos(t * 0.6 + j * 1.3) * 0.7;
-          const tw2 = 0.55 + 0.45 * Math.sin(t * (0.8 + prand(j * 4.1)) + j * 2.6);
+          const tw2 = 0.55 + 0.45 * Math.sin(t * tg.twS + j * 2.6);
           const a = e * tg.b * (0.22 + tw2 * 0.3) * (1 + flarePulse * 0.5);
-          ctx.fillStyle = colorA(prand(j * 5.7) > 0.9 ? "#FFF6E5" : "#E8B872", Math.min(0.8, a));
+          ctx.globalAlpha = Math.min(0.8, a);
+          ctx.fillStyle = tg.white ? "#FFF6E5" : "#E8B872";
           ctx.beginPath();
           ctx.arc(x, y, 0.9 + tg.b * 0.9, 0, Math.PI * 2);
           ctx.fill();
         }
+        ctx.globalAlpha = 1;
       }
 
       /* ── residual gold, so it never sits still ──────────────────── */

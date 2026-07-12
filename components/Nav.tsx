@@ -14,14 +14,14 @@ export default function Nav() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-6">
         <a href="#" className="-my-2 flex shrink-0 items-center gap-2.5 py-2 sm:gap-3.5">
           <Image
-            src="/art/stelar-icon-trim.png"
+            src="/art/stelar-icon-trim.webp"
             alt=""
             width={46}
             height={46}
             className="h-8 w-8 animate-orbit sm:h-[46px] sm:w-[46px]"
           />
           <Image
-            src="/art/stelar-wordmark-trim.png"
+            src="/art/stelar-wordmark-trim.webp"
             alt="Stelar"
             width={186}
             height={26}

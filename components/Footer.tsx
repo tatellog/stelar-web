@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="relative border-t hairline py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 text-[13px] tracking-widest text-cream/35 sm:flex-row">
         <Image
-          src="/art/stelar-wordmark-trim.png"
+          src="/art/stelar-wordmark-trim.webp"
           alt="Stelar"
           width={100}
           height={14}

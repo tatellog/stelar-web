@@ -32,14 +32,22 @@ export default function AutoPilot() {
     let raf = 0;
     let last = performance.now();
     let acc = 0;
+    // hoisted: reading scrollHeight right after a scroll write every
+    // frame risks a forced layout
+    let max = document.documentElement.scrollHeight - window.innerHeight;
+    const onResize = () => {
+      max = document.documentElement.scrollHeight - window.innerHeight;
+    };
+    window.addEventListener("resize", onResize);
     const step = (now: number) => {
       const dt = Math.min(64, now - last);
       last = now;
       acc += (window.innerHeight * SPEED_VH * dt) / 1000;
       const px = Math.floor(acc);
       acc -= px;
-      if (px > 0) window.scrollBy(0, px);
-      const max = document.documentElement.scrollHeight - window.innerHeight;
+      // "instant": html has scroll-behavior smooth, and a plain scrollBy
+      // would start a native smooth animation every frame (slow + jerky)
+      if (px > 0) window.scrollBy({ top: px, behavior: "instant" });
       if (window.scrollY >= max - 2) {
         // journey complete — rest on the final sky
         setPlaying(false);

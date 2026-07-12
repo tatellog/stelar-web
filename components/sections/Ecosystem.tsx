@@ -46,6 +46,50 @@ const FALL_LEN = 0.07;
 
 const N_TRAILS = 430; // star-trail rings of the vortex
 const N_STARS = 900; // the dense field of tiny stars
+
+/* seeded statics baked once — the draw loop must not re-derive them
+   (430 trails × 2 passes + 900 stars × ~8 prand each = ~14k sin/frame) */
+const STARS = Array.from({ length: N_STARS }, (_, i) => {
+  const born0 = 0.01 + prand(i * 1.9) * 0.16;
+  const below = prand(i * 2.7) > 0.3;
+  return {
+    born0,
+    born1: born0 + 0.08,
+    clustered: i % 2 === 0,
+    ang: below ? Math.PI * (0.15 + prand(i * 4.1) * 0.7) : prand(i * 4.1) * Math.PI * 2,
+    rrF: 1.15 + Math.pow(prand(i * 6.3), 0.7) * 2.4,
+    yJitF: (prand(i * 7.9) - 0.5) * 0.5,
+    fx: prand(i * 3.7),
+    fy: prand(i * 8.3),
+    twS: 0.3 + prand(i * 1.3) * 0.6,
+    size: 0.4 + prand(i * 13.7) * 1.05,
+  };
+});
+
+const TRAILS = Array.from({ length: N_TRAILS }, (_, i) => {
+  const u = prand(i * 3.9);
+  const longRing = prand(i * 15.7) > 0.42;
+  // the inner disk runs hot: ~15% of the close trails glow old gold
+  const warm = u < 0.34 && prand(i * 21.3) > 0.55;
+  return {
+    rF: 1.3 + Math.pow(u, 1.35) * 1.9,
+    a00: prand(i * 7.1) * Math.PI * 2,
+    len: longRing ? 2 + prand(i * 9.3) * 3.4 : 0.3 + prand(i * 9.3) * 0.9,
+    alpha:
+      (longRing ? 0.06 + prand(i * 11.7) * 0.13 : 0.16 + prand(i * 11.7) * 0.24) *
+      (warm ? 1.25 : 1),
+    color: warm ? (prand(i * 27.7) > 0.7 ? "#FFE9C2" : "#D9AE6F") : "#F4ECDE",
+    lw: 0.4 + prand(i * 13.1) * 0.75,
+  };
+});
+
+const LENSED = Array.from({ length: 70 }, (_, i) => ({
+  rrF: 1.05 + Math.pow(prand(i * 4.3), 1.6) * 0.4,
+  a00: prand(i * 6.7) * Math.PI * 2,
+  len: 0.5 + prand(i * 8.9) * 1.6,
+  alpha: 0.05 + prand(i * 10.3) * 0.14,
+  lw: 0.4 + prand(i * 12.7) * 0.6,
+}));
 const N_GOLD = 150; // the rivers of gold
 
 export default function Ecosystem() {
@@ -159,24 +203,22 @@ export default function Ecosystem() {
       const diskAlpha = hole * (1 - silence * 0.55) * (1 - emission * 0.45);
 
       /* ── a dense field of tiny stars; the vortex gathers the near ones ── */
+      ctx.fillStyle = "#F4ECDE";
       for (let i = 0; i < N_STARS; i++) {
-        const born = ramp(p, 0.01 + prand(i * 1.9) * 0.16, 0.09 + prand(i * 1.9) * 0.16);
+        const st = STARS[i];
+        const born = ramp(p, st.born0, st.born1);
         if (born <= 0) continue;
-        const clustered = i % 2 === 0 && hole > 0.01; // half crowds the funnel
+        const clustered = st.clustered && hole > 0.01; // half crowds the funnel
         let x: number;
         let y: number;
         if (clustered) {
           // biased toward the lower foreground, like the reference
-          const below = prand(i * 2.7) > 0.3;
-          const ang = below
-            ? Math.PI * (0.15 + prand(i * 4.1) * 0.7)
-            : prand(i * 4.1) * Math.PI * 2;
-          const rr = bhR * (1.15 + Math.pow(prand(i * 6.3), 0.7) * 2.4);
-          x = cx + Math.cos(ang) * rr;
-          y = cy + Math.sin(ang) * rr * 0.3 + (prand(i * 7.9) - 0.5) * bhR * 0.5;
+          const rr = bhR * st.rrF;
+          x = cx + Math.cos(st.ang) * rr;
+          y = cy + Math.sin(st.ang) * rr * 0.3 + st.yJitF * bhR;
         } else {
-          x = prand(i * 3.7) * W;
-          y = prand(i * 8.3) * H;
+          x = st.fx * W;
+          y = st.fy * H;
         }
         // gravity curves every drift
         const dxs = x - cx;
@@ -187,13 +229,13 @@ export default function Ecosystem() {
         x += Math.cos(ang2) * swirlK * 0.25 + Math.sin(t * 0.13 + i) * 2.4;
         y += Math.sin(ang2) * swirlK * 0.25 + Math.cos(t * 0.11 + i * 1.7) * 2;
         if (d < bhR * 1.02 && hole > 0.01) continue; // already beyond the horizon
-        const tw = 0.35 + 0.65 * Math.abs(Math.sin(t * (0.3 + prand(i * 1.3) * 0.6) + i * 2.4));
-        const size = 0.4 + prand(i * 13.7) * 1.05;
-        ctx.fillStyle = colorA("#F4ECDE", (clustered ? 0.55 : 0.32) * tw * born * (clustered ? hole : 1));
+        const tw = 0.35 + 0.65 * Math.abs(Math.sin(t * st.twS + i * 2.4));
+        ctx.globalAlpha = (clustered ? 0.55 : 0.32) * tw * born * (clustered ? hole : 1);
         ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.arc(x, y, st.size, 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.globalAlpha = 1;
 
       /* ── the gravitational lens: space darkens toward the center ── */
       if (grav1 > 0) {
@@ -212,28 +254,21 @@ export default function Ecosystem() {
         ctx.rotate(-0.09 + pointer.x * 0.02);
         const squash = 0.2;
 
-        const drawDiskTrail = (i: number) => {
-          const u = prand(i * 3.9);
-          const r = bhR * (1.3 + Math.pow(u, 1.35) * 1.9);
+        const drawDiskTrail = (tr: (typeof TRAILS)[number]) => {
+          const r = bhR * tr.rF;
           const w = (bhR * 22) / (r + 1);
-          const a0 = prand(i * 7.1) * Math.PI * 2 + t * w * 0.06;
-          const longRing = prand(i * 15.7) > 0.42;
-          const len = longRing ? 2 + prand(i * 9.3) * 3.4 : 0.3 + prand(i * 9.3) * 0.9;
-          const alpha =
-            (longRing ? 0.06 + prand(i * 11.7) * 0.13 : 0.16 + prand(i * 11.7) * 0.24) *
-            diskAlpha;
-          // the inner disk runs hot: ~15% of the close trails glow old
-          // gold, tying the phenomenon to the brand sky
-          const warm = u < 0.34 && prand(i * 21.3) > 0.55;
-          ctx.strokeStyle = colorA(warm ? (prand(i * 27.7) > 0.7 ? "#FFE9C2" : "#D9AE6F") : "#F4ECDE", warm ? alpha * 1.25 : alpha);
-          ctx.lineWidth = 0.4 + prand(i * 13.1) * 0.75;
+          const a0 = tr.a00 + t * w * 0.06;
+          ctx.globalAlpha = tr.alpha * diskAlpha;
+          ctx.strokeStyle = tr.color;
+          ctx.lineWidth = tr.lw;
           ctx.beginPath();
-          ctx.ellipse(0, 0, r, r * squash, 0, a0, a0 + len);
+          ctx.ellipse(0, 0, r, r * squash, 0, a0, a0 + tr.len);
           ctx.stroke();
         };
 
         // the disk, behind the sphere
-        for (let i = 0; i < N_TRAILS; i++) drawDiskTrail(i);
+        for (let i = 0; i < N_TRAILS; i++) drawDiskTrail(TRAILS[i]);
+        ctx.globalAlpha = 1;
 
         // pulses ride the disk after each absorption
         for (const pu of pulses) {
@@ -259,17 +294,18 @@ export default function Ecosystem() {
         ctx.fill();
 
         // the lensed image of the disk: light bent around the sphere
-        for (let i = 0; i < 70; i++) {
-          const rr = bhR * (1.05 + Math.pow(prand(i * 4.3), 1.6) * 0.4);
+        ctx.strokeStyle = "#F4ECDE";
+        for (const ln of LENSED) {
+          const rr = bhR * ln.rrF;
           const w2 = (bhR * 26) / (rr + 1);
-          const a0 = prand(i * 6.7) * Math.PI * 2 + t * w2 * 0.05;
-          const len = 0.5 + prand(i * 8.9) * 1.6;
-          ctx.strokeStyle = colorA("#F4ECDE", (0.05 + prand(i * 10.3) * 0.14) * diskAlpha);
-          ctx.lineWidth = 0.4 + prand(i * 12.7) * 0.6;
+          const a0 = ln.a00 + t * w2 * 0.05;
+          ctx.globalAlpha = ln.alpha * diskAlpha;
+          ctx.lineWidth = ln.lw;
           ctx.beginPath();
-          ctx.arc(0, 0, rr, a0, a0 + len);
+          ctx.arc(0, 0, rr, a0, a0 + ln.len);
           ctx.stroke();
         }
+        ctx.globalAlpha = 1;
         // photon ring — the thin bright edge
         ctx.strokeStyle = colorA("#FFF6E5", (0.28 * hole + 0.04) * (1 - emission * 0.3));
         ctx.lineWidth = 1.1;
@@ -283,7 +319,8 @@ export default function Ecosystem() {
         ctx.beginPath();
         ctx.rect(-bhR * 4, bhR * squash * 0.4, bhR * 8, bhR * 4);
         ctx.clip();
-        for (let i = 0; i < N_TRAILS; i++) drawDiskTrail(i);
+        for (let i = 0; i < N_TRAILS; i++) drawDiskTrail(TRAILS[i]);
+        ctx.globalAlpha = 1;
         ctx.restore();
 
         ctx.restore();
