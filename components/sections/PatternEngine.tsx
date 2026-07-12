@@ -3,14 +3,14 @@ import Reveal from "../Reveal";
 /**
  * Capítulo V — IA Pattern Engine.
  * Palabras solas sobre el cielo abierto (la red de nodos se retiró a
- * pedido de la usuaria). Dos beats de copy en flujo normal — nada de
- * pin ni capas absolutas: no pueden encimarse jamás.
+ * pedido de la usuaria). Un solo bloque centrado: título, promesa y
+ * el nombre del motor, respirando juntos.
  */
 export default function PatternEngine() {
   return (
-    <section className="relative">
-      <div className="flex min-h-screen items-center justify-center px-6">
-        <Reveal className="max-w-2xl text-center">
+    <section className="relative flex min-h-screen items-center justify-center px-6 py-28">
+      <div className="max-w-2xl text-center">
+        <Reveal>
           <p className="mb-4 text-[13px] uppercase tracking-[0.35em] text-gold">
             Capítulo V · IA Pattern Engine
           </p>
@@ -24,15 +24,13 @@ export default function PatternEngine() {
             Cada dato parece pequeño. Juntos cuentan una historia.
           </p>
         </Reveal>
-      </div>
 
-      <div className="flex min-h-[70vh] items-center justify-center px-6 pb-28">
-        <Reveal className="max-w-xl text-center">
-          <p className="text-[13px] uppercase tracking-[0.35em] text-gold">
-            IA Pattern Engine
-          </p>
-          <p className="mt-4 text-lg leading-relaxed text-cream/70">
-            Encuentra relaciones entre tus registros para mostrarte{" "}
+        <Reveal delay={0.35} className="mx-auto mt-14 max-w-xl">
+          <span aria-hidden className="mb-6 inline-block h-px w-16 bg-gold/30" />
+          <p className="text-lg leading-relaxed text-cream/70">
+            El{" "}
+            <span className="font-semibold text-cream/90">IA Pattern Engine</span>{" "}
+            encuentra relaciones entre tus registros para mostrarte{" "}
             <span className="font-serif italic text-gold">
               patrones que normalmente no verías.
             </span>
