@@ -5,7 +5,9 @@ import { AnimatePresence, motion, useInView } from "framer-motion";
 import Reveal from "../Reveal";
 import { useSign } from "../SignContext";
 import { FIGURES } from "@/lib/zodiac/figures";
+import type { ZodiacSign } from "@/lib/zodiac/types";
 import { joinBeta } from "@/lib/beta";
+import { saveEmblemCard } from "@/lib/emblemCard";
 
 /**
  * Capítulo XII — Final.
@@ -143,7 +145,7 @@ export default function FinalCTA() {
 
         <Reveal delay={0.5} className="mt-12">
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <BetaButton />
+            <BetaButton sign={sign} />
             <a
               href="#orbita"
               className="inline-flex items-center gap-2 rounded-full border border-cream/20 px-7 py-3.5 text-sm font-semibold tracking-wide text-cream/80 transition-all duration-500 hover:border-gold/50 hover:text-cream"
@@ -172,12 +174,13 @@ export default function FinalCTA() {
 /** The beta CTA: a REAL waitlist. The button opens into an email field,
  *  the email lands in Supabase, and the visitor gets an answer — the
  *  same gesture as the whole journey: a loose light joining the rest. */
-function BetaButton() {
+function BetaButton({ sign }: { sign: ZodiacSign }) {
   const [hover, setHover] = useState(false);
   const [state, setState] = useState<
     "idle" | "open" | "sending" | "done" | "duplicate" | "error"
   >("idle");
   const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -197,17 +200,32 @@ function BetaButton() {
 
   if (state === "done" || state === "duplicate") {
     return (
-      <motion.p
+      <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/[0.07] px-7 py-3.5 text-sm font-semibold tracking-wide text-gold"
+        className="inline-flex flex-col items-center gap-4"
       >
-        <span aria-hidden>✦</span>
-        {state === "done"
-          ? "Estás dentro. Te escribimos pronto."
-          : "Ya estabas en la lista — te escribimos pronto."}
-      </motion.p>
+        <p className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/[0.07] px-7 py-3.5 text-sm font-semibold tracking-wide text-gold">
+          <span aria-hidden>✦</span>
+          {state === "done"
+            ? "Estás dentro. Te escribimos pronto."
+            : "Ya estabas en la lista — te escribimos pronto."}
+        </p>
+        {/* the journey's keepsake: your constellation, ready to share */}
+        <button
+          onClick={async () => {
+            setSaving(true);
+            await saveEmblemCard(sign);
+            setSaving(false);
+          }}
+          disabled={saving}
+          className="inline-flex items-center gap-2 rounded-full bg-pink px-7 py-3.5 text-sm font-semibold tracking-wide text-cream transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,72,134,0.5)] disabled:opacity-60"
+        >
+          {saving ? "Dibujando tu cielo…" : "Guardar mi emblema"}
+          {!saving && <span aria-hidden>✦</span>}
+        </button>
+      </motion.div>
     );
   }
 
