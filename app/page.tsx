@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import Starfield from "@/components/Starfield";
 import Opening from "@/components/Opening";
 import StarCursor from "@/components/StarCursor";
+import Handoff from "@/components/Handoff";
 import AutoPilot from "@/components/AutoPilot";
 import Nav from "@/components/Nav";
 import { SignProvider } from "@/components/SignContext";
@@ -51,14 +52,19 @@ export default function Home() {
   
         <SignalField />
         <ConstellationBirth />
+        {/* handoffs: el hilo de luz cose los capítulos entre sí */}
+        <Handoff />
         <PatternEngine />
         <Understands />
+        <Handoff />
         <ScanIA />
         <Ecosystem />
+        <Handoff />
         <OrbitaAction />
         <PatternExamples />
         <DataNoise />
         <Emblem />
+        <Handoff />
         {/* después del clímax emocional, las secciones racionales de
             conversión: producto, roadmap, planes y preguntas */}
         <ProductOverview />
