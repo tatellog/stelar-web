@@ -56,6 +56,45 @@ body {
   border-radius: 4px;
 }
 
+/* El cursor-estrella reemplaza la flecha (solo lo activa StarCursor
+   en desktop); los campos de texto conservan el caret */
+html.star-cursor,
+html.star-cursor * {
+  cursor: none !important;
+}
+html.star-cursor :is(input, textarea) {
+  cursor: text !important;
+}
+
+/* Micro-hovers: todo lo interactivo responde al puntero.
+   Selectores de elemento — cualquier clase Tailwind explícita gana. */
+@media (hover: hover) and (pointer: fine) {
+  a,
+  button,
+  summary {
+    transition-property: transform, box-shadow, color, background-color,
+      border-color, opacity;
+    transition-duration: 0.45s;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  a:hover,
+  button:hover,
+  summary:hover {
+    transform: translateY(-2px);
+  }
+  a:active,
+  button:active {
+    transform: translateY(0) scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  a:hover,
+  button:hover,
+  summary:hover {
+    transform: none;
+  }
+}
+
 /* Soft radial vignettes layered over the page background */
 .cosmic-gradient {
   background:

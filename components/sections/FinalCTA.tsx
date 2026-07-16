@@ -194,6 +194,7 @@ function BetaButton({ sign }: { sign: ZodiacSign }) {
   >("idle");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   // on touch the emblem goes straight to the native share sheet
   // (Instagram Stories one tap away); on desktop it downloads
   const [canShare, setCanShare] = useState(false);
@@ -218,9 +219,16 @@ function BetaButton({ sign }: { sign: ZodiacSign }) {
     setState("sending");
     const result = await joinBeta(email);
     setState(result === "ok" ? "done" : result);
+    if (result === "ok") {
+      // the induction: your constellation flares before the confirmation
+      setCelebrate(true);
+      setTimeout(() => setCelebrate(false), 2700);
+    }
   };
 
   if (state === "done" || state === "duplicate") {
+    const def = FIGURES[sign];
+    const nice = def.label.charAt(0) + def.label.slice(1).toLowerCase();
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
@@ -228,6 +236,85 @@ function BetaButton({ sign }: { sign: ZodiacSign }) {
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="inline-flex flex-col items-center gap-4"
       >
+        {/* la iniciación: tu constelación destella a pantalla completa */}
+        <AnimatePresence>
+          {celebrate && (
+            <motion.div
+              aria-hidden
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.7 } }}
+              className="pointer-events-none fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[radial-gradient(circle,rgba(20,8,11,0.9)_0%,rgba(10,6,8,0.96)_100%)]"
+            >
+              <div className="relative h-64 w-64 sm:h-80 sm:w-80">
+                {/* golden burst */}
+                {Array.from({ length: 14 }, (_, i) => {
+                  const a = (i / 14) * Math.PI * 2;
+                  return (
+                    <motion.span
+                      key={i}
+                      initial={{ x: 0, y: 0, opacity: 0, scale: 0.5 }}
+                      animate={{
+                        x: Math.cos(a) * (110 + (i % 3) * 34),
+                        y: Math.sin(a) * (110 + (i % 3) * 34),
+                        opacity: [0, 0.9, 0],
+                        scale: 1,
+                      }}
+                      transition={{ duration: 1.4, delay: 0.55, ease: "easeOut" }}
+                      className="absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full bg-gold-soft shadow-[0_0_10px_rgba(232,184,114,0.9)]"
+                    />
+                  );
+                })}
+                <svg viewBox="0 0 100 100" className="h-full w-full">
+                  {def.lines.map(([a, b], i) => (
+                    <motion.line
+                      key={i}
+                      x1={def.stars[a].x * 100}
+                      y1={def.stars[a].y * 100}
+                      x2={def.stars[b].x * 100}
+                      y2={def.stars[b].y * 100}
+                      stroke="rgba(255,233,194,0.75)"
+                      strokeWidth="0.5"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.45, delay: 0.15 + i * 0.05, ease: "easeOut" }}
+                    />
+                  ))}
+                  {def.stars.map((st, i) => (
+                    <motion.circle
+                      key={`s${i}`}
+                      cx={st.x * 100}
+                      cy={st.y * 100}
+                      r={st.mag <= 2.3 ? 1.7 : 1.1}
+                      fill="#FFF6E5"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: [0, 1.8, 1], opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.1 + i * 0.05 }}
+                      style={{ transformOrigin: `${st.x * 100}px ${st.y * 100}px` }}
+                    />
+                  ))}
+                </svg>
+              </div>
+              <motion.p
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.7 }}
+                className="mt-6 font-serif text-3xl italic text-gold sm:text-4xl"
+              >
+                Estás dentro.
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2, duration: 0.7 }}
+                className="mt-2 text-sm tracking-wide text-cream/65"
+              >
+                Tu {nice} ya brilla en la lista.
+              </motion.p>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <p className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/[0.07] px-7 py-3.5 text-sm font-semibold tracking-wide text-gold">
           <span aria-hidden>✦</span>
           {state === "done"

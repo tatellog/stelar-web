@@ -1,5 +1,7 @@
 import dynamic from "next/dynamic";
 import Starfield from "@/components/Starfield";
+import Opening from "@/components/Opening";
+import StarCursor from "@/components/StarCursor";
 import AutoPilot from "@/components/AutoPilot";
 import Nav from "@/components/Nav";
 import { SignProvider } from "@/components/SignContext";
@@ -39,6 +41,9 @@ export default function Home() {
     <main className="cosmic-gradient relative">
       <Starfield />
       <SignProvider>
+        {/* la ceremonia de entrada y el cursor-estrella (solo desktop) */}
+        <Opening />
+        <StarCursor />
         {/* el viaje puede llevarte solo; cualquier gesto devuelve el control */}
         <AutoPilot />
         <Nav />
