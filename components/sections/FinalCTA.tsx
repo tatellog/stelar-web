@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
 import Reveal from "../Reveal";
 import { useSign } from "../SignContext";
+import { useJourney, FOCUS_TXT } from "../JourneyContext";
 import { FIGURES } from "@/lib/zodiac/figures";
 import type { ZodiacSign } from "@/lib/zodiac/types";
 import { joinBeta } from "@/lib/beta";
@@ -16,6 +17,7 @@ import { saveEmblemCard } from "@/lib/emblemCard";
  */
 export default function FinalCTA() {
   const { sign } = useSign();
+  const { focus } = useJourney();
   const def = FIGURES[sign];
   // infinite animations only tick while the closing sky is on screen
   const artRef = useRef<HTMLDivElement>(null);
@@ -170,7 +172,9 @@ export default function FinalCTA() {
 
         <Reveal delay={0.7} className="mt-8">
           <p className="font-serif text-base italic text-cream/45 sm:text-lg">
-            Empieza a ver lo que tus hábitos ya están diciendo.
+            {focus
+              ? `Empieza a ver lo que tus hábitos ya están diciendo de ${FOCUS_TXT[focus]}.`
+              : "Empieza a ver lo que tus hábitos ya están diciendo."}
           </p>
         </Reveal>
 

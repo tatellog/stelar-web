@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import Reveal from "../Reveal";
+import { useJourney, FOCUS_TXT, MOMENTO_TXT } from "../JourneyContext";
 
 /**
  * Capítulo X — Patrones reales.
@@ -390,6 +391,16 @@ const EXAMPLES: Example[] = [
 ];
 
 export default function PatternExamples() {
+  const { focus, momento } = useJourney();
+  // el eco de lo que la visitante le contó al observatorio
+  const echo =
+    focus && momento
+      ? `Empezando por lo que ${MOMENTO_TXT[momento]} le hacen a ${FOCUS_TXT[focus]}.`
+      : momento
+        ? `Empezando por lo que se esconde en ${MOMENTO_TXT[momento]}.`
+        : focus
+          ? `Empezando por los que deciden ${FOCUS_TXT[focus]}.`
+          : null;
   return (
     <section className="relative overflow-hidden py-32 sm:py-44">
       <div className="mx-auto max-w-3xl px-6">
@@ -403,6 +414,9 @@ export default function PatternExamples() {
               no notarías.
             </span>
           </h2>
+          {echo && (
+            <p className="mt-5 font-serif text-lg italic text-gold/90">{echo}</p>
+          )}
         </Reveal>
 
         <div className="mt-16 flex flex-col gap-5 sm:mt-20">

@@ -3,6 +3,8 @@ import Starfield from "@/components/Starfield";
 import Opening from "@/components/Opening";
 import StarCursor from "@/components/StarCursor";
 import Handoff from "@/components/Handoff";
+import { JourneyProvider } from "@/components/JourneyContext";
+import { AskFocus, AskMomento } from "@/components/interludes";
 import AutoPilot from "@/components/AutoPilot";
 import Nav from "@/components/Nav";
 import { SignProvider } from "@/components/SignContext";
@@ -42,6 +44,7 @@ export default function Home() {
     <main className="cosmic-gradient relative">
       <Starfield />
       <SignProvider>
+        <JourneyProvider>
         {/* la ceremonia de entrada y el cursor-estrella (solo desktop) */}
         <Opening />
         <StarCursor />
@@ -49,7 +52,8 @@ export default function Home() {
         <AutoPilot />
         <Nav />
         <Hero />
-  
+        {/* el observatorio pregunta: la respuesta tiñe el viaje */}
+        <AskFocus />
         <SignalField />
         <ConstellationBirth />
         {/* handoffs: el hilo de luz cose los capítulos entre sí */}
@@ -61,6 +65,7 @@ export default function Home() {
         <Ecosystem />
         <Handoff />
         <OrbitaAction />
+        <AskMomento />
         <PatternExamples />
         <DataNoise />
         <Emblem />
@@ -73,6 +78,7 @@ export default function Home() {
         <FAQ />
         <FinalCTA />
         <Footer />
+        </JourneyProvider>
       </SignProvider>
     </main>
   );
