@@ -10,6 +10,7 @@ import {
 } from "framer-motion";
 import { useSign } from "../SignContext";
 import { FIGURES } from "@/lib/zodiac/figures";
+import { FACTS } from "@/lib/zodiac/facts";
 
 const FRAMES = 11;
 
@@ -42,6 +43,9 @@ export default function Emblem() {
   const auraOpacity = useTransform(p, [0.42, 0.75], [0, 0.85]);
   const textOpacity = useTransform(p, [0.8, 0.9], [0, 1]);
   const textY = useTransform(p, [0.8, 0.9], [24, 0]);
+  // el archivo del observatorio: el dato real acompaña el pintado
+  const factOpacity = useTransform(p, [0.48, 0.58, 0.72, 0.8], [0, 1, 1, 0]);
+  const factY = useTransform(p, [0.48, 0.58], [18, 0]);
 
   // scroll → paint frame (preloaded so the paint never stutters).
   // The paint stops before the last frames: partially revealed, on purpose.
@@ -87,6 +91,20 @@ export default function Emblem() {
               Dejan una marca.
             </span>
           </h2>
+        </motion.div>
+
+        {/* archivo del observatorio: astronomía real de TU constelación,
+            revelada mientras el emblema se pinta — nunca horóscopos */}
+        <motion.div
+          style={{ opacity: factOpacity, y: factY }}
+          className="pointer-events-none absolute top-[max(11%,5rem)] z-10 mx-auto max-w-xl px-6 text-center"
+        >
+          <p className="mb-3 text-[12px] uppercase tracking-[0.32em] text-gold/75">
+            Archivo del observatorio · {def.label}
+          </p>
+          <p className="font-serif text-lg italic leading-relaxed text-cream/85 sm:text-xl">
+            {FACTS[sign]}
+          </p>
         </motion.div>
 
         <div className="relative w-full max-w-[min(24rem,80vh)] px-6 sm:max-w-[min(34rem,72vh)]">
